@@ -1,12 +1,11 @@
 const { CommandInteraction, Client } = require('discord.js');
 const { SlashCommandBuilder } = require('discord.js');
-const Discord = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('verify')
         .setDescription('Verify your discord account')
-        .addStringOption(option =>option.setName('secret').setDescription('Your byond account secret').setRequired(true))
+        .addStringOption(option =>option.setName('identifier').setDescription('Your byond account identifier').setRequired(true))
     ,
 
     /** 
@@ -17,18 +16,18 @@ module.exports = {
 
     run: async (client, interaction, args) => {
         await interaction.deferReply({ ephemeral: true });
-        client.simpleEmbed({
-            title: `Verification`,
-            desc: `In progress...`,
-            type: 'ephemeraledit'
+        client.vereficationEmbed({
+            desc: `In progress...`
         }, interaction);
-        const secret = await interaction.options.getString('secret');
+        const identifier = await interaction.options.getString('identifier');
+        let db_response;
+        let player_id = 0;
         let existed = 0;
-        if(secret === 0) {
+        if(identifier === 0) {
             existed = 2;
         } else {
-            const result = await new Promise((resolve, reject) => {
-                global.database.query("SELECT ckey, discordid FROM discord_links WHERE randomid = ?", [secret], (err, result) => {
+            db_response = await new Promise((resolve, reject) => {
+                global.database.query("SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -36,41 +35,63 @@ module.exports = {
                     }
                 });
             });
-            if (!result[0]) {
+            if (!db_response[0] || db_response[0].used) {
                 existed = 2;
-            } else if (result[0].discordid) {
+            } else if (db_response[0].realtime + 14400000 < new Date().toLocaleTimeString()) {
                 existed = 1;
+            } else {
+                player_id = db_response.playerid;
             }
         }
         switch (existed) {
             case 0:
-                await new Promise((resolve, reject) => {
-                    global.database.query("UPDATE discord_links SET discordid = ? WHERE randomid = ?", [interaction.user.id, secret], (err, result) => {
+                db_response = await new Promise((resolve, reject) => {
+                    global.database.query("SELECT player_id, discord_id, rank, stable_rank FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
-                            client.simpleEmbed({
-                                title: `Verification`,
-                                desc: `You successfully verified`,
-                                type: 'ephemeraledit'
-                            }, interaction);
                             resolve(result);
                         }
                     });
                 });
+                if (db_response[0]) {
+                    client.vereficationEmbed({
+                        desc: `You already verified`
+                    }, interaction);
+                } else {
+                    await new Promise((resolve, reject) => {
+                        global.database.query("INSERT INTO discord_links SET player_id = ?, discordid = ?", [player_id, interaction.user.id], (err, result) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(result);
+                            }
+                        });
+                    });
+                    await new Promise((resolve, reject) => {
+                        global.database.query("UPDATE discord_identifiers SET used = 1 WHERE playerid = ?", [playerid], (err, result) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(result);
+                            }
+                        });
+                    });
+                    interaction.user.roles.add(interaction.options.getRole(client.config.verified_role))
+                    interaction.user.roles.remove(interaction.options.getRole(client.config.anti_verified_role))
+                    client.vereficationEmbed({
+                        desc: `You successfully verified`
+                    }, interaction);
+                }
                 break;
             case 1:
-                client.simpleEmbed({
-                    title: `Verification`,
-                    desc: `You already verified`,
-                    type: 'ephemeraledit'
+                client.vereficationEmbed({
+                    desc: `Time out, order new in game`
                 }, interaction);
                 break;
             case 2:
-                client.simpleEmbed({
-                    title: `Verification`,
-                    desc: `Wrong secret`,
-                    type: 'ephemeraledit'
+                client.vereficationEmbed({
+                    desc: `Wrong identifier`
                 }, interaction);
                 break;
         }

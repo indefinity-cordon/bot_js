@@ -13,7 +13,7 @@ module.exports = async (client) => {
 
 async function updateRoles(client) {
     const dbroles = await new Promise((resolve, reject) => {
-        global.database.query("SELECT discordroleid, level FROM sublevels ORDER BY level", [], (err, result) => {
+        global.database.query("SELECT discord_role_ids, rank FROM ranks ORDER BY rank", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -21,16 +21,11 @@ async function updateRoles(client) {
             }
         });
     });
-/*
-Return it back, when you need handle multiguilds donation statuses... why? idk.
-    var members_sublevel = [];
-    client.guilds.cache.forEach(async (guild) => {
-*/
     const guild = client.guilds.cache.get(client.config.main_guild);
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
-        const discord_link = await new Promise((resolve, reject) => {
-            global.database.query("SELECT ckey, stablelevel FROM discord_links WHERE discordid = ?", [member.id], (err, result) => {
+        let discord_link = await new Promise((resolve, reject) => {
+            global.database.query("SELECT player_id, stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -38,25 +33,16 @@ Return it back, when you need handle multiguilds donation statuses... why? idk.
                 }
             });
         });
-        if (discord_link[0] && discord_link[0].stablelevel === 0) {
-            var sublevel = 0;
+        if (discord_link[0]) {
+            let rank = discord_link[0].stable_rank;
             member.roles.cache.forEach(async (role) => {
-                const matchingRole = dbroles.find(row => row.discordroleid === role.id);
-                if (matchingRole && sublevel < matchingRole.level) {
-                    sublevel = matchingRole.level;
+                const matchingRole = dbroles.find(row => row.discord_role_ids === role.id);
+                if (matchingRole && rank < matchingRole.rank) {
+                    rank = matchingRole.rank;
                 }
             });
-/*
-            if(members_sublevel[member.id]) {
-                if(members_sublevel[member.id] < sublevel) {
-                    members_sublevel[member.id] = sublevel;
-                }
-            } else {
-                members_sublevel[member.id] = sublevel;
-            }
-*/
             await new Promise((resolve, reject) => {
-                global.database.query("UPDATE discord_links SET sublevel = ? WHERE discordid = ?", [sublevel, member.id], (err, result) => {
+                global.database.query("UPDATE discord_links SET rank = ? WHERE discord_id = ?", [rank, member.id], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -66,5 +52,4 @@ Return it back, when you need handle multiguilds donation statuses... why? idk.
             });
         }
     });
-//    });
 };

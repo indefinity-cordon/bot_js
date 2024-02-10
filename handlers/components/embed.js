@@ -69,6 +69,16 @@ module.exports = (client) => {
     //                        BASIC MESSAGES                          //
     //----------------------------------------------------------------//
 
+    client.vereficationEmbed = async function ({
+        desc: desc,
+    }, interaction) {
+        return client.simpleEmbed({
+            title: `Verification`,
+            desc: desc,
+            type: 'ephemeraledit'
+        }, interaction)
+    }
+
     // Default
     client.embed = async function ({
         embed: embed = client.templateEmbed(),
