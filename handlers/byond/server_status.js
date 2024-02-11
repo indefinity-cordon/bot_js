@@ -4,11 +4,15 @@ const handlingConnections = [];
 
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
-        startListining(client);
-        setInterval(
-            startListining,
-            1200000,
-            client
+        setTimeout(() => {
+                startListining(client);
+                setInterval(
+                    startListining,
+                    1200000,
+                    client
+                );
+            },
+            2000,
         );
     });
 };
@@ -32,7 +36,7 @@ async function startListining(client) {
         }
         for (const server of servers) {
             const statuses = await new Promise((resolve, reject) => {
-                global.database.query("SELECT channelid, messageid FROM discordstatus WHERE servername = ?", [server.name], (err, result) => {
+                global.database.query("SELECT channel_id, message_id FROM statuses WHERE server_name = ?", [server.name], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -46,12 +50,12 @@ async function startListining(client) {
             } else {
                 var messages = [];
                 for (const status of statuses) {
-                    const channel = await client.channels.fetch(status.channelid);
+                    const channel = await client.channels.fetch(status.channel_id);
                     var found_message = null;
-                    if (status.messageid) {
+                    if (status.message_id) {
                         await channel.messages.fetch().then((messages) => {
                             for (const message of messages) {
-                                if (message[1].id === status.messageid) {
+                                if (message[1].id === status.message_id) {
                                     found_message = message[1];
                                 }
                             }
@@ -64,7 +68,7 @@ async function startListining(client) {
                         }, channel).then((message) => {
                             found_message = message;
                             new Promise((resolve, reject) => {
-                                global.database.query("UPDATE discordstatus SET messageid = ? WHERE servername = ? AND channelid = ?", [message.id, server.name, status.channelid], (err, result) => {
+                                global.database.query("UPDATE statuses SET message_id = ? WHERE server_name = ? AND channel_id = ?", [message.id, server.name, status.channel_id], (err, result) => {
                                     if (err) {
                                         reject(err);
                                     } else {

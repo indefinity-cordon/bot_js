@@ -16,7 +16,7 @@ module.exports = {
 
     run: async (client, interaction, args) => {
         await interaction.deferReply({ ephemeral: true });
-        client.vereficationEmbed({
+        await client.vereficationEmbed({
             desc: `In progress...`
         }, interaction);
         const identifier = await interaction.options.getString('identifier');
@@ -40,13 +40,13 @@ module.exports = {
             } else if (db_response[0].realtime + 14400000 < new Date().toLocaleTimeString()) {
                 existed = 1;
             } else {
-                player_id = db_response.playerid;
+                player_id = db_response[0].playerid;
             }
         }
         switch (existed) {
             case 0:
                 db_response = await new Promise((resolve, reject) => {
-                    global.database.query("SELECT player_id, discord_id, rank, stable_rank FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
+                    global.database.query("SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -54,13 +54,34 @@ module.exports = {
                         }
                     });
                 });
-                if (db_response[0]) {
+                if (db_response[0] && db_response[0].discord_id) {
                     client.vereficationEmbed({
                         desc: `You already verified`
                     }, interaction);
                 } else {
+                    if (db_response[0]) {
+                        await new Promise((resolve, reject) => {
+                            global.database.query("UPDATE discord_links SET discord_id = ? WHERE player_id = ?", [interaction.user.id, player_id], (err, result) => {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    resolve(result);
+                                }
+                            });
+                        });
+                    } else {
+                        await new Promise((resolve, reject) => {
+                            global.database.query("INSERT INTO discord_links (player_id, discord_id) VALUES (?, ?)", [player_id, interaction.user.id], (err, result) => {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    resolve(result);
+                                }
+                            });
+                        });
+                    }
                     await new Promise((resolve, reject) => {
-                        global.database.query("INSERT INTO discord_links SET player_id = ?, discordid = ?", [player_id, interaction.user.id], (err, result) => {
+                        global.database.query("UPDATE discord_identifiers SET used = 1 WHERE identifier = ?", [identifier], (err, result) => {
                             if (err) {
                                 reject(err);
                             } else {
@@ -68,17 +89,9 @@ module.exports = {
                             }
                         });
                     });
-                    await new Promise((resolve, reject) => {
-                        global.database.query("UPDATE discord_identifiers SET used = 1 WHERE playerid = ?", [playerid], (err, result) => {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve(result);
-                            }
-                        });
-                    });
-                    interaction.user.roles.add(interaction.options.getRole(client.config.verified_role))
-                    interaction.user.roles.remove(interaction.options.getRole(client.config.anti_verified_role))
+                    const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
+                    interactionUser.roles.add(client.config.verified_role)
+                    interactionUser.roles.remove(client.config.anti_verified_role)
                     client.vereficationEmbed({
                         desc: `You successfully verified`
                     }, interaction);

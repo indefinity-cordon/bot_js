@@ -15,11 +15,11 @@ module.exports = {
 
     run: async (client, interaction, args) => {
         await interaction.deferReply({ ephemeral: true });
-        client.vereficationEmbed({
+        await client.vereficationEmbed({
             desc: `In progress...`
         }, interaction);
         const db_response = await new Promise((resolve, reject) => {
-            global.database.query("SELECT player_id, discord_id, rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
+            global.database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -28,8 +28,9 @@ module.exports = {
             });
         });
         if (db_response[0]) {
-            interaction.user.roles.add(interaction.options.getRole(client.config.verified_role))
-            interaction.user.roles.remove(interaction.options.getRole(client.config.anti_verified_role))
+            const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
+            interactionUser.roles.add(client.config.verified_role)
+            interactionUser.roles.remove(client.config.anti_verified_role)
             client.vereficationEmbed({
                 desc: `You already verified`
             }, interaction);

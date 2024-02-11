@@ -12,10 +12,6 @@ module.exports = async (client) => {
         ];
         return Promise.all(promises)
             .then(results => {
-                let statuttext;
-                if (client.config.discord_status) {
-                    statuttext = client.config.discord_status.split(', ');
-                }
                 client.user.setPresence({ activities: [{ name: 'Spectating pigs', type: Discord.ActivityType.Playing }], status: 'online' });
             })
     }, 50000)
