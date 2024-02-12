@@ -109,7 +109,7 @@ async function updateStatus(client, server, messages) {
         for (const message of messages) {
             await client.embed({
                 title: `${server.name} status`,
-                desc: `# SERVER DOWN`,
+                desc: `# SERVER OFFLINE`,
                 color: `#a00f0f`,
                 type: 'edit'
             }, message)
