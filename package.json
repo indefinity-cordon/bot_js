@@ -1,6 +1,6 @@
 {
-  "name": "incitatus_real_bot",
-  "version": "1.0.0",
+  "name": "discord_bot",
+  "version": "1.0.1",
   "description": "",
   "main": "discord_bot.js",
   "type": "commonjs",
