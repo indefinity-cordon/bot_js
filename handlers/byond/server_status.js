@@ -132,11 +132,11 @@ async function serverTopic(address, port) {
                 resolve(decodePacket(response));
             } else {
                 client.end();
-                reject(new console.log('BYOND server returned invalid data.'));
+                reject(console.log('BYOND server returned invalid data.'));
             }
         });
         client.on('error', (err) => {
-            reject(new console.log(`Can't connect to ${address}:${port}: ${err.message}`));
+            reject(console.log(`Can't connect to ${address}:${port}: ${err.message}`));
         });
     });
 }
@@ -148,5 +148,5 @@ function decodePacket(packet) {
     } else if (packetType === 0x06) {
         return packet.slice(1, -1).toString('ascii');
     }
-    throw new console.log(`Unknown BYOND data code: 0x${packetType.toString(16)}`);
+    return console.log(`Unknown BYOND data code: 0x${packetType.toString(16)}`);
 }
