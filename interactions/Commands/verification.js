@@ -5,7 +5,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('verify')
         .setDescription('Verify your discord account')
-        .addStringOption(option =>option.setName('identifier').setDescription('Your byond account identifier').setRequired(true))
+        .addStringOption(option => option.setName('identifier').setDescription('Your byond account identifier').setRequired(true))
     ,
 
     /** 
@@ -20,33 +20,69 @@ module.exports = {
             desc: `In progress...`
         }, interaction);
         const identifier = await interaction.options.getString('identifier');
-        let db_response;
-        let player_id = 0;
-        let existed = 0;
-        if(identifier === 0) {
-            existed = 2;
-        } else {
-            db_response = await new Promise((resolve, reject) => {
-                global.database.query("SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-                });
+        let db_response = await new Promise((resolve, reject) => {
+            global.database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
             });
-            if (!db_response[0] || db_response[0].used) {
-                existed = 2;
-            } else if (db_response[0].realtime + 14400000 < new Date().toLocaleTimeString()) {
-                existed = 1;
-            } else {
-                player_id = db_response[0].playerid;
-            }
+        });
+        if (db_response[0] && db_response[0].discord_id) {
+            const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
+            interactionUser.roles.add(client.config.verified_role)
+            interactionUser.roles.remove(client.config.anti_verified_role)
+            client.vereficationEmbed({
+                desc: `You already verified`
+            }, interaction);
+            return;
         }
-        switch (existed) {
-            case 0:
-                db_response = await new Promise((resolve, reject) => {
-                    global.database.query("SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
+        let player_id = 0;
+        if(identifier === 0) {
+            client.vereficationEmbed({
+                desc: `Wrong identifier`
+            }, interaction);
+            return;
+        }
+        db_response = await new Promise((resolve, reject) => {
+            global.database.query("SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+        if (!db_response[0] || db_response[0].used) {
+            client.vereficationEmbed({
+                desc: `Wrong identifier`
+            }, interaction);
+            return;
+        } else if (db_response[0].realtime + 14400000 < new Date().toLocaleTimeString()) {
+            client.vereficationEmbed({
+                desc: `Time out, order new in game`
+            }, interaction);
+            return;
+        }
+        player_id = db_response[0].playerid;
+        db_response = await new Promise((resolve, reject) => {
+            global.database.query("SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+        if (db_response[0] && db_response[0].discord_id) {
+            client.vereficationEmbed({
+                desc: `You already verified`
+            }, interaction);
+        } else {
+            if (db_response[0]) {
+                await new Promise((resolve, reject) => {
+                    global.database.query("UPDATE discord_links SET discord_id = ? WHERE player_id = ?", [interaction.user.id, player_id], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -54,59 +90,32 @@ module.exports = {
                         }
                     });
                 });
-                if (db_response[0] && db_response[0].discord_id) {
-                    client.vereficationEmbed({
-                        desc: `You already verified`
-                    }, interaction);
-                } else {
-                    if (db_response[0]) {
-                        await new Promise((resolve, reject) => {
-                            global.database.query("UPDATE discord_links SET discord_id = ? WHERE player_id = ?", [interaction.user.id, player_id], (err, result) => {
-                                if (err) {
-                                    reject(err);
-                                } else {
-                                    resolve(result);
-                                }
-                            });
-                        });
-                    } else {
-                        await new Promise((resolve, reject) => {
-                            global.database.query("INSERT INTO discord_links (player_id, discord_id) VALUES (?, ?)", [player_id, interaction.user.id], (err, result) => {
-                                if (err) {
-                                    reject(err);
-                                } else {
-                                    resolve(result);
-                                }
-                            });
-                        });
-                    }
-                    await new Promise((resolve, reject) => {
-                        global.database.query("UPDATE discord_identifiers SET used = 1 WHERE identifier = ?", [identifier], (err, result) => {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve(result);
-                            }
-                        });
+            } else {
+                await new Promise((resolve, reject) => {
+                    global.database.query("INSERT INTO discord_links (player_id, discord_id) VALUES (?, ?)", [player_id, interaction.user.id], (err, result) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
                     });
-                    const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
-                    interactionUser.roles.add(client.config.verified_role)
-                    interactionUser.roles.remove(client.config.anti_verified_role)
-                    client.vereficationEmbed({
-                        desc: `You successfully verified`
-                    }, interaction);
-                }
-                break;
-            case 1:
-                client.vereficationEmbed({
-                    desc: `Time out, order new in game`
-                }, interaction);
-                break;
-            case 2:
-                client.vereficationEmbed({
-                    desc: `Wrong identifier`
-                }, interaction);
-                break;
+                });
+            }
+            await new Promise((resolve, reject) => {
+                global.database.query("UPDATE discord_identifiers SET used = 1 WHERE identifier = ?", [identifier], (err, result) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+            const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
+            interactionUser.roles.add(client.config.verified_role)
+            interactionUser.roles.remove(client.config.anti_verified_role)
+            client.vereficationEmbed({
+                desc: `You successfully verified`
+            }, interaction);
         }
     },
 };
