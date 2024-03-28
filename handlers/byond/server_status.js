@@ -4,15 +4,12 @@ const handlingConnections = [];
 
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
-        setTimeout(() => {
-                startListining(client);
-                setInterval(
-                    startListining,
-                    1200000,
-                    client
-                );
-            },
-            2000,
+        await global.database
+        startListining(client);
+        setInterval(
+            startListining,
+            1200000,
+            client
         );
     });
 };
@@ -95,7 +92,7 @@ async function startListining(client) {
 
 async function updateStatus(client, server, messages) {
     try {
-        const response = await serverTopic(server.ip, server.port);
+        const response = await client.prepareByondAPIRequest({request: "status"});
         for (const message of messages) {
             await client.embed({
                 title: `${server.name} status`,
@@ -117,29 +114,6 @@ async function updateStatus(client, server, messages) {
         console.error(error);
     }
 };
-
-async function serverTopic(address, port) {
-    const packet = new Uint8Array([0, 131, 0, 13, 0, 0, 0, 0, 0, 63, 115, 116, 97, 116, 117, 115, 0]);//b'\x00\x83\x00\r\x00\x00\x00\x00\x00?status\x00' the shitcode version of python shitcode of byond shitcode old api (lazy right now with new api)
-    return new Promise((resolve, reject) => {
-        const client = net.connect(port, address, () => {
-            client.write(packet);
-        });
-        client.on('data', (data) => {
-            if (data.slice(0, 2).equals(Buffer.from([0x00, 0x83]))) {
-                const size = data.readUInt16BE(2);
-                const response = data.slice(4, 4 + size);
-                client.end();
-                resolve(decodePacket(response));
-            } else {
-                client.end();
-                reject(console.log('BYOND server returned invalid data.'));
-            }
-        });
-        client.on('error', (err) => {
-            reject(console.log(`Can't connect to ${address}:${port}: ${err.message}`));
-        });
-    });
-}
 
 function decodePacket(packet) {
     const packetType = packet[0];
