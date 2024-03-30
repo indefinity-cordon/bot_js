@@ -9,15 +9,16 @@ const connection = mysql.createConnection({
     database: process.env.DB_NAME,
 });
 
+connection.on('error', err => console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.white(`>>`), chalk.red(err)));
+
 module.exports = async () => {
     console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`is connecting...`))
+    global.database = connection;
     connection.connect((err) => {
         if (err) {
             console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`MySQL`), chalk.white(`>>`), chalk.red(`Failed to connect to MySQL!`), chalk.white(`>>`), chalk.red(err))
-            process.exit(1)
         } else {
             console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the MySQL server.`))
-            global.database = connection;
         }
     });
     return;

@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const chalk = require('chalk');
+const net = require('net');
 
 module.exports = (client) => {
     client.templateEmbed = function () {
@@ -15,12 +16,14 @@ module.exports = (client) => {
     // Missing perms
 
     client.prepareByondAPIRequest = async function ({
-        request: request
+        request: request,
+        port: port,
+        address: address
     }) {
         if (request) {
             const textEncoder = new TextEncoder();
             const encodedText = textEncoder.encode(request);
-            const bitArray = new Uint8Array([0, 131, 0, 13, 0, 0, 0, 0, 0, 63, ...encodedText, 0]);
+            const packet = new Uint8Array([0, 131, 0, 13, 0, 0, 0, 0, 0, 63, ...encodedText, 0]);
             return new Promise((resolve, reject) => {
                 const client = net.connect(port, address, () => {
                     client.write(packet);
@@ -44,4 +47,14 @@ module.exports = (client) => {
             console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`Malformed ByondAPI request, with request: ${request}.`))
         }
     }
+}
+
+function decodePacket(packet) {
+    const packetType = packet[0];
+    if (packetType === 0x2a) {
+        return packet.readFloatLE(1);
+    } else if (packetType === 0x06) {
+        return packet.slice(1, -1).toString('ascii');
+    }
+    return console.log(`Unknown BYOND data code: 0x${packetType.toString(16)}`);
 }

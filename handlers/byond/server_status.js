@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-const net = require('net');
 const handlingConnections = [];
 
 module.exports = async (client) => {
@@ -92,7 +91,7 @@ async function startListining(client) {
 
 async function updateStatus(client, server, messages) {
     try {
-        const response = await client.prepareByondAPIRequest({request: "status"});
+        const response = await client.prepareByondAPIRequest({request: "status", port: server.port, address: server.ip});
         for (const message of messages) {
             await client.embed({
                 title: `${server.name} status`,
@@ -114,13 +113,3 @@ async function updateStatus(client, server, messages) {
         console.error(error);
     }
 };
-
-function decodePacket(packet) {
-    const packetType = packet[0];
-    if (packetType === 0x2a) {
-        return packet.readFloatLE(1);
-    } else if (packetType === 0x06) {
-        return packet.slice(1, -1).toString('ascii');
-    }
-    return console.log(`Unknown BYOND data code: 0x${packetType.toString(16)}`);
-}
