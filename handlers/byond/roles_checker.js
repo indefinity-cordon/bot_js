@@ -30,7 +30,7 @@ async function updateRoles(client) {
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
         let discord_link = await new Promise((resolve, reject) => {
-            global.database.query("SELECT player_id, stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
+            global.database.query("SELECT player_ckey, stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {

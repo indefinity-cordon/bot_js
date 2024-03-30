@@ -21,7 +21,7 @@ module.exports = {
         }, interaction);
         const identifier = await interaction.options.getString('identifier');
         let db_response = await new Promise((resolve, reject) => {
-            global.database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
+            global.database.query("SELECT player_ckey, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -38,7 +38,7 @@ module.exports = {
             }, interaction);
             return;
         }
-        let player_id = 0;
+        let player_ckey = 0;
         if(identifier === 0) {
             client.vereficationEmbed({
                 desc: `Wrong identifier`
@@ -46,7 +46,7 @@ module.exports = {
             return;
         }
         db_response = await new Promise((resolve, reject) => {
-            global.database.query("SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
+            global.database.query("SELECT player_ckey, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -65,9 +65,9 @@ module.exports = {
             }, interaction);
             return;
         }
-        player_id = db_response[0].playerid;
+        player_ckey = db_response[0].player_ckey;
         db_response = await new Promise((resolve, reject) => {
-            global.database.query("SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
+            global.database.query("SELECT player_ckey, discord_id FROM discord_links WHERE player_ckey = ?", [player_ckey], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -82,7 +82,7 @@ module.exports = {
         } else {
             if (db_response[0]) {
                 await new Promise((resolve, reject) => {
-                    global.database.query("UPDATE discord_links SET discord_id = ? WHERE player_id = ?", [interaction.user.id, player_id], (err, result) => {
+                    global.database.query("UPDATE discord_links SET discord_id = ? WHERE player_ckey = ?", [interaction.user.id, player_ckey], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -92,7 +92,7 @@ module.exports = {
                 });
             } else {
                 await new Promise((resolve, reject) => {
-                    global.database.query("INSERT INTO discord_links (player_id, discord_id) VALUES (?, ?)", [player_id, interaction.user.id], (err, result) => {
+                    global.database.query("INSERT INTO discord_links (player_ckey, discord_id) VALUES (?, ?)", [player_ckey, interaction.user.id], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {

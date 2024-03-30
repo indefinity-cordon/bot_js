@@ -14,8 +14,12 @@ module.exports = async (client) => {
 };
 
 async function startListining(client) {
+    for (const connections of handlingConnections) {
+        clearInterval(connections);
+    }
+    handlingConnections.length = 0;
     const servers = await new Promise((resolve, reject) => {
-        global.database.query("SELECT name, ip, port FROM servers ORDER BY name", [], (err, result) => {
+        global.database.query("SELECT server_name, ip, port FROM servers ORDER BY server_name", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -27,12 +31,9 @@ async function startListining(client) {
         console.log(`Failed to find servers. Aborting.`);
         return;
     } else {
-        for (const connections of handlingConnections) {
-            clearInterval(connections)
-        }
         for (const server of servers) {
             const statuses = await new Promise((resolve, reject) => {
-                global.database.query("SELECT channel_id, message_id FROM statuses WHERE server_name = ?", [server.name], (err, result) => {
+                global.database.query("SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'status'", [server.server_name], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -41,7 +42,7 @@ async function startListining(client) {
                 });
             });
             if (!statuses.length) {
-                console.log(`Failed to find server related feed channels. Aborting, for ${server.name}`);
+                console.log(`Failed to find server related feed channels. Aborting, for ${server.server_name}`);
                 return;
             } else {
                 var messages = [];
@@ -59,12 +60,12 @@ async function startListining(client) {
                     }
                     if (found_message === null) {
                         await client.embed({
-                            title: `${server.name} status`,
+                            title: `${server.server_name} status`,
                             desc: `prepairing...`
                         }, channel).then((message) => {
                             found_message = message;
                             new Promise((resolve, reject) => {
-                                global.database.query("UPDATE statuses SET message_id = ? WHERE server_name = ? AND channel_id = ?", [message.id, server.name, status.channel_id], (err, result) => {
+                                global.database.query("UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = 'status' AND channel_id = ?", [message.id, server.server_name, status.channel_id], (err, result) => {
                                     if (err) {
                                         reject(err);
                                     } else {
@@ -94,7 +95,7 @@ async function updateStatus(client, server, messages) {
         const response = await client.prepareByondAPIRequest({request: "status", port: server.port, address: server.ip});
         for (const message of messages) {
             await client.embed({
-                title: `${server.name} status`,
+                title: `${server.server_name} status`,
                 desc: `${response}`,
                 color: `#669917`,
                 type: 'edit'
@@ -104,7 +105,7 @@ async function updateStatus(client, server, messages) {
         
         for (const message of messages) {
             await client.embed({
-                title: `${server.name} status`,
+                title: `${server.server_name} status`,
                 desc: `# SERVER OFFLINE`,
                 color: `#a00f0f`,
                 type: 'edit'

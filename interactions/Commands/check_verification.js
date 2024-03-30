@@ -19,7 +19,7 @@ module.exports = {
             desc: `In progress...`
         }, interaction);
         const db_response = await new Promise((resolve, reject) => {
-            global.database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
+            global.database.query("SELECT player_ckey, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
