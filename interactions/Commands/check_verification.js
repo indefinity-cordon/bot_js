@@ -15,7 +15,8 @@ module.exports = {
 
     run: async (client, interaction, args) => {
         await interaction.deferReply({ ephemeral: true });
-        await client.vereficationEmbed({
+        await client.ephemeralEmbed({
+            title: `Verification`,
             desc: `In progress...`
         }, interaction);
         const db_response = await new Promise((resolve, reject) => {
@@ -31,12 +32,14 @@ module.exports = {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
             interactionUser.roles.add(client.config.verified_role)
             interactionUser.roles.remove(client.config.anti_verified_role)
-            client.vereficationEmbed({
+            client.ephemeralEmbed({
+                title: `Verification`,
                 desc: `You already verified`
             }, interaction);
             return;
         }
-        client.vereficationEmbed({
+        client.ephemeralEmbed({
+            title: `Verification`,
             desc: `You need verify, you don't have linked game account`
         }, interaction);
     },

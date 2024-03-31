@@ -31,15 +31,15 @@ async function startListining(client) {
                 }
             });
         });
-        if (!status.length) {
+        if (!status[0].length) {
             console.log(`Failed to find server (${data.source}) and type (${data.type}) related feed channels. Aborting. FULL DATA TRANSMISSION LOG ${data}`);
         } else {
-            const channel = await client.channels.fetch(status.channel_id);
+            const channel = await client.channels.fetch(status[0].channel_id);
             var found_message = null;
-            if (status.message_id) {
+            if (status[0].message_id) {
                 await channel.messages.fetch().then((messages) => {
                     for (const message of messages) {
-                        if (message[1].id === status.message_id) {
+                        if (message[1].id === status[0].message_id) {
                             found_message = message[1];
                         }
                     }
@@ -55,7 +55,7 @@ async function startListining(client) {
                         color: role.hexColor
                     }, channel).then((message) => {
                         new Promise((resolve, reject) => {
-                            global.database.query("UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, data.source, data.type, status.channel_id], (err, result) => {
+                            global.database.query("UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, data.source, data.type, status[0].channel_id], (err, result) => {
                                 if (err) {
                                     message.delete({timeout: 300000});
                                     reject(err);

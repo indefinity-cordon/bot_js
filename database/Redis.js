@@ -11,9 +11,7 @@ module.exports = async () => {
     console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.green(`is connecting...`))
     global.redis_connection = connection;
     connection.connect((err) => {
-        if (err) {
-            console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.white(`>>`), chalk.red(`Failed to connect to Redis Server!`), chalk.white(`>>`), chalk.red(err))
-        } else {
+        if (!err) {
             console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.green(`Connected to the Redis server.`))
         }
     });

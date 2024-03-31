@@ -68,12 +68,15 @@ module.exports = (client) => {
     //                        BASIC MESSAGES                          //
     //----------------------------------------------------------------//
 
-    client.vereficationEmbed = async function ({
+    client.ephemeralEmbed = async function ({
+        title: title,
         desc: desc,
+        color: color
     }, interaction) {
         return client.simpleEmbed({
-            title: `Verification`,
+            title: title,
             desc: desc,
+            color: color,
             type: 'ephemeraledit'
         }, interaction)
     }

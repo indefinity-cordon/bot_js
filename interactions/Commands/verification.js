@@ -16,7 +16,8 @@ module.exports = {
 
     run: async (client, interaction, args) => {
         await interaction.deferReply({ ephemeral: true });
-        await client.vereficationEmbed({
+        await client.ephemeralEmbed({
+            title: `Verification`,
             desc: `In progress...`
         }, interaction);
         const identifier = await interaction.options.getString('identifier');
@@ -33,14 +34,16 @@ module.exports = {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
             interactionUser.roles.add(client.config.verified_role)
             interactionUser.roles.remove(client.config.anti_verified_role)
-            client.vereficationEmbed({
+            client.ephemeralEmbed({
+                title: `Verification`,
                 desc: `You already verified`
             }, interaction);
             return;
         }
         let player_ckey = 0;
         if(identifier === 0) {
-            client.vereficationEmbed({
+            client.ephemeralEmbed({
+                title: `Verification`,
                 desc: `Wrong identifier`
             }, interaction);
             return;
@@ -55,12 +58,14 @@ module.exports = {
             });
         });
         if (!db_response[0] || db_response[0].used) {
-            client.vereficationEmbed({
+            client.ephemeralEmbed({
+                title: `Verification`,
                 desc: `Wrong identifier`
             }, interaction);
             return;
         } else if (db_response[0].realtime + 14400000 < new Date().toLocaleTimeString()) {
-            client.vereficationEmbed({
+            client.ephemeralEmbed({
+                title: `Verification`,
                 desc: `Time out, order new in game`
             }, interaction);
             return;
@@ -76,7 +81,8 @@ module.exports = {
             });
         });
         if (db_response[0] && db_response[0].discord_id) {
-            client.vereficationEmbed({
+            client.ephemeralEmbed({
+                title: `Verification`,
                 desc: `You already verified`
             }, interaction);
         } else {
@@ -113,7 +119,8 @@ module.exports = {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
             interactionUser.roles.add(client.config.verified_role)
             interactionUser.roles.remove(client.config.anti_verified_role)
-            client.vereficationEmbed({
+            client.ephemeralEmbed({
+                title: `Verification`,
                 desc: `You successfully verified`
             }, interaction);
         }
