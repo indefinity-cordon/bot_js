@@ -92,7 +92,7 @@ async function startListining(client) {
 
 async function updateStatus(client, server, messages) {
     try {
-        const response = await client.prepareByondAPIRequest({request: "status", port: server.port, address: server.ip});
+        const response = await client.prepareByondAPIRequest({request: "status", port: server.port, address: server.ip}); //`{"query":"status","auth":"anonymous","source":"bot"}` cm example
         for (const message of messages) {
             await client.embed({
                 title: `${server.server_name} status`,
@@ -111,6 +111,5 @@ async function updateStatus(client, server, messages) {
                 type: 'edit'
             }, message)
         }
-        console.error(error);
     }
 };

@@ -48,7 +48,8 @@ async function startListining(client) {
             }
             switch (data.state) {
                 case "start":
-                    found_message.delete();
+                    if (found_message)
+                        found_message.delete();
                     const role = channel.guild.roles.cache.find(role => role.name === `${data.source} Round`);
                     await client.embed({
                         title: `NEW ROUND!`,
