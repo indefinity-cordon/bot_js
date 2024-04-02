@@ -27,7 +27,7 @@ async function startListining(client) {
             }
         });
     });
-    if (!servers.length) {
+    if (!servers[0]) {
         console.log(`Failed to find servers. Aborting.`);
         return;
     } else {
@@ -41,7 +41,7 @@ async function startListining(client) {
                     }
                 });
             });
-            if (!statuses.length) {
+            if (!statuses[0]) {
                 console.log(`Failed to find server related feed channels. Aborting, for ${server.server_name}`);
                 return;
             } else {
@@ -80,7 +80,7 @@ async function startListining(client) {
                 updateStatus(client, server, messages)
                 handlingConnections.push(setInterval(
                     updateStatus,
-                    60000,
+                    30000,
                     client,
                     server,
                     messages

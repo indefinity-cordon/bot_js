@@ -33,7 +33,14 @@ module.exports = (client) => {
                         const size = data.readUInt16BE(2);
                         const response = data.slice(4, 4 + size);
                         client.end();
-                        resolve(decodePacket(response));
+                        const packetType = response[0];
+                        if (packetType === 0x2a) {
+                            resolve(response.readFloatLE(1));
+                        } else if (packetType === 0x06) {
+                            resolve(response.slice(1, -1).toString('ascii'));
+                        } else {
+                            reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`Unknown BYOND data code: 0x${packetType.toString(16)}`)));
+                        }
                     } else {
                         client.end();
                         reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`BYOND server returned invalid data.`)));
@@ -47,14 +54,4 @@ module.exports = (client) => {
             console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`Malformed ByondAPI request, with request: ${request}.`))
         }
     }
-}
-
-function decodePacket(packet) {
-    const packetType = packet[0];
-    if (packetType === 0x2a) {
-        return packet.readFloatLE(1);
-    } else if (packetType === 0x06) {
-        return packet.slice(1, -1).toString('ascii');
-    }
-    return console.log(`Unknown BYOND data code: 0x${packetType.toString(16)}`);
 }

@@ -22,6 +22,7 @@ async function startListining(client) {
     subscriber = global.redis_connection.duplicate();
     await subscriber.connect();
     subscriber.subscribe('byond.round', async (data) => {
+        data = JSON.parse(data);
         const status = await new Promise((resolve, reject) => {
             global.database.query("SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", [data.source, data.type], (err, result) => {
                 if (err) {
@@ -31,7 +32,7 @@ async function startListining(client) {
                 }
             });
         });
-        if (!status[0].length) {
+        if (!status.length) {
             console.log(`Failed to find server (${data.source}) and type (${data.type}) related feed channels. Aborting. FULL DATA TRANSMISSION LOG ${data}`);
         } else {
             const channel = await client.channels.fetch(status[0].channel_id);
