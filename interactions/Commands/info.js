@@ -56,8 +56,11 @@ module.exports = {
         }
         switch (server) {
             case "CMI":
+                global.game_database.changeUser({database : client.config.game_dbs[server]}, function(err) {
+                    if (err) throw err;
+                });
                 const db_player_profile = await new Promise((resolve, reject) => {
-                    global.cmi_database.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [db_discord_link[0].player_ckey], (err, result) => {
+                    global.game_database.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [db_discord_link[0].player_ckey], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -80,7 +83,7 @@ module.exports = {
                     player_info += `## **Banned**\n**Reason:** ${db_player_profile[0].time_ban_reason}, **Exp:** ${db_player_profile[0].time_ban_expiration}, **Date:** ${db_player_profile[0].time_ban_date}\n`;
                 }
                 const db_player_playtime = await new Promise((resolve, reject) => {
-                    global.cmi_database.query("SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id], (err, result) => {
+                    global.game_database.query("SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -99,6 +102,9 @@ module.exports = {
                 }, interaction);
                 break;
             case "TGMC":
+                global.game_database.changeUser({database : client.config.game_dbs[server]}, function(err) {
+                    if (err) throw err;
+                });
                 client.ephemeralEmbed({
                     title: `Information Request`,
                     desc: `This is user don't have TGMC profile`,

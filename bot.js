@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs');
 
 require("./database/MySQL")();
-require("./database/Redis")();
+require("./socket/Redis")();
 
 const client = new Discord.Client({
     autoReconnect: true,
