@@ -26,7 +26,7 @@ async function updateRoles(client) {
             }
         });
     });
-    const guild = client.guilds.cache.get(client.config.main_guild);
+    const guild = client.guilds.cache.get(global.bot_config.main_guild);
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
         let discord_link = await new Promise((resolve, reject) => {

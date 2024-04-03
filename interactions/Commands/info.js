@@ -15,10 +15,13 @@ module.exports = {
             option.setName('server')
             .setDescription('Select game server')
             .setRequired(true)
-            .addChoices(
-                { name: 'CMI', value: 'CMI' },
-                { name: 'TGMC', value: 'TGMC' }
-            )
+            .addChoices( function () {
+                let server_list = []
+                for (const status of global.bot_config.game_dbs) {
+                    server_list.push({ name: status[1], value: status[2] })
+                }
+                return server_list
+            })
         )
     ,
 
@@ -56,7 +59,7 @@ module.exports = {
         }
         switch (server) {
             case "CMI":
-                global.game_database.changeUser({database : client.config.game_dbs[server]}, function(err) {
+                global.game_database.changeUser({database : global.bot_config.game_dbs[server]}, function(err) {
                     if (err) throw err;
                 });
                 const db_player_profile = await new Promise((resolve, reject) => {
@@ -102,7 +105,7 @@ module.exports = {
                 }, interaction);
                 break;
             case "TGMC":
-                global.game_database.changeUser({database : client.config.game_dbs[server]}, function(err) {
+                global.game_database.changeUser({database : global.bot_config.game_dbs[server]}, function(err) {
                     if (err) throw err;
                 });
                 client.ephemeralEmbed({

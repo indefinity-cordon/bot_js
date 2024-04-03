@@ -18,7 +18,7 @@ const client = new Discord.Client({
     restTimeOffset: 0
 });
 
-client.config = require('./config/bot');
+global.bot_config = require('./config/bot');
 
 client.commands = new Discord.Collection();
 

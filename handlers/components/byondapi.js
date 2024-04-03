@@ -5,7 +5,7 @@ const net = require('net');
 module.exports = (client) => {
     client.templateEmbed = function () {
         return new Discord.EmbedBuilder()
-            .setColor(client.config.colors.normal)
+            .setColor(global.bot_config.colors.normal)
             .setTimestamp();
     }
 

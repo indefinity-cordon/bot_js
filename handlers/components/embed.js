@@ -8,7 +8,7 @@ const Discord = require('discord.js');
 module.exports = (client) => {
     client.templateEmbed = function () {
         return new Discord.EmbedBuilder()
-            .setColor(client.config.colors.normal)
+            .setColor(global.bot_config.colors.normal)
             .setTimestamp();
     }
 
@@ -30,7 +30,7 @@ module.exports = (client) => {
         embed.addFields(
             { name: "🔑┆Required Permission", value: `\`\`\`${perms}\`\`\``},
         )
-        embed.setColor(client.config.colors.error)
+        embed.setColor(global.bot_config.colors.error)
 
         return client.sendEmbed({
             embeds: [embed],
@@ -54,7 +54,7 @@ module.exports = (client) => {
         embed.addFields(
             { name: "🔑┆Required Permission", value: `\`\`\`${perms}\`\`\``},
         )
-        embed.setColor(client.config.colors.error)
+        embed.setColor(global.bot_config.colors.error)
 
         return client.sendEmbed({
             embeds: [embed],
@@ -130,7 +130,7 @@ module.exports = (client) => {
         type: type
     }, interaction) {
         let embed = new Discord.EmbedBuilder()
-            .setColor(client.config.colors.normal)
+            .setColor(global.bot_config.colors.normal)
 
         if (title) embed.setTitle(title);
         if (desc && desc.length >= 2048) embed.setDescription(desc.substr(0, 2044) + "...");
