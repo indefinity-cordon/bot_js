@@ -57,11 +57,25 @@ module.exports = {
             }, interaction);
             return;
         }
+        const db_status = await new Promise((resolve, reject) => {
+            global.game_database.changeUser({database : global.bot_config.game_dbs[server]}, (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+        if(!db_status) {
+            client.ephemeralEmbed({
+                title: `Information Request`,
+                desc: `Cannot connect to database...`,
+                color: `#8f0c0c`
+            }, interaction);
+            return;
+        }
         switch (server) {
             case "CMI":
-                global.game_database.changeUser({database : global.bot_config.game_dbs[server]}, function(err) {
-                    if (err) throw err;
-                });
                 const db_player_profile = await new Promise((resolve, reject) => {
                     global.game_database.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [db_discord_link[0].player_ckey], (err, result) => {
                         if (err) {
@@ -105,9 +119,6 @@ module.exports = {
                 }, interaction);
                 break;
             case "TGMC":
-                global.game_database.changeUser({database : global.bot_config.game_dbs[server]}, function(err) {
-                    if (err) throw err;
-                });
                 client.ephemeralEmbed({
                     title: `Information Request`,
                     desc: `This is user don't have TGMC profile`,
