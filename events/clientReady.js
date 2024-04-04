@@ -12,7 +12,7 @@ module.exports = async (client) => {
         ];
         return Promise.all(promises)
             .then(results => {
-                client.user.setPresence({ activities: [{ name: 'Spectating pigs', type: Discord.ActivityType.Playing }], status: 'online' });
+                client.user.setPresence({ activities: [{ name: `Spectating ${results.length} pigs`, type: Discord.ActivityType.Playing }], status: 'online' });
             })
     }, 50000)
 }

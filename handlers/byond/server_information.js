@@ -3,7 +3,6 @@ const handlingConnections = [];
 
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
-        await global.database
         startListining(client);
         setInterval(
             startListining,
@@ -19,7 +18,7 @@ async function startListining(client) {
     }
     handlingConnections.length = 0;
     const servers = await new Promise((resolve, reject) => {
-        global.database.query("SELECT server_name, ip, port FROM servers ORDER BY server_name", [], (err, result) => {
+        global.database.query("SELECT server_name, ip, port FROM servers ORDER BY id", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -27,7 +26,7 @@ async function startListining(client) {
             }
         });
     });
-    if (!servers[0]) {
+    if (!servers.length) {
         console.log(`Failed to find servers. Aborting.`);
         return;
     } else {
@@ -41,7 +40,7 @@ async function startListining(client) {
                     }
                 });
             });
-            if (!statuses[0]) {
+            if (!statuses.length) {
                 console.log(`Failed to find server related feed channels. Aborting, for ${server.server_name}`);
                 return;
             } else {

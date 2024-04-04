@@ -5,7 +5,6 @@ var subscriber;
 
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
-        await global.database && await global.redis_connection
         startListining(client);
         setInterval(
             startListining,
@@ -16,6 +15,9 @@ module.exports = async (client) => {
 };
 
 async function startListining(client) {
+    if(!global.redis_connection) {
+        return;
+    }
     if (subscriber) {
         subscriber.disconnect()
     }

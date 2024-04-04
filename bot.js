@@ -1,8 +1,11 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 
+// TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
+
 require("./database/MySQL")();
 require("./socket/Redis")();
+global.bot_config = require('./config/bot');
 
 const client = new Discord.Client({
     autoReconnect: true,
@@ -11,24 +14,43 @@ const client = new Discord.Client({
     ],
     intents: [
         Discord.GatewayIntentBits.Guilds,
-		Discord.GatewayIntentBits.GuildMessages,
-		Discord.GatewayIntentBits.MessageContent,
-		Discord.GatewayIntentBits.GuildMembers
+        Discord.GatewayIntentBits.GuildMessages,
+        Discord.GatewayIntentBits.MessageContent,
+        Discord.GatewayIntentBits.GuildMembers
     ],
     restTimeOffset: 0
 });
 
-global.bot_config = require('./config/bot');
+initializeMess(client)
+
+async function initializeMess(client) {
+    await new Promise(resolve => {
+        let interval = setInterval( async () => {
+            if (!global.database) return;
+            clearInterval(interval);
+            (async () => {
+                global.handling_game_servers = await new Promise((resolve, reject) => {
+                    global.database.query("SELECT server_name, db_name FROM servers ORDER BY id", [], (err, result) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+                });
+            })();
+            await client.login(process.env.DISCORD_TOKEN);
+            fs.readdirSync('./handlers').forEach((dir) => {
+                fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
+                    require(`./handlers/${dir}/${handler}`)(client);
+                });
+            });
+            resolve();
+        }, 5000)
+    })
+}
 
 client.commands = new Discord.Collection();
-
-fs.readdirSync('./handlers').forEach((dir) => {
-    fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
-        require(`./handlers/${dir}/${handler}`)(client);
-    });
-});
-
-client.login(process.env.DISCORD_TOKEN);
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);

@@ -1,27 +1,26 @@
 const { CommandInteraction, Client } = require('discord.js');
 const { SlashCommandBuilder } = require('discord.js');
-const mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('info')
         .setDescription('Order information about yourself')
         .addUserOption(option =>
-            option.setName('user')
-            .setDescription('Select user to show info about')
-            .setRequired(true)
+            option
+                .setName('user')
+                .setDescription('Select user to show info about')
+                .setRequired(true)
         )
         .addStringOption(option =>
-            option.setName('server')
-            .setDescription('Select game server')
-            .setRequired(true)
-            .addChoices( function () {
-                let server_list = []
-                for (const status of global.bot_config.game_dbs) {
-                    server_list.push({ name: status[1], value: status[2] })
+            option
+                .setName('server')
+                .setDescription('Select game server')
+                .setRequired(true),
+                () => {
+                    for (const server of global.handling_game_servers) {
+                        option.addChoice(server.server_name, server.db_name)
+                    }
                 }
-                return server_list
-            })
         )
     ,
 
@@ -58,7 +57,7 @@ module.exports = {
             return;
         }
         const db_status = await new Promise((resolve, reject) => {
-            global.game_database.changeUser({database : global.bot_config.game_dbs[server]}, (err, result) => {
+            global.game_database.changeUser({database : server}, (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -75,7 +74,7 @@ module.exports = {
             return;
         }
         switch (server) {
-            case "CMI":
+            case "cmi":
                 const db_player_profile = await new Promise((resolve, reject) => {
                     global.game_database.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [db_discord_link[0].player_ckey], (err, result) => {
                         if (err) {
@@ -118,7 +117,7 @@ module.exports = {
                     color: `#6d472b`
                 }, interaction);
                 break;
-            case "TGMC":
+            case "tgmc":
                 client.ephemeralEmbed({
                     title: `Information Request`,
                     desc: `This is user don't have TGMC profile`,

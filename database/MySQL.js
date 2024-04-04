@@ -9,17 +9,30 @@ game_connection.on('error', err => console.log(chalk.blue(chalk.bold(`Database`)
 
 module.exports = async () => {
     console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`starting connecting...`))
-    global.database = connection;
-    global.game_database = game_connection;
-    connection.connect((err) => {
-        if (!err) {
-            console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Main database.`))
-        }
+    global.database = null;
+    global.game_database = null;
+    new Promise((resolve, reject) => {
+        connection.connect((err, result) => {
+            if (err) {
+                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed connect to the Main database.`));
+                reject(err);
+            } else {
+                global.database = connection;
+                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Main database.`));
+                resolve(result);
+            }
+        });
     });
-    game_connection.connect((err) => {
-        if (!err) {
-            console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Game database.`))
-        }
+    new Promise((resolve, reject) => {
+        game_connection.connect((err, result) => {
+            if (err) {
+                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed connect to the Game database.`));
+                reject(err);
+            } else {
+                global.game_database = game_connection;
+                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Game database.`));
+                resolve(result);
+            }
+        });
     });
-    return;
 }
