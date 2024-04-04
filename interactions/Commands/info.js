@@ -18,7 +18,7 @@ module.exports = {
                 .setRequired(true),
                 () => {
                     for (const server of global.handling_game_servers) {
-                        option.addChoice(server.server_name, server.db_name)
+                        option.addStringOption(sub_option => sub_option.addChoice(server.server_name, server.db_name))
                     }
                 }
         )
