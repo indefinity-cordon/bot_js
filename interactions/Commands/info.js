@@ -5,11 +5,9 @@ let options = [];
 for (const server of global.handling_game_servers) {
     options.push({
         name: `${server.server_name}`,
-        value:`${ server.db_name}`
+        value: `${server.db_name}`
     });
 }
-
-const choices = options.map(option => ({ name: option.name, value: option.value }));
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -26,7 +24,7 @@ module.exports = {
                 .setName('server')
                 .setDescription('Select game server')
                 .setRequired(true)
-                .addChoices(...choices)
+                .addChoices(...options)
         )
     ,
 
@@ -44,7 +42,7 @@ module.exports = {
             color: `#6d472b`
         }, interaction);
         const user = await interaction.options.getUser('user');
-        const server = await interaction.options.getString('server');
+        let server = await interaction.options.getString('server');
         const db_discord_link = await new Promise((resolve, reject) => {
             global.database.query("SELECT player_ckey, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [user.id], (err, result) => {
                 if (err) {
@@ -62,6 +60,11 @@ module.exports = {
             }, interaction);
             return;
         }
+        client.ephemeralEmbed({
+            title: `Information Request`,
+            desc: `Connecting to database...`,
+            color: `#8f0c0c`
+        }, interaction);
         const db_status = await new Promise((resolve, reject) => {
             global.game_database.changeUser({database : server}, (err, result) => {
                 if (err) {
@@ -80,7 +83,7 @@ module.exports = {
             return;
         }
         switch (server) {
-            case "cmi":
+            case "СЬШ":
                 let rank_info = ``;
                 if (db_discord_link[0].role_rank) {
                     const db_role = await new Promise((resolve, reject) => {
