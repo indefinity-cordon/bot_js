@@ -24,7 +24,7 @@ module.exports = {
                 .setName('server')
                 .setDescription('Select game server')
                 .setRequired(true)
-                .addOptions(options)
+                .addChoices(options)
         )
     ,
 
