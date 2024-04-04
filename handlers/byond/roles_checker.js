@@ -17,7 +17,7 @@ module.exports = async (client) => {
 };
 
 async function updateRoles(client) {
-    const dbroles = await new Promise((resolve, reject) => {
+    const db_roles = await new Promise((resolve, reject) => {
         global.database.query("SELECT role_id, role_rank FROM discord_ranks ORDER BY role_rank", [], (err, result) => {
             if (err) {
                 reject(err);
@@ -41,7 +41,7 @@ async function updateRoles(client) {
         if (discord_link[0]) {
             let role_rank = discord_link[0].stable_rank;
             member.roles.cache.forEach(async (role) => {
-                const matchingRole = dbroles.find(row => row.role_id === role.id);
+                const matchingRole = db_roles.find(row => row.role_id === role.id);
                 if (matchingRole && role_rank < matchingRole.role_rank) {
                     role_rank = matchingRole.role_rank;
                 }

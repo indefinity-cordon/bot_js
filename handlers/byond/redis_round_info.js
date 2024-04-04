@@ -15,7 +15,7 @@ module.exports = async (client) => {
 };
 
 async function startListining(client) {
-    if(!global.redis_connection) {
+    if (!global.redis_connection) {
         return;
     }
     if (subscriber) {
