@@ -7,13 +7,7 @@ module.exports = async (client) => {
     console.log(chalk.blue(chalk.bold(`Bot`)), (chalk.white(`>>`)), chalk.green(`Started on`), chalk.red(`${client.guilds.cache.size}`), chalk.green(`servers!`))
 
     setInterval(async function () {
-        const promises = [
-            client.shard.fetchClientValues('guilds.cache.size'),
-        ];
-        return Promise.all(promises)
-            .then(results => {
-                client.user.setPresence({ activities: [{ name: `Spectating ${results.length} pigs`, type: Discord.ActivityType.Playing }], status: 'online' });
-            })
+        client.user.setPresence({ activities: [{ name: `Spectating pigs`, type: Discord.ActivityType.Playing }], status: 'online' });
     }, 50000)
 }
 
