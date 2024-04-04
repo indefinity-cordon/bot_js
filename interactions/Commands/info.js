@@ -155,7 +155,7 @@ module.exports = {
                 //TODO: Admins
                 client.ephemeralEmbed({
                     title: `**${db_discord_link[0].stable_rank ? `HIDDEN` : db_discord_link[0].player_ckey}** player info`,
-                    desc: `${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`,
+                    desc: `\n${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`,
                     color: `#6d472b`
                 }, interaction);
                 break;
