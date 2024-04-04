@@ -1,6 +1,14 @@
 const { CommandInteraction, Client } = require('discord.js');
 const { SlashCommandBuilder } = require('discord.js');
 
+let options = [];
+for (const server of global.handling_game_servers) {
+    options.push({
+        name: `${server.server_name}`,
+        value: `${server.db_name}`
+    });
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('info')
@@ -15,12 +23,8 @@ module.exports = {
             option
                 .setName('server')
                 .setDescription('Select game server')
-                .setRequired(true),
-                () => {
-                    for (const server of global.handling_game_servers) {
-                        option.addStringOption(sub_option => sub_option.addChoice(server.server_name, server.db_name))
-                    }
-                }
+                .setRequired(true)
+                .addOptions(resultFromSearch)
         )
     ,
 
