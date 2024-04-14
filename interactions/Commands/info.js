@@ -83,7 +83,7 @@ module.exports = {
             return;
         }
         switch (server) {
-            case "СЬШ":
+            case "cmi":
                 let rank_info = ``;
                 if (db_discord_link[0].role_rank) {
                     const db_role = await new Promise((resolve, reject) => {
