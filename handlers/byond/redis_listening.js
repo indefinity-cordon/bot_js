@@ -26,20 +26,28 @@ async function startListining(client) {
     subscriber = global.redis_connection.duplicate();
     subscribers.push(subscriber)
     await subscriber.connect();
-    subscriber.subscribe('byond.round', client.redisCallback({data: JSON.parse(data)}));
+    subscriber.subscribe('byond.round', async (data) => {
+        client.redisCallback({data: JSON.parse(data)});
+    });
 
     subscriber = global.redis_connection.duplicate();
     subscribers.push(subscriber)
     await subscriber.connect();
-    subscriber.subscribe('byond.admin', client.redisCallback({data: JSON.parse(data)}));
+    subscriber.subscribe('byond.admin', async (data) => {
+        client.redisCallback({data: JSON.parse(data)});
+    });
 
     subscriber = global.redis_connection.duplicate();
     subscribers.push(subscriber)
     await subscriber.connect();
-    subscriber.subscribe('byond.asay', client.redisCallback({data: JSON.parse(data)}));
+    subscriber.subscribe('byond.asay', async (data) => {
+        client.redisCallback({data: JSON.parse(data)});
+    });
 
     subscriber = global.redis_connection.duplicate();
     subscribers.push(subscriber)
     await subscriber.connect();
-    subscriber.subscribe('byond.access', client.redisCallback({data: JSON.parse(data)}));
+    subscriber.subscribe('byond.access', async (data) => {
+        client.redisCallback({data: JSON.parse(data)});
+    });
 };
