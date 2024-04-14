@@ -3,15 +3,11 @@ const config = require("../../config/bot.js");
 
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
-        setTimeout(() => {
-                updateRoles(client);
-                setInterval(
-                    updateRoles,
-                    3600000,
-                    client
-                );
-            },
-            2000,
+        updateRoles(client);
+        setInterval(
+            updateRoles,
+            3600000,
+            client
         );
     });
 };

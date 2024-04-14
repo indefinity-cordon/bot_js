@@ -3,24 +3,12 @@ const chalk = require('chalk');
 const net = require('net');
 
 module.exports = (client) => {
-    client.templateEmbed = function () {
-        return new Discord.EmbedBuilder()
-            .setColor(global.bot_config.colors.normal)
-            .setTimestamp();
-    }
-
-    //----------------------------------------------------------------//
-    //                        ERROR MESSAGES                          //
-    //----------------------------------------------------------------//
-
-    // Missing perms
-
     client.prepareByondAPIRequest = async function ({
         request: request,
         port: port,
         address: address
     }) {
-        if (request) {
+        if (request && port && address) {
             const textEncoder = new TextEncoder();
             const encodedText = textEncoder.encode(request);
             const packet = new Uint8Array([0, 131, 0, 13, 0, 0, 0, 0, 0, 63, ...encodedText, 0]);
@@ -39,19 +27,19 @@ module.exports = (client) => {
                         } else if (packetType === 0x06) {
                             resolve(response.slice(1, -1).toString('ascii'));
                         } else {
-                            reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`Unknown BYOND data code: 0x${packetType.toString(16)}`)));
+                            reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown BYOND data code: 0x${packetType.toString(16)}`)));
                         }
                     } else {
                         client.end();
-                        reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`BYOND server returned invalid data.`)));
+                        reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`BYOND server returned invalid data.`)));
                     }
                 });
                 client.on('error', (err) => {
-                    reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`Can't connect to ${address}:${port}: ${err.message}`)));
+                    reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`)));
                 });
             });
         } else {
-            console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), chalk.green(`Malformed ByondAPI request, with request: ${request}.`))
+            console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Malformed ByondAPI request, with request: ${request}, target: ${address}:${port}.`))
         }
     }
 }

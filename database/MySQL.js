@@ -14,24 +14,20 @@ module.exports = async () => {
     new Promise((resolve, reject) => {
         connection.connect((err, result) => {
             if (err) {
-                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed connect to the Main database.`));
-                reject(err);
+                reject(console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed connect to the Main database.`)));
             } else {
                 global.database = connection;
-                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Main database.`));
-                resolve(result);
+                resolve(console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Main database. Result: ${result}`)));
             }
         });
     });
     new Promise((resolve, reject) => {
         game_connection.connect((err, result) => {
             if (err) {
-                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed connect to the Game database.`));
-                reject(err);
+                reject(console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed connect to the Game database.`)));
             } else {
                 global.game_database = game_connection;
-                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Game database.`));
-                resolve(result);
+                resolve(console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Game database. Result: ${result}`)));
             }
         });
     });
