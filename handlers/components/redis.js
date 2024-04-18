@@ -4,12 +4,11 @@ module.exports = (client) => {
     client.redisCallback = async function ({
         data: data
     }) {
-        console.log(`redis req ${data}`)
         if (data) {
             const status = await new Promise((resolve, reject) => {
                 global.database.query("SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", [data.source, data.type], (err, result) => {
                     if (err) {
-                        console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to save message id for deletion, data: ${[message.id]}; ${[data]}; ${[status[0].channel_id]}.`))
+                        console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to save message id for deletion, data: ${[message.id]}; ${[data]}; ${[status[0].channel_id]}.`));
                         reject(err);
                     } else {
                         resolve(result);
@@ -17,7 +16,7 @@ module.exports = (client) => {
                 });
             });
             if (!status.length) {
-                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${[data]}.`))
+                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${[data]}.`));
             } else {
                 const channel = await client.channels.fetch(status[0].channel_id);
                 switch (data.state) {
@@ -60,7 +59,7 @@ module.exports = (client) => {
                             await client.embed({
                                 title: stat.title,
                                 desc: stat.desc
-                            }, channel)
+                            }, channel);
                         }
                         break;
 
@@ -74,7 +73,7 @@ module.exports = (client) => {
                             url: data.embed.url,
                             author: data.embed.author,
                             color: `#5a2944`
-                        }, channel)
+                        }, channel);
                         break;
 
                     case "ban":
@@ -82,7 +81,7 @@ module.exports = (client) => {
                             title: data.title,
                             desc: data.desc,
                             color: data.color
-                        }, channel)
+                        }, channel);
                         break;
 
                     case "fflog":
@@ -90,7 +89,7 @@ module.exports = (client) => {
                             title: data.title,
                             desc: data.desc,
                             color: data.color
-                        }, channel)
+                        }, channel);
                         break;
 
                     case "asay":
@@ -98,7 +97,7 @@ module.exports = (client) => {
                             title: `Asay of ${data.author}`,
                             desc: `Message ${data.message}\n Rank: ${data.rank}`,
                             color: `#261395`
-                        }, channel)
+                        }, channel);
                         break;
 
                     case "fax":
@@ -107,26 +106,26 @@ module.exports = (client) => {
                             desc: data.desc,
                             fields: data.fields,
                             color: `#76b0a8`
-                        }, channel)
+                        }, channel);
                         break;
 
                     case "login":
                         await client.embed({
                             title: `Admin Login`,
                             desc: data.key
-                        }, channel)
+                        }, channel);
                         break;
 
                     case "logout":
                         await client.embed({
                             title: `Admin logout`,
                             desc: data.key
-                        }, channel)
+                        }, channel);
                         break;
                 }
             }
         } else {
-            console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Malformed Redis message, without data.`))
+            console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Malformed Redis message, without data.`));
         }
     }
 }

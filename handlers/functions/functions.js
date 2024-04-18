@@ -67,13 +67,13 @@ module.exports = async (client) => {
     client.loadSubcommands = async function (client, interaction, args) {
         try {
             return require(`${process.cwd()}/commands/${interaction.commandName}/${interaction.options.getSubcommand()}`)(client, interaction, args).catch(err => {
-                client.emit("errorCreate", err, interaction.commandName, interaction)
-            })
+                client.emit("errorCreate", err, interaction.commandName, interaction);
+            });
         }
         catch {
             return require(`${process.cwd()}/commands/${interaction.commandName}/${interaction.options.getSubcommand()}`)(client, interaction, args).catch(err => {
-                client.emit("errorCreate", err, interaction.commandName, interaction)
-            })
+                client.emit("errorCreate", err, interaction.commandName, interaction);
+            });
         }
     }
 
@@ -83,7 +83,7 @@ module.exports = async (client) => {
 
         let embed = client.templateEmbed()
             .setTitle(`${title}`)
-            .setDescription(`${result.toString()}`)
+            .setDescription(`${result.toString()}`);
 
         return embed;
     }

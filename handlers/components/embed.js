@@ -25,19 +25,19 @@ module.exports = (client) => {
         content: content,
         components: components
     }, interaction) {
-        embed.setTitle(`Error!`)
-        embed.setDescription(`You don't have the right permissions`)
+        embed.setTitle(`Error!`);
+        embed.setDescription(`You don't have the right permissions`);
         embed.addFields(
             { name: "🔑┆Required Permission", value: `\`\`\`${perms}\`\`\``},
-        )
-        embed.setColor(global.bot_config.colors.error)
+        );
+        embed.setColor(global.bot_config.colors.error);
 
         return client.sendEmbed({
             embeds: [embed],
             content: content,
             components: components,
             type: type
-        }, interaction)
+        }, interaction);
     }
 
     // No bot perms
@@ -49,19 +49,19 @@ module.exports = (client) => {
         content: content,
         components: components
     }, interaction) {
-        embed.setTitle(`Error!`)
-        embed.setDescription(`I don't have the right permissions`)
+        embed.setTitle(`Error!`);
+        embed.setDescription(`I don't have the right permissions`);
         embed.addFields(
             { name: "🔑┆Required Permission", value: `\`\`\`${perms}\`\`\``},
-        )
-        embed.setColor(global.bot_config.colors.error)
+        );
+        embed.setColor(global.bot_config.colors.error);
 
         return client.sendEmbed({
             embeds: [embed],
             content: content,
             components: components,
             type: type
-        }, interaction)
+        }, interaction);
     }
 
     //----------------------------------------------------------------//
@@ -78,7 +78,7 @@ module.exports = (client) => {
             desc: desc,
             color: color,
             type: 'ephemeraledit'
-        }, interaction)
+        }, interaction);
     }
 
     // Default
@@ -113,7 +113,7 @@ module.exports = (client) => {
             content: content,
             components: components,
             type: type
-        }, interaction)
+        }, interaction);
     }
 
     client.simpleEmbed = async function ({
@@ -130,7 +130,7 @@ module.exports = (client) => {
         type: type
     }, interaction) {
         let embed = new Discord.EmbedBuilder()
-            .setColor(global.bot_config.colors.normal)
+            .setColor(global.bot_config.colors.normal);
 
         if (title) embed.setTitle(title);
         if (desc && desc.length >= 2048) embed.setDescription(desc.substr(0, 2044) + "...");
@@ -147,7 +147,7 @@ module.exports = (client) => {
             content: content,
             components: components,
             type: type
-        }, interaction)
+        }, interaction);
     }
 
     client.sendEmbed = async function ({

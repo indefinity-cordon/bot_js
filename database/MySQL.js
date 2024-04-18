@@ -8,7 +8,7 @@ const game_connection = mysql.createConnection({host: process.env.DB_HOST, port:
 game_connection.on('error', err => console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL Game`), chalk.white(`>>`), chalk.red(err)));
 
 module.exports = async () => {
-    console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`starting connecting...`))
+    console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`starting connecting...`));
     global.database = null;
     global.game_database = null;
     new Promise((resolve, reject) => {

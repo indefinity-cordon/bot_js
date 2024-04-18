@@ -5,7 +5,7 @@ const Discord = require('discord.js');
 module.exports = (client) => {
 
     if (client.shard.ids[0] === 0) console.log(`\u001b[0m`);
-    if (client.shard.ids[0] === 0) console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`Loading events`)), (chalk.white(`...`)))
+    if (client.shard.ids[0] === 0) console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`Loading events`)), (chalk.white(`...`)));
     if (client.shard.ids[0] === 0) console.log(`\u001b[0m`);
 
     const events = fs.readdirSync(`./events`).filter(files => files.endsWith('.js'));
