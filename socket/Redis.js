@@ -10,18 +10,12 @@ connection.on('error', err => console.log(chalk.blue(chalk.bold(`Socket`)), (cha
 module.exports = async () => {
     console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.green(`starting connecting...`));
     global.redis_connection = null;
-    console.log(`nigeeeeeeerssssss`)
-    new Promise((resolve, reject) => {
-        console.log(`nigeeeeeeerssssss2`)
-        connection.connect((err, result) => {
-            if (err) {
-                console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed connect to the Redis server.`));
-                reject(err);
-            } else {
-                global.redis_connection = connection;
-                console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.green(`Connected to the Redis server.`));
-                resolve(result);
-            }
-        });
+    await connection.connect((err, result) => {
+        if (err) {
+            console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed connect to the Redis server.`));
+        } else {
+            global.redis_connection = connection;
+            console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.green(`Connected to the Redis server.`));
+        }
     });
 }
