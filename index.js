@@ -2,6 +2,18 @@ const Discord = require('discord.js');
 const chalk = require('chalk');
 require('dotenv').config('.env');
 
+global.bot_config = require('./config/bot');
+
+require("./database/MySQL")();
+require("./socket/Redis")();
+
+// TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
+
+global.webhookLogs = new Discord.WebhookClient({
+    id: process.env.WEBHOOK_ID,
+    token: process.env.WEBHOOK_TOKEN,
+});
+
 const manager = new Discord.ShardingManager('./bot.js', {
     totalShards: 'auto',
     token: process.env.DISCORD_TOKEN,
@@ -42,8 +54,45 @@ manager.spawn();
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
+    if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
+    if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
+    if (!error.stack) return
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`🚨・Unhandled promise rejection`)
+        .addFields([
+            {
+                name: "Error",
+                value: error ? Discord.codeBlock(error) : "No error",
+            },
+            {
+                name: "Stack error",
+                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
+            }
+        ])
+    global.webhookLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending unhandled promise rejection to webhook')
+        console.log(error)
+    })
 });
 
 process.on('warning', warn => {
     console.warn("Warning:", warn);
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`🚨・New warning found`)
+        .addFields([
+            {
+                name: `Warn`,
+                value: `\`\`\`${warn}\`\`\``,
+            },
+        ])
+    global.webhookLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending warning to webhook')
+        console.log(warn)
+    })
 });

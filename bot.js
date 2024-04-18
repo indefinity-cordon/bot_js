@@ -1,22 +1,29 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 
-// TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
-
-require("./database/MySQL")();
-require("./socket/Redis")();
-global.bot_config = require('./config/bot');
-
 const client = new Discord.Client({
     autoReconnect: true,
     disabledEvents: [
         "TYPING_START"
     ],
+    partials: [
+        Discord.Partials.Channel,
+        Discord.Partials.GuildMember,
+        Discord.Partials.Message,
+        Discord.Partials.Reaction,
+        Discord.Partials.User,
+        Discord.Partials.GuildScheduledEvent
+    ],
     intents: [
         Discord.GatewayIntentBits.Guilds,
+        Discord.GatewayIntentBits.GuildMembers,
+        Discord.GatewayIntentBits.GuildIntegrations,
+        Discord.GatewayIntentBits.GuildWebhooks,
+        Discord.GatewayIntentBits.GuildInvites,
         Discord.GatewayIntentBits.GuildMessages,
-        Discord.GatewayIntentBits.MessageContent,
-        Discord.GatewayIntentBits.GuildMembers
+        Discord.GatewayIntentBits.GuildMessageTyping,
+        Discord.GatewayIntentBits.GuildScheduledEvents,
+        Discord.GatewayIntentBits.MessageContent
     ],
     restTimeOffset: 0
 });
@@ -54,12 +61,71 @@ client.commands = new Discord.Collection();
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
+    if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
+    if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
+    if(!error.stack) return
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`🚨・Unhandled promise rejection`)
+        .addFields([
+            {
+                name: "Error",
+                value: error ? Discord.codeBlock(error) : "No error",
+            },
+            {
+                name: "Stack error",
+                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
+            }
+        ])
+        .setColor(client.config.colors.normal)
+    global.webhookLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending unhandledRejection to webhook')
+        console.log(error)
+    })
 });
 
 process.on('warning', warn => {
     console.warn("Warning:", warn);
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`🚨・New warning found`)
+        .addFields([
+            {
+                name: `Warn`,
+                value: `\`\`\`${warn}\`\`\``,
+            },
+        ])
+        .setColor(client.config.colors.normal)
+    global.webhookLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending warning to webhook')
+        console.log(warn)
+    })
 });
 
 client.on(Discord.ShardEvents.Error, error => {
-    console.log(error);
+    console.log(error)
+    if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
+    if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
+    if (!error.stack) return
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`🚨・A websocket connection encountered an error`)
+        .addFields([
+            {
+                name: `Error`,
+                value: `\`\`\`${error}\`\`\``,
+            },
+            {
+                name: `Stack error`,
+                value: `\`\`\`${error.stack}\`\`\``,
+            }
+        ])
+        .setColor(client.config.colors.normal)
+    global.webhookLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    });
 });
