@@ -2,7 +2,12 @@ const redis = require('redis');
 const chalk = require('chalk');
 
 const connection = redis.createClient({
-    url: `${process.env.REDIS_CONNECTION_STRING}`
+    username: `${process.env.REDIS_USER}`,
+    password: `${process.env.REDIS_PASSWORD}`,
+    socket: {
+        host: `${process.env.REDIS_SERVER}`,
+        port: `${process.env.REDIS_PORT}`
+    }
 });
 
 connection.on('error', err => console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(err)));
