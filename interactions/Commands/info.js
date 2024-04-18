@@ -44,8 +44,10 @@ module.exports = {
             color: `#6d472b`
         }, interaction);
         const user = await interaction.options.getUser('user');
-        let server = servers_reverse_options[await interaction.options.getString('server')];
-        console.log(`target server ${server}`)
+        let server = await interaction.options.getString('server');
+        if (server in servers_reverse_options) {
+            server = servers_reverse_options[server];
+        }
         const db_discord_link = await new Promise((resolve, reject) => {
             global.database.query("SELECT player_ckey, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [user.id], (err, result) => {
                 if (err) {

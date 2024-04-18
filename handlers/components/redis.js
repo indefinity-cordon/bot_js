@@ -5,6 +5,7 @@ module.exports = (client) => {
     client.redisCallback = async function ({
         data: data
     }) {
+        console.log(`redis req ${data}`)
         if (data) {
             const status = await new Promise((resolve, reject) => {
                 global.database.query("SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", [data.source, data.type], (err, result) => {
