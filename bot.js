@@ -1,6 +1,13 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 
+global.bot_config = require('./config/bot');
+
+require("./database/MySQL")();
+require("./socket/Redis")();
+
+// TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
+
 const client = new Discord.Client({
     autoReconnect: true,
     disabledEvents: [

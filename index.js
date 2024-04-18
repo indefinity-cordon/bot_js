@@ -2,13 +2,6 @@ const Discord = require('discord.js');
 const chalk = require('chalk');
 require('dotenv').config('.env');
 
-global.bot_config = require('./config/bot');
-
-require("./database/MySQL")();
-require("./socket/Redis")();
-
-// TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
-
 const manager = new Discord.ShardingManager('./bot.js', {
     totalShards: 'auto',
     token: process.env.DISCORD_TOKEN,
