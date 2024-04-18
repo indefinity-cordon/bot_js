@@ -61,9 +61,6 @@ client.commands = new Discord.Collection();
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
-    if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-    if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-    if(!error.stack) return
     const embed = new Discord.EmbedBuilder()
         .setTitle(`🚨・Unhandled promise rejection`)
         .addFields([
@@ -108,9 +105,6 @@ process.on('warning', warn => {
 
 client.on(Discord.ShardEvents.Error, error => {
     console.log(error)
-    if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-    if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-    if (!error.stack) return
     const embed = new Discord.EmbedBuilder()
         .setTitle(`🚨・A websocket connection encountered an error`)
         .addFields([

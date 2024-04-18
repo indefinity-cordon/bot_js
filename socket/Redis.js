@@ -13,10 +13,12 @@ module.exports = async () => {
     new Promise((resolve, reject) => {
         connection.connect((err, result) => {
             if (err) {
-                reject(console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed connect to the Redis server.`)));
+                console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed connect to the Redis server.`));
+                reject(err);
             } else {
                 global.redis_connection = connection;
-                resolve(console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.green(`Connected to the Redis server.`)));
+                console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), chalk.green(`Connected to the Redis server.`));
+                resolve(result);
             }
         });
     });
