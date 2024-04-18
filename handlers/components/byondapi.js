@@ -1,4 +1,3 @@
-const Discord = require('discord.js');
 const chalk = require('chalk');
 const net = require('net');
 

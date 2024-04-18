@@ -1,4 +1,3 @@
-const Discord = require('discord.js');
 const { REST } = require('discord.js');
 const { Routes } = require('discord.js');
 const chalk = require('chalk');

@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs');
+require('dotenv').config('.env');
 
 global.bot_config = require('./config/bot');
 
