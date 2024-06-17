@@ -47,6 +47,4 @@ typings/
 .env
 .env.test
 
-config/*
-
 package-lock.json
