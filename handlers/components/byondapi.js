@@ -10,7 +10,13 @@ module.exports = (client) => {
         if (request && port && address) {
             const textEncoder = new TextEncoder();
             const encodedText = textEncoder.encode(request);
-            const packet = new Uint8Array([0, 131, 0, 13, 0, 0, 0, 0, 0, 63, ...encodedText, 0]);
+            const length = encodedText.length + 7; // 7 байт: 2 для типа пакета (0, 131), 2 для длины, 1 для нулевого байта в конце, 1 байт для кода пакета и 1 байт для завершающего нуля
+
+            const packet = new Uint8Array(length + 4);
+            packet.set([0, 131, (length >> 8) & 0xFF, length & 0xFF, 0, 0, 0, 0, 0, 63], 0);
+            packet.set(encodedText, 10);
+            packet[length + 3] = 0;
+
             return new Promise((resolve, reject) => {
                 const client = net.connect(port, address, () => {
                     client.write(packet);

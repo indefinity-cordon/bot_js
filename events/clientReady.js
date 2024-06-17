@@ -10,7 +10,7 @@ module.exports = async (client) => {
     let pigs_count = 0;
     setInterval(function () {
         pigs_count++
-        client.user.setPresence({ activities: [{ name: `counting pigs, ${numberToWords.toWords(pigs_count)}`, type: Discord.ActivityType.Playing }], status: 'online' });
-    }, 60000);
+        client.user.setPresence({ activities: [{ name: `counting bad devs, ${numberToWords.toWords(pigs_count)}`, type: Discord.ActivityType.Playing }], status: 'online' });
+    })
 }
 

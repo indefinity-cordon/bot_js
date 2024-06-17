@@ -30,8 +30,26 @@ module.exports = {
         });
         if (db_response[0] && db_response[0].discord_id) {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
-            interactionUser.roles.add(global.bot_config.verified_role)
-            interactionUser.roles.remove(global.bot_config.anti_verified_role)
+            let bot_settings = await new Promise((resolve, reject) => {
+                global.database.query("SELECT param FROM settings WHERE name = verified_role", [], (err, result) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+            interactionUser.roles.add(bot_settings[0].param)
+            bot_settings = await new Promise((resolve, reject) => {
+                global.database.query("SELECT param FROM settings WHERE name = anti_verified_role", [], (err, result) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+            interactionUser.roles.remove(bot_settings[0].param)
             client.ephemeralEmbed({
                 title: `Verification`,
                 desc: `You already verified`

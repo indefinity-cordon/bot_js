@@ -4,12 +4,7 @@ const ServerActions = require(`${process.cwd()}/server_modules/servers_actions.j
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
         global.servers_link = []
-        ServerActions.updateServers(client);
-        setInterval(
-            ServerActions.updateServers(client),
-            1200000,
-            client
-        );
+        ServerActions(client);
     });
 
     client.serverStatus = async function ({
@@ -28,8 +23,7 @@ module.exports = async (client) => {
             updateStatus,
             30000,
             client,
-            game_server,
-            messages
+            game_server
         );
     }
 };
@@ -82,20 +76,20 @@ async function updateStatusMessages(client, game_server) {
     }
 }
 
-async function updateStatus(client, game_server, messages) {
+async function updateStatus(client, game_server) {
     try {
-        const response = await client.prepareByondAPIRequest({request: "status", port: game_server.port, address: game_server.ip}); //`{"query":"status","auth":"anonymous","source":"bot"}` cm example
-        for (const message of messages) {
+        const response = JSON.parse(await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip}));
+        for (const message of game_server.status_messages) {
             await client.embed({
                 title: `${game_server.server_name} status`,
-                desc: `${response}`,
+                desc: `**Round ID:** ${response.data.round_id}\n**Players:** ${response.data.players}\n**Map:** ${response.data.map_name}\n**Round Time:** ${await time_convert(Math.floor(response.data.round_duration / 600))}`,
                 color: `#669917`,
                 type: 'edit'
             }, message)
         }
     } catch (error) {
         
-        for (const message of messages) {
+        for (const message of game_server.status_messages) {
             await client.embed({
                 title: `${game_server.server_name} status`,
                 desc: `# SERVER OFFLINE`,
@@ -104,4 +98,10 @@ async function updateStatus(client, game_server, messages) {
             }, message)
         }
     }
+}
+
+async function time_convert(num) { 
+    var hours = Math.floor(num / 60);  
+    var minutes = num % 60;
+    return `${hours}:` + `${minutes}`.padStart(2, '0');         
 }

@@ -21,7 +21,16 @@ async function updateRoles(client) {
             }
         });
     });
-    const guild = client.guilds.cache.get(global.bot_config.main_guild);
+    const bot_settings = await new Promise((resolve, reject) => {
+        global.database.query("SELECT param FROM settings WHERE name = 'main_guild'", [], (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+    const guild = client.guilds.cache.get(bot_settings[0].param);
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
         let discord_link = await new Promise((resolve, reject) => {

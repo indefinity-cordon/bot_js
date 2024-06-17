@@ -2,8 +2,6 @@ const Discord = require('discord.js');
 const fs = require('fs');
 require('dotenv').config('.env');
 
-global.bot_config = require('./config/bot');
-
 require("./database/MySQL")();
 require("./socket/Redis")();
 
@@ -32,7 +30,7 @@ async function initializeMess(client) {
             clearInterval(interval);
             (async () => {
                 global.handling_game_servers = await new Promise((resolve, reject) => {
-                    global.database.query("SELECT server_name, db_name FROM servers ORDER BY id", [], (err, result) => {
+                    global.database.query("SELECT server_name, db_name FROM servers", [], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
