@@ -3,6 +3,7 @@ module.exports = (client, game_server) => {
         try {
             const response = JSON.parse(await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip}));
             const time = Math.floor(response.data.round_duration / 600)
+            const ztime = Math.floor(response.data.zone_time / 600)
             for (const message of game_server.status_messages) {
                 await client.embed({
                     title: `${game_server.server_name} status`,
@@ -12,7 +13,7 @@ module.exports = (client, game_server) => {
                     **Ship Map:**  ${response.data.ship_map_name + response.data.next_ship_map_name ? `` : ` | **Next Map:** ${response.data.next_ship_map_name}`}\n
                     **Total Players:** ${response.data.players}\n
                     **Gamemode:** ${response.data.gamemode}\n
-                    **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')}\n
+                    **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')} | **Operation Zone Time:** ${`${Math.floor(ztime / 60)}:` + `${ztime % 60}`.padStart(2, '0')}\n
                     ${response.data.round_end_state ? `\n**Rouned End State:** ${response.data.round_end_state}` : 0}`,
                     color: `#669917`,
                     type: 'edit'

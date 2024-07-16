@@ -20,7 +20,7 @@ module.exports = async (client) => {
             game_server
         );
         game_server.status_interval = setInterval(
-            updateStatus,
+            game_server.updateStatus,
             30000,
             client,
             game_server
@@ -74,34 +74,4 @@ async function updateStatusMessages(client, game_server) {
         }
         game_server.status_messages.push(found_message);
     }
-}
-
-async function updateStatus(client, game_server) {
-    try {
-        const response = JSON.parse(await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip}));
-        for (const message of game_server.status_messages) {
-            await client.embed({
-                title: `${game_server.server_name} status`,
-                desc: `**Round ID:** ${response.data.round_id}\n**Players:** ${response.data.players}\n**Map:** ${response.data.map_name}\n**Round Time:** ${await time_convert(Math.floor(response.data.round_duration / 600))}`,
-                color: `#669917`,
-                type: 'edit'
-            }, message)
-        }
-    } catch (error) {
-        
-        for (const message of game_server.status_messages) {
-            await client.embed({
-                title: `${game_server.server_name} status`,
-                desc: `# SERVER OFFLINE`,
-                color: `#a00f0f`,
-                type: 'edit'
-            }, message)
-        }
-    }
-}
-
-async function time_convert(num) { 
-    var hours = Math.floor(num / 60);  
-    var minutes = num % 60;
-    return `${hours}:` + `${minutes}`.padStart(2, '0');         
 }
