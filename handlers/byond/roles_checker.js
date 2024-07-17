@@ -13,7 +13,7 @@ module.exports = async (client) => {
 
 async function updateRoles(client) {
     const db_roles = await new Promise((resolve, reject) => {
-        global.database.query("SELECT role_id, role_rank FROM discord_ranks ORDER BY role_rank", [], (err, result) => {
+        global.database.query("SELECT role_id, rank FROM discord_ranks ORDER BY rank", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -34,7 +34,7 @@ async function updateRoles(client) {
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
         let discord_link = await new Promise((resolve, reject) => {
-            global.database.query("SELECT player_ckey, stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
+            global.database.query("SELECT stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -43,15 +43,15 @@ async function updateRoles(client) {
             });
         });
         if (discord_link[0]) {
-            let role_rank = discord_link[0].stable_rank;
+            let rank = discord_link[0].stable_rank;
             member.roles.cache.forEach(async (role) => {
                 const matchingRole = db_roles.find(row => row.role_id === role.id);
-                if (matchingRole && role_rank < matchingRole.role_rank) {
-                    role_rank = matchingRole.role_rank;
+                if (matchingRole && rank < matchingRole.rank) {
+                    rank = matchingRole.rank;
                 }
             });
             await new Promise((resolve, reject) => {
-                global.database.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [role_rank, member.id], (err, result) => {
+                global.database.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank, member.id], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
