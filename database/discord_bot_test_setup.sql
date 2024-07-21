@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `servers` (
 
 -- Дамп данных таблицы discord_bot.servers: ~1 rows (приблизительно)
 INSERT INTO `servers` (`server_name`, `db_name`, `file_name`, `guild`, `ip`, `port`) VALUES
-	('CM', 'cm13', 'cm.js', '614611020039585792', 'play.colonialmarines.ru', 4737);
+	('CM', 'cm13', 'cm.js', '1030833617879978004', 'play.colonialmarines.ru', 4737);
 
 -- Дамп структуры для таблица discord_bot.server_channels
 CREATE TABLE IF NOT EXISTS `server_channels` (
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `server_channels` (
 
 -- Дамп данных таблицы discord_bot.server_channels: ~1 rows (приблизительно)
 INSERT INTO `server_channels` (`server_name`, `type`, `channel_id`, `message_id`) VALUES
-	('CM', 'status', '1252302664142819541', '1252302966254473328');
+	('CM', 'status', '1260279980374622218', '1264658740297072651');
 
 -- Дамп структуры для таблица discord_bot.settings
 CREATE TABLE IF NOT EXISTS `settings` (
@@ -59,8 +59,8 @@ CREATE TABLE IF NOT EXISTS `settings` (
 -- Дамп данных таблицы discord_bot.settings: ~3 rows (приблизительно)
 INSERT INTO `settings` (`id`, `name`, `param`) VALUES
 	(1, 'main_server', 'CM'),
-	(2, 'verified_role', '1252317492609810595'),
-	(3, 'anti_verified_role', '746716442946306088');
+	(2, 'verified_role', '1260279361593147392'),
+	(3, 'anti_verified_role', '1260279307788488796');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
