@@ -3,7 +3,7 @@ const fs = require('fs');
 module.exports = async (client) => {
     const GameServerClass = require('./index.s.mts');
     const servers = await new Promise((resolve, reject) => {
-        global.database.query("SELECT server_name, db_name, file_name, ip, port FROM servers", [], (err, result) => {
+        global.database.query("SELECT server_name, db_name, file_name, guild, ip, port FROM servers", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -30,6 +30,7 @@ module.exports = async (client) => {
                     });
                 });
                 game_server.init_file_name = server.file_name;
+                game_server.guild = server.guild
                 game_server.ip = server.ip;
                 game_server.port = server.port;
             } else {
@@ -37,8 +38,9 @@ module.exports = async (client) => {
                 game_server.server_name = server.server_name;
                 game_server.database = server.db_name;
                 game_server.game_connection = null;
-                client.createDBConnection({ game_server: game_server })
+                await client.createDBConnection({ game_server: game_server })
                 game_server.init_file_name = server.file_name;
+                game_server.guild = server.guild
                 game_server.ip = server.ip;
                 game_server.port = server.port;
                 require(`./servers/${game_server.init_file_name}`)(client, game_server);
