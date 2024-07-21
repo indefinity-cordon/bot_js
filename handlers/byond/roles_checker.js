@@ -12,6 +12,32 @@ module.exports = async (client) => {
 };
 
 async function updateRoles(client) {
+    let bot_settings = await new Promise((resolve, reject) => {
+        global.database.query("SELECT param FROM settings WHERE name = 'main_server'", [], (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+    const db_status = await new Promise((resolve, reject) => {
+        global.game_database.changeUser({database : global.servers_link[bot_settings[0].param].database}, (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+    if (!db_status) {
+        client.ephemeralEmbed({
+            title: `Information Request`,
+            desc: `Cannot connect to database...`,
+            color: `#8f0c0c`
+        }, interaction);
+        return;
+    }
     const db_roles = await new Promise((resolve, reject) => {
         global.game_database.query("SELECT role_id, rank FROM discord_ranks ORDER BY rank", [], (err, result) => {
             if (err) {
@@ -21,7 +47,7 @@ async function updateRoles(client) {
             }
         });
     });
-    const bot_settings = await new Promise((resolve, reject) => {
+    bot_settings = await new Promise((resolve, reject) => {
         global.game_database.query("SELECT param FROM settings WHERE name = 'main_guild'", [], (err, result) => {
             if (err) {
                 reject(err);
