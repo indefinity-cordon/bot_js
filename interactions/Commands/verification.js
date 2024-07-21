@@ -85,7 +85,7 @@ module.exports = {
             return;
         }
         let player_id = 0;
-        if (identifier === 0) {
+        if (     === 0) {
             client.ephemeralEmbed({
                 title: `Verification`,
                 desc: `Wrong identifier`
@@ -93,7 +93,7 @@ module.exports = {
             return;
         }
         db_response = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT player_id, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
+            global.game_database.query("SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -114,7 +114,7 @@ module.exports = {
             }, interaction);
             return;
         }
-        player_id = db_response[0].player_id;
+        player_id = db_response[0].playerid;
         db_response = await new Promise((resolve, reject) => {
             global.game_database.query("SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
                 if (err) {
