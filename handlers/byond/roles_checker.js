@@ -48,7 +48,7 @@ async function updateRoles(client) {
         });
     });
     bot_settings = await new Promise((resolve, reject) => {
-        global.game_database.query("SELECT param FROM settings WHERE name = 'main_guild'", [], (err, result) => {
+        global.database.query("SELECT param FROM settings WHERE name = 'main_guild'", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
