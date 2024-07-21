@@ -20,7 +20,7 @@ module.exports = {
             desc: `In progress...`
         }, interaction);
         const bot_settings = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT param FROM settings WHERE name = 'main_server'", [], (err, result) => {
+            global.database.query("SELECT param FROM settings WHERE name = 'main_server'", [], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -28,25 +28,9 @@ module.exports = {
                 }
             });
         });
-        const db_status = await new Promise((resolve, reject) => {
-            global.game_database.changeUser({database : global.servers_link[bot_settings[0].param].database}, (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-        if (!db_status) {
-            client.ephemeralEmbed({
-                title: `Information Request`,
-                desc: `Cannot connect to database...`,
-                color: `#8f0c0c`
-            }, interaction);
-            return;
-        }
+        const game_database = global.servers_link[bot_settings[0].param].game_connection
         const db_response = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
+            game_database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {

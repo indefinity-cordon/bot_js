@@ -2,18 +2,20 @@ module.exports = (client, game_server) => {
     game_server.updateStatus = async function (client, game_server) {
         try {
             const response = JSON.parse(await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip}));
-            const time = Math.floor(response.data.round_duration / 600)
+            const data = response.data
+            const time = Math.floor(data.round_duration / 600)
+            const desc = `**Round Name:** ${data.round_name}\n
+                **Round ID:** ${data.round_id}\n
+                **Map:** ${data.map_name}${data.next_map_name ? ` | **Next Map:** ${data.next_map_name}` : ``}\n
+                **Ship Map:**  ${data.ship_map_name}${data.next_ship_map_name ? ` | **Next Map:** ${data.next_ship_map_name}` : ``}\n
+                **Total Players:** ${data.players}\n
+                **Gamemode:** ${data.gamemode}\n
+                **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')}\n
+                ${data.round_end_state ? `\n**Rouned End State:** ${data.round_end_state}` : ``}`
             for (const message of game_server.status_messages) {
                 await client.embed({
                     title: `${game_server.server_name} status`,
-                    desc: `**Round Name:** ${response.data.round_name}\n
-                    **Round ID:** ${response.data.round_id}\n
-                    **Map:** ${response.data.map_name + response.data.next_map_name ? `` : ` | **Next Map:** ${response.data.next_map_name}`}\n
-                    **Ship Map:**  ${response.data.ship_map_name + response.data.next_ship_map_name ? `` : ` | **Next Map:** ${response.data.next_ship_map_name}`}\n
-                    **Total Players:** ${response.data.players}\n
-                    **Gamemode:** ${response.data.gamemode}\n
-                    **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')}\n
-                    ${response.data.round_end_state ? `\n**Rouned End State:** ${response.data.round_end_state}` : 0}`,
+                    desc: desc,
                     color: `#669917`,
                     type: 'edit'
                 }, message)
@@ -33,22 +35,10 @@ module.exports = (client, game_server) => {
     game_server.infoRequest = async function ({
         request: request
     }, interaction) {
-        const db_status = await new Promise((resolve, reject) => {
-            global.game_database.changeUser({database : game_server.database}, (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-        if (!db_status) {
-            return;
-        }
         let rank_info = ``;
         if (request[0].role_rank) {
             const db_role = await new Promise((resolve, reject) => {
-                global.game_database.query("SELECT role_name FROM discord_ranks WHERE rank = ?", [request[0].role_rank], (err, result) => {
+                game_server.game_connection.query("SELECT role_name FROM discord_ranks WHERE rank = ?", [request[0].role_rank], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -59,7 +49,7 @@ module.exports = (client, game_server) => {
             let db_stable_role;
             if (request[0].stable_rank != request[0].role_rank) {
                 db_stable_role = await new Promise((resolve, reject) => {
-                    global.game_database.query("SELECT role_name FROM discord_ranks WHERE rank = ?", [request[0].stable_rank], (err, result) => {
+                    game_server.game_connection.query("SELECT role_name FROM discord_ranks WHERE rank = ?", [request[0].stable_rank], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -78,7 +68,7 @@ module.exports = (client, game_server) => {
             }
         }
         const db_player_profile = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [request[0].player_id], (err, result) => {
+            game_server.game_connection.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [request[0].player_id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -101,7 +91,7 @@ module.exports = (client, game_server) => {
             player_info += `## **Banned**\n**Reason:** ${db_player_profile[0].time_ban_reason}, **Exp:** ${db_player_profile[0].time_ban_expiration}, **Date:** ${db_player_profile[0].time_ban_date}\n`;
         }
         const db_player_playtime = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id], (err, result) => {
+            game_server.game_connection.query("SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {

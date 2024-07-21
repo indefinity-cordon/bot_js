@@ -1,45 +1,23 @@
 const Discord = require('discord.js');
 
 module.exports = async (client) => {
-    client.on(Discord.Events.ClientReady, async () => {
-        setTimeout(updateRoles, 10000, client);
-        setInterval(
+    client.serverRoles = async function ({
+        game_server: game_server
+    }) {
+        clearInterval(game_server.update_roles_interval);
+        await updateRoles(client, game_server)
+        game_server.update_roles_interval = setInterval(
             updateRoles,
             3600000,
-            client
+            client,
+            game_server
         );
-    });
-};
+    };
+}
 
-async function updateRoles(client) {
-    let bot_settings = await new Promise((resolve, reject) => {
-        global.database.query("SELECT param FROM settings WHERE name = 'main_server'", [], (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
-    const db_status = await new Promise((resolve, reject) => {
-        global.game_database.changeUser({database : global.servers_link[bot_settings[0].param].database}, (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
-    if (!db_status) {
-        client.ephemeralEmbed({
-            title: `Information Request`,
-            desc: `Cannot connect to database...`,
-            color: `#8f0c0c`
-        }, interaction);
-        return;
-    }
+async function updateRoles(client, game_server) {
     const db_roles = await new Promise((resolve, reject) => {
-        global.game_database.query("SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", [], (err, result) => {
+        game_server.game_connection.query("SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -47,20 +25,11 @@ async function updateRoles(client) {
             }
         });
     });
-    bot_settings = await new Promise((resolve, reject) => {
-        global.database.query("SELECT param FROM settings WHERE name = 'main_guild'", [], (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
-    const guild = client.guilds.cache.get(bot_settings[0].param);
+    const guild = client.guilds.cache.get(game_server.guild);
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
         let discord_link = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
+            game_server.game_connection.query("SELECT stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -77,7 +46,7 @@ async function updateRoles(client) {
                 }
             });
             await new Promise((resolve, reject) => {
-                global.game_database.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank_id, member.id], (err, result) => {
+                game_server.game_connection.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank_id, member.id], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -87,4 +56,4 @@ async function updateRoles(client) {
             });
         }
     });
-};
+};    

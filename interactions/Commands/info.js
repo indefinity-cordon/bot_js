@@ -65,28 +65,6 @@ module.exports = {
             }, interaction);
             return;
         }
-        client.ephemeralEmbed({
-            title: `Information Request`,
-            desc: `Connecting to database...`,
-            color: `#8f0c0c`
-        }, interaction);
-        const db_status = await new Promise((resolve, reject) => {
-            global.game_database.changeUser({database : server}, (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-        if (!db_status) {
-            client.ephemeralEmbed({
-                title: `Information Request`,
-                desc: `Cannot connect to database...`,
-                color: `#8f0c0c`
-            }, interaction);
-            return;
-        }
         if (server in global.servers_link) {
             global.servers_link[server].infoRequest({request: db_discord_link}, interaction)
         } else {

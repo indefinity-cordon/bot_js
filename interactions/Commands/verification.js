@@ -29,26 +29,10 @@ module.exports = {
                 }
             });
         });
-        const db_status = await new Promise((resolve, reject) => {
-            global.game_database.changeUser({database : global.servers_link[bot_settings[0].param].database}, (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-        if (!db_status) {
-            client.ephemeralEmbed({
-                title: `Information Request`,
-                desc: `Cannot connect to database...`,
-                color: `#8f0c0c`
-            }, interaction);
-            return;
-        }
+        const game_database = global.servers_link[bot_settings[0].param].game_connection
         const identifier = await interaction.options.getString('identifier');
         let db_response = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
+            game_database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -93,7 +77,7 @@ module.exports = {
             return;
         }
         db_response = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
+            game_database.query("SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -116,7 +100,7 @@ module.exports = {
         }
         player_id = db_response[0].playerid;
         db_response = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
+            game_database.query("SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -132,7 +116,7 @@ module.exports = {
         } else {
             if (db_response[0]) {
                 await new Promise((resolve, reject) => {
-                    global.game_database.query("UPDATE discord_links SET discord_id = ? WHERE player_id = ?", [interaction.user.id, player_id], (err, result) => {
+                    game_database.query("UPDATE discord_links SET discord_id = ? WHERE player_id = ?", [interaction.user.id, player_id], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -142,7 +126,7 @@ module.exports = {
                 });
             } else {
                 await new Promise((resolve, reject) => {
-                    global.game_database.query("INSERT INTO discord_links (player_id, discord_id) VALUES (?, ?)", [player_id, interaction.user.id], (err, result) => {
+                    game_database.query("INSERT INTO discord_links (player_id, discord_id) VALUES (?, ?)", [player_id, interaction.user.id], (err, result) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -152,7 +136,7 @@ module.exports = {
                 });
             }
             await new Promise((resolve, reject) => {
-                global.game_database.query("UPDATE discord_identifiers SET used = 1 WHERE identifier = ?", [identifier], (err, result) => {
+                game_database.query("UPDATE discord_identifiers SET used = 1 WHERE identifier = ?", [identifier], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -162,7 +146,7 @@ module.exports = {
             });
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
             let bot_settings = await new Promise((resolve, reject) => {
-                global.game_database.query("SELECT param FROM settings WHERE name = 'verified_role'", [], (err, result) => {
+                game_database.query("SELECT param FROM settings WHERE name = 'verified_role'", [], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -172,7 +156,7 @@ module.exports = {
             });
             interactionUser.roles.add(bot_settings[0].param)
             bot_settings = await new Promise((resolve, reject) => {
-                global.game_database.query("SELECT param FROM settings WHERE name = 'anti_verified_role'", [], (err, result) => {
+                game_database.query("SELECT param FROM settings WHERE name = 'anti_verified_role'", [], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {

@@ -2,9 +2,6 @@ const Discord = require('discord.js');
 const fs = require('fs');
 require('dotenv').config('.env');
 
-require("./database/MySQL")();
-require("./socket/Redis")();
-
 // TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
 
 const client = new Discord.Client({
@@ -20,6 +17,9 @@ const client = new Discord.Client({
     ],
     restTimeOffset: 0
 });
+
+require("./database/MySQL")(client);
+require("./socket/Redis")(client);
 
 initializeMess(client)
 
