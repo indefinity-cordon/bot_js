@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
-        updateRoles(client);
+        setTimeout(updateRoles(client), 10000);
         setInterval(
             updateRoles,
             3600000,
