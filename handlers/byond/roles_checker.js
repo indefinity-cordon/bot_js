@@ -13,7 +13,7 @@ module.exports = async (client) => {
 
 async function updateRoles(client) {
     const db_roles = await new Promise((resolve, reject) => {
-        global.database.query("SELECT role_id, rank FROM discord_ranks ORDER BY rank", [], (err, result) => {
+        global.game_database.query("SELECT role_id, rank FROM discord_ranks ORDER BY rank", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -22,7 +22,7 @@ async function updateRoles(client) {
         });
     });
     const bot_settings = await new Promise((resolve, reject) => {
-        global.database.query("SELECT param FROM settings WHERE name = 'main_guild'", [], (err, result) => {
+        global.game_database.query("SELECT param FROM settings WHERE name = 'main_guild'", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -34,7 +34,7 @@ async function updateRoles(client) {
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
         let discord_link = await new Promise((resolve, reject) => {
-            global.database.query("SELECT stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
+            global.game_database.query("SELECT stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -51,7 +51,7 @@ async function updateRoles(client) {
                 }
             });
             await new Promise((resolve, reject) => {
-                global.database.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank, member.id], (err, result) => {
+                global.game_database.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank, member.id], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {

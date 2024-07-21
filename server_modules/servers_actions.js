@@ -2,6 +2,16 @@ const fs = require('fs');
 
 module.exports = async (client) => {
     const GameServerClass = require('./index.s.mts');
+    const bot_settings = await new Promise((resolve, reject) => {
+        global.game_database.query("SELECT param FROM settings WHERE name = main_server", [], (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+    global.main_server = bot_settings[0].param
     const servers = await new Promise((resolve, reject) => {
         global.database.query("SELECT server_name, db_name, file_name, ip, port FROM servers", [], (err, result) => {
             if (err) {

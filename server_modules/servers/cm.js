@@ -33,6 +33,18 @@ module.exports = (client, game_server) => {
     game_server.infoRequest = async function ({
         request: request
     }, interaction) {
+        const db_status = await new Promise((resolve, reject) => {
+            global.game_database.changeUser({database : game_server.database}, (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+        if (!db_status) {
+            return;
+        }
         let rank_info = ``;
         if (request[0].role_rank) {
             const db_role = await new Promise((resolve, reject) => {
