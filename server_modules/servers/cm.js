@@ -78,7 +78,7 @@ module.exports = (client, game_server) => {
             }
         }
         const db_player_profile = await new Promise((resolve, reject) => {
-            global.game_database.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [request[0].player_ckey], (err, result) => {
+            global.game_database.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [request[0].player_id], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -115,7 +115,7 @@ module.exports = (client, game_server) => {
         }
         //TODO: Admins
         client.ephemeralEmbed({
-            title: `**${request[0].stable_rank ? `HIDDEN` : request[0].player_ckey}** player info`,
+            title: `**${request[0].stable_rank ? `HIDDEN` : request[0].player_id}** player info`,
             desc: `\n${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`,
             color: `#6d472b`
         }, interaction);
