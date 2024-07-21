@@ -20,8 +20,17 @@ module.exports = {
             title: `Verification`,
             desc: `In progress...`
         }, interaction);
+        const bot_settings = await new Promise((resolve, reject) => {
+            global.game_database.query("SELECT param FROM settings WHERE name = 'main_server'", [], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
         const db_status = await new Promise((resolve, reject) => {
-            global.game_database.changeUser({database : global.servers_link[global.main_server].database}, (err, result) => {
+            global.game_database.changeUser({database : global.servers_link[bot_settings[0].param].database}, (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -50,7 +59,7 @@ module.exports = {
         if (db_response[0] && db_response[0].discord_id) {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
             let bot_settings = await new Promise((resolve, reject) => {
-                global.game_database.query("SELECT param FROM settings WHERE name = verified_role", [], (err, result) => {
+                global.game_database.query("SELECT param FROM settings WHERE name = 'verified_role'", [], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -60,7 +69,7 @@ module.exports = {
             });
             interactionUser.roles.add(bot_settings[0].param)
             bot_settings = await new Promise((resolve, reject) => {
-                global.game_database.query("SELECT param FROM settings WHERE name = anti_verified_role", [], (err, result) => {
+                global.game_database.query("SELECT param FROM settings WHERE name = 'anti_verified_role'", [], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -153,7 +162,7 @@ module.exports = {
             });
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
             let bot_settings = await new Promise((resolve, reject) => {
-                global.game_database.query("SELECT param FROM settings WHERE name = verified_role", [], (err, result) => {
+                global.game_database.query("SELECT param FROM settings WHERE name = 'verified_role'", [], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
@@ -163,7 +172,7 @@ module.exports = {
             });
             interactionUser.roles.add(bot_settings[0].param)
             bot_settings = await new Promise((resolve, reject) => {
-                global.game_database.query("SELECT param FROM settings WHERE name = anti_verified_role", [], (err, result) => {
+                global.game_database.query("SELECT param FROM settings WHERE name = 'anti_verified_role'", [], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
