@@ -39,7 +39,7 @@ async function updateRoles(client) {
         return;
     }
     const db_roles = await new Promise((resolve, reject) => {
-        global.game_database.query("SELECT role_id, rank FROM discord_ranks ORDER BY rank", [], (err, result) => {
+        global.game_database.query("SELECT role_id, rank FROM discord_ranks ORDER BY 'rank'", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
