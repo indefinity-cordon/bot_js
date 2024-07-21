@@ -39,7 +39,7 @@ async function updateRoles(client) {
         return;
     }
     const db_roles = await new Promise((resolve, reject) => {
-        global.game_database.query("SELECT role_id, 'rank' FROM discord_ranks ORDER BY 'rank'", [], (err, result) => {
+        global.game_database.query("SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", [], (err, result) => {
             if (err) {
                 reject(err);
             } else {
@@ -69,15 +69,15 @@ async function updateRoles(client) {
             });
         });
         if (discord_link[0]) {
-            let rank = discord_link[0].stable_rank;
+            let rank_id = discord_link[0].stable_rank;
             member.roles.cache.forEach(async (role) => {
                 const matchingRole = db_roles.find(row => row.role_id === role.id);
-                if (matchingRole && rank < matchingRole.rank) {
-                    rank = matchingRole.rank;
+                if (matchingRole && rank_id < matchingRole.rank_id) {
+                    rank_id = matchingRole.rank_id;
                 }
             });
             await new Promise((resolve, reject) => {
-                global.game_database.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank, member.id], (err, result) => {
+                global.game_database.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank_id, member.id], (err, result) => {
                     if (err) {
                         reject(err);
                     } else {
