@@ -85,7 +85,7 @@ module.exports = {
             return;
         }
         let player_id = 0;
-        if (     === 0) {
+        if (identifier === 0) {
             client.ephemeralEmbed({
                 title: `Verification`,
                 desc: `Wrong identifier`
