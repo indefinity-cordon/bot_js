@@ -16,27 +16,11 @@ module.exports = async (client) => {
 }
 
 async function updateRoles(client, game_server) {
-    const db_roles = await new Promise((resolve, reject) => {
-        game_server.game_connection.query("SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", [], (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
+    const db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", params: []})
     const guild = client.guilds.cache.get(game_server.guild);
     const members = await guild.members.fetch();
     members.forEach(async (member) => {
-        let discord_link = await new Promise((resolve, reject) => {
-            game_server.game_connection.query("SELECT stable_rank FROM discord_links WHERE discord_id = ?", [member.id], (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        let discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT stable_rank FROM discord_links WHERE discord_id = ?", params: [member.id]})
         if (discord_link[0]) {
             let rank_id = discord_link[0].stable_rank;
             member.roles.cache.forEach(async (role) => {
@@ -45,15 +29,7 @@ async function updateRoles(client, game_server) {
                     rank_id = matchingRole.rank_id;
                 }
             });
-            await new Promise((resolve, reject) => {
-                game_server.game_connection.query("UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank_id, member.id], (err, result) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-                });
-            });
+            await new client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, member.id]})
         }
     });
 };    

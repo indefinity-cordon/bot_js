@@ -48,15 +48,7 @@ module.exports = {
         if (server in servers_reverse_options) {
             server = servers_reverse_options[server];
         }
-        const db_discord_link = await new Promise((resolve, reject) => {
-            global.database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [user.id], (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        const db_discord_link = await client.databaseRequest({ database: global.database, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [user.id]})
         if (!db_discord_link[0] || !db_discord_link[0].discord_id) {
             client.ephemeralEmbed({
                 title: `Information Request`,

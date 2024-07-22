@@ -30,15 +30,7 @@ module.exports = async (client) => {
 
 async function updateStatusMessages(client, game_server) {
     game_server.status_messages = [];
-    const statuses = await new Promise((resolve, reject) => {
-        global.database.query("SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'status'", [game_server.server_name], (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
+    const statuses = await client.databaseRequest({ database: global.database, query: "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'status'", params: [game_server.server_name] })
     if (!statuses.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
@@ -61,15 +53,7 @@ async function updateStatusMessages(client, game_server) {
                 desc: `prepairing...`
             }, channel).then((message) => {
                 found_message = message;
-                new Promise((resolve, reject) => {
-                    global.database.query("UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = 'status' AND channel_id = ?", [message.id, game_server.server_name, status.channel_id], (err, result) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-                });
+                client.databaseRequest({ database: global.database, query: "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = 'status' AND channel_id = ?", params: [message.id, game_server.server_name, status.channel_id]})
             });
         }
         game_server.status_messages.push(found_message);

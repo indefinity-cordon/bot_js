@@ -5,16 +5,7 @@ module.exports = (client) => {
         data: data
     }) {
         if (data) {
-            const status = await new Promise((resolve, reject) => {
-                global.database.query("SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", [data.source, data.type], (err, result) => {
-                    if (err) {
-                        console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to save message id for deletion, data: ${[message.id]}; ${[data]}; ${[status[0].channel_id]}.`));
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-                });
-            });
+            const status = await client.databaseRequest({ database: global.database, query: "SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", params: [data.source, data.type]})
             if (!status.length) {
                 console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${[data]}.`));
             } else {
@@ -36,16 +27,7 @@ module.exports = (client) => {
                             desc: `<@&${role.id}>`,
                             color: role.hexColor
                         }, channel).then((message) => {
-                            new Promise((resolve, reject) => {
-                                global.database.query("UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, data.source, data.type, status[0].channel_id], (err, result) => {
-                                    if (err) {
-                                        message.delete({timeout: 300000});
-                                        reject(console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to save message id for deletion. Data: ${[message.id]}; ${[data]}; ${[status[0].channel_id]}.`)));
-                                    } else {
-                                        resolve(result);
-                                    }
-                                });
-                            });
+                            client.databaseRequest({ database: global.database, query: "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", params: [message.id, data.source, data.type, status[0].channel_id]})
                         });
                         break;
 

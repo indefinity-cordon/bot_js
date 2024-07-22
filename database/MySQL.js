@@ -38,4 +38,19 @@ module.exports = async (client) => {
             });
         });
     }
+    client.databaseRequest = async function ({
+        database: database,
+        query: query,
+        params: params
+    }) {
+        return await new Promise((resolve, reject) => {
+            database.query(query, [...params], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    };
 }

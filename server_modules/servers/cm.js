@@ -32,31 +32,18 @@ module.exports = (client, game_server) => {
             }
         }
     }
+
+
+
     game_server.infoRequest = async function ({
         request: request
     }, interaction) {
         let rank_info = ``;
         if (request[0].role_rank) {
-            const db_role = await new Promise((resolve, reject) => {
-                game_server.game_connection.query("SELECT role_name FROM discord_ranks WHERE rank = ?", [request[0].role_rank], (err, result) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-                });
-            });
+            const db_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_name FROM discord_ranks WHERE rank = ?", params: [request[0].role_rank]})
             let db_stable_role;
             if (request[0].stable_rank != request[0].role_rank) {
-                db_stable_role = await new Promise((resolve, reject) => {
-                    game_server.game_connection.query("SELECT role_name FROM discord_ranks WHERE rank = ?", [request[0].stable_rank], (err, result) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-                });
+                db_stable_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_name FROM discord_ranks WHERE rank = ?", params: [request[0].stable_rank]})
             }
             if(request[0].stable_rank && !db_stable_role) {
                 rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`
@@ -67,15 +54,7 @@ module.exports = (client, game_server) => {
                 rank_info = `Supported Rank: ${db_role[0].rank_name}\n`
             }
         }
-        const db_player_profile = await new Promise((resolve, reject) => {
-            game_server.game_connection.query("SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", [request[0].player_id], (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", params: [request[0].player_id]})
         if (!db_player_profile[0]) {
             client.ephemeralEmbed({
                 title: `Information Request`,
@@ -90,15 +69,7 @@ module.exports = (client, game_server) => {
         } else if (db_player_profile[0].is_time_banned) {
             player_info += `## **Banned**\n**Reason:** ${db_player_profile[0].time_ban_reason}, **Exp:** ${db_player_profile[0].time_ban_expiration}, **Date:** ${db_player_profile[0].time_ban_date}\n`;
         }
-        const db_player_playtime = await new Promise((resolve, reject) => {
-            game_server.game_connection.query("SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id], (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        const db_player_playtime = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", params: [db_player_profile[0].id]})
         let player_playtime = 0;
         for (const playtime of db_player_playtime) {
             player_playtime += playtime.total_minutes

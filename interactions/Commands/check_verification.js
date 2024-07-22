@@ -19,46 +19,13 @@ module.exports = {
             title: `Verification`,
             desc: `In progress...`
         }, interaction);
-        const bot_settings = await new Promise((resolve, reject) => {
-            global.database.query("SELECT param FROM settings WHERE name = 'main_server'", [], (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-        const game_database = global.servers_link[bot_settings[0].param].game_connection
-        const db_response = await new Promise((resolve, reject) => {
-            game_database.query("SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id], (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        const bot_settings = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'main_server'", params: []})
+        const db_response = await client.databaseRequest({ database: global.servers_link[bot_settings[0].param].game_connection, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [interaction.user.id]})
         if (db_response[0] && db_response[0].discord_id) {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
-            let bot_settings = await new Promise((resolve, reject) => {
-                global.database.query("SELECT param FROM settings WHERE name = 'verified_role'", [], (err, result) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-                });
-            });
+            let bot_settings = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'verified_role'", params: []})
             interactionUser.roles.add(bot_settings[0].param)
-            bot_settings = await new Promise((resolve, reject) => {
-                global.database.query("SELECT param FROM settings WHERE name = 'anti_verified_role'", [], (err, result) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(result);
-                    }
-                });
-            });
+            bot_settings = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'anti_verified_role'", params: []})
             interactionUser.roles.remove(bot_settings[0].param)
             client.ephemeralEmbed({
                 title: `Verification`,

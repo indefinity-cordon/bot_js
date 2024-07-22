@@ -29,15 +29,7 @@ async function initializeMess(client) {
             if (!global.database) return;
             clearInterval(interval);
             (async () => {
-                global.handling_game_servers = await new Promise((resolve, reject) => {
-                    global.database.query("SELECT server_name, db_name FROM servers", [], (err, result) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-                });
+                global.handling_game_servers = await client.databaseRequest({ database: global.database, query: "SELECT server_name, db_name FROM servers", params: []})
             })();
             await client.login(process.env.DISCORD_TOKEN);
             fs.readdirSync('./handlers').forEach((dir) => {
