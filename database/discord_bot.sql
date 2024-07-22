@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS `server_channels` (
 -- Дамп данных таблицы discord_bot.server_channels: ~1 rows (приблизительно)
 INSERT INTO `server_channels` (`server_name`, `type`, `channel_id`, `message_id`) VALUES
 	('CM', 'status', '1252302664142819541', '1252302966254473328');
+	('CM', 'round', '614619975151517718', '1');
 
 -- Дамп структуры для таблица discord_bot.settings
 CREATE TABLE IF NOT EXISTS `settings` (
@@ -58,9 +59,13 @@ CREATE TABLE IF NOT EXISTS `settings` (
 
 -- Дамп данных таблицы discord_bot.settings: ~3 rows (приблизительно)
 INSERT INTO `settings` (`id`, `name`, `param`) VALUES
-	(1, 'main_server', 'CM'),
-	(2, 'verified_role', '1252317492609810595'),
-	(3, 'anti_verified_role', '746716442946306088');
+	(1, 'main_server', 'CM');
+	(2, 'tgs_address', 'http://localhost:5000');
+	(3, 'verified_role', '1252317492609810595');
+	(4, 'anti_verified_role', '746716442946306088');
+  (5, 'new_round_message', '<@&1171983021340102746>\nНовый раунд');
+  (6, 'tgs_bot_id', '0');
+  (7, 'tgs_bot_mmessage', '');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
