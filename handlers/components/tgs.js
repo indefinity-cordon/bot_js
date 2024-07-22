@@ -112,7 +112,7 @@ module.exports = async (client) => {
         { label:  "deploy", value:  "deploy" }
     ]
 
-    client.on('onMessage', async (message) => {
+    client.on('messageCreate', async (message) => {
         const tgs_bot_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_id'", params: []})
         const tgs_bot_message = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_message'", params: []})
         if (message.author.id === tgs_bot_id[0].param && message.content === tgs_bot_message[0].param) {
