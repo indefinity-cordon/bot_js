@@ -9,7 +9,7 @@ module.exports = (client, game_server) => {
                 **Map:** ${data.map_name}${data.next_map_name ? ` | **Next Map:** ${data.next_map_name}` : ``}\n
                 **Ship Map:**  ${data.ship_map_name}${data.next_ship_map_name ? ` | **Next Map:** ${data.next_ship_map_name}` : ``}\n
                 **Total Players:** ${data.players}\n
-                **Gamemode:** ${data.gamemode}\n
+                **Gamemode:** ${data.mode}\n
                 **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')}\n
                 ${data.round_end_state ? `\n**Rouned End State:** ${data.round_end_state}` : ``}`
             for (const message of game_server.status_messages) {
