@@ -20,5 +20,5 @@ module.exports = async (client) => {
         channel.consume(queue, onMessage, { noAck: true });
     }
 
-    main().catch(console.error);
+    client.main().catch(console.error);
 }

@@ -1,7 +1,6 @@
 const base64 = require('base-64');
 const axios = require('axios');
 const { DateTime } = require('luxon');
-const Discord = require('discord.js');
 
 let bearerValidUntil = DateTime.utc();
 let bearer = { Authorization: 'fixme' };
@@ -101,12 +100,22 @@ module.exports = async (client) => {
         return response.data;
     }
 
+    global.handling_commands_actions = [
+        { "stop": [ client.tgs_stop ] },
+        { "start": [ client.tgs_start ] },
+        { "deploy": [ client.tgs_deploy ] }
+    ]
 
+    global.handling_commands = [
+        { label: "stop", value: "stop" },
+        { label: "start", value: "start" },
+        { label:  "deploy", value:  "deploy" }
+    ]
 
     client.on('onMessage', async (message) => {
         const tgs_bot_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_id'", params: []})
-        const tgs_bot_mmessage = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_mmessage'", params: []})
-        if (message.author.id === tgs_bot_id[0].param && message.content === tgs_bot_mmessage[0].param) {
+        const tgs_bot_message = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_message'", params: []})
+        if (message.author.id === tgs_bot_id[0].param && message.content === tgs_bot_message[0].param) {
             const related_feed_channel = await client.databaseRequest({ database: global.database, query: "SELECT channel_id, message_id FROM server_channels WHERE name = 'round'", params: []})
             if (!related_feed_channel[0] || !related_feed_channel[0].message_id) return;
             const channel = client.channels.cache.get(related_feed_channel[0].channel_id);

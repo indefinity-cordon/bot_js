@@ -65,7 +65,8 @@ INSERT INTO `settings` (`id`, `name`, `param`) VALUES
 	(4, 'anti_verified_role', '746716442946306088');
   (5, 'new_round_message', '<@&1171983021340102746>\nНовый раунд');
   (6, 'tgs_bot_id', '0');
-  (7, 'tgs_bot_mmessage', '');
+  (7, 'tgs_bot_message', '');
+  (8, 'tgs_role_id', '1237738433427013756');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

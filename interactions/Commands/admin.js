@@ -1,21 +1,11 @@
 const { CommandInteraction, Client } = require('discord.js');
 const { SlashCommandBuilder } = require('discord.js');
 
-let servers_options = global.handling_game_servers.map(server => ({
-    label: server.server_name,
-    value: server.db_name
-}));
-
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('info')
-        .setDescription('Order information about yourself')
-        .addUserOption(option =>
-            option
-                .setName('user')
-                .setDescription('Select user to show info about')
-                .setRequired(true)
-        ),
+        .setName('admin')
+        .setDescription('Use admin command')
+    ,
 
     /** 
      * @param {Client} client
@@ -27,28 +17,36 @@ module.exports = {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
 
         const user = interaction.options.getUser('user');
+        const tgs_role_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_role_id'", params: []})
+        let matchingRole = 0
+        member.roles.cache.forEach(async (role) => {
+            if (role.id === tgs_role_id[0].param) {
+                matchingRole = 1
+            }
+        });
+        if (!matchingRole) return;
 
         // Create the select menu
         const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId('select-server')
-            .setPlaceholder('Select game server')
-            .addOptions(servers_options);
+            .setCustomId('select-command')
+            .setPlaceholder('Select command')
+            .addOptions(global.handling_commands);
 
         const row = new ActionRowBuilder()
             .addComponents(selectMenu);
 
         await interaction.reply({
-            content: 'Please select a game server:',
+            content: 'Please select a command:',
             components: [row],
             ephemeral: true
         }); 
 
         // Handle the select menu interaction
-        const filter = i => i.customId === 'select-server' && i.user.id === interaction.user.id;
+        const filter = i => i.customId === 'select-command' && i.user.id === interaction.user.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
         collector.on('collect', async i => {
-            const selectedServer = i.values[0];
+            const selectedCommand = i.values[0];
 
             await i.deferUpdate();
 
@@ -64,8 +62,8 @@ module.exports = {
                 return;
             }
 
-            if (selectedServer in global.servers_link) {
-                global.servers_link[selectedServer].infoRequest({ request: db_discord_link }, i);
+            if (selectedCommand in global.handling_commands) {
+                global.handling_commands_actions[selectedCommand]();
             } else {
                 const errorEmbed = new EmbedBuilder()
                     .setTitle('Information Request')
