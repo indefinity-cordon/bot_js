@@ -40,10 +40,10 @@ module.exports = (client, game_server) => {
     }, interaction) {
         let rank_info = ``;
         if (request[0].role_rank) {
-            const db_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_name FROM discord_ranks WHERE rank = ?", params: [request[0].role_rank]})
+            const db_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].role_rank]})
             let db_stable_role;
             if (request[0].stable_rank != request[0].role_rank) {
-                db_stable_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_name FROM discord_ranks WHERE rank = ?", params: [request[0].stable_rank]})
+                db_stable_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].stable_rank]})
             }
             if(request[0].stable_rank && !db_stable_role) {
                 rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`
@@ -54,11 +54,11 @@ module.exports = (client, game_server) => {
                 rank_info = `Supported Rank: ${db_role[0].rank_name}\n`
             }
         }
-        const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE ckey = ?", params: [request[0].player_id]})
+        const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", params: [request[0].player_id]})
         if (!db_player_profile[0]) {
             client.ephemeralEmbed({
                 title: `Information Request`,
-                desc: `This is user don't have CMI profile`,
+                desc: `This is user don't have CM profile`,
                 color: `#6d472b`
             }, interaction);
             return;
@@ -76,7 +76,7 @@ module.exports = (client, game_server) => {
         }
         //TODO: Admins
         client.ephemeralEmbed({
-            title: `**${request[0].stable_rank ? `HIDDEN` : request[0].player_id}** player info`,
+            title: `**${request[0].role_rank ? `HIDDEN` : db_player_profile[0].ckey}** player info`,
             desc: `\n${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`,
             color: `#6d472b`
         }, interaction);

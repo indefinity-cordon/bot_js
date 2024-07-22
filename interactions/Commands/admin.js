@@ -1,5 +1,4 @@
-const { CommandInteraction, Client } = require('discord.js');
-const { SlashCommandBuilder } = require('discord.js');
+const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, InteractionType, EmbedBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -50,28 +49,14 @@ module.exports = {
 
             await i.deferUpdate();
 
-            const db_discord_link = await client.databaseRequest({ database: global.database, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [user.id]})
+            global.handling_commands_actions[selectedCommand]();
 
-            if (!db_discord_link[0] || !db_discord_link[0].discord_id) {
-                const noLinkEmbed = new EmbedBuilder()
-                    .setTitle('Information Request')
-                    .setDescription('This user does not have a linked game profile')
-                    .setColor('#6d472b');
+            const errorEmbed = new EmbedBuilder()
+                .setTitle('Status')
+                .setDescription('Executed... probably.')
+                .setColor('#6d472b');
 
-                await i.editReply({ embeds: [noLinkEmbed], components: [] });
-                return;
-            }
-
-            if (selectedCommand in global.handling_commands) {
-                global.handling_commands_actions[selectedCommand]();
-            } else {
-                const errorEmbed = new EmbedBuilder()
-                    .setTitle('Information Request')
-                    .setDescription('Warning, server selection error. Try again later, and if the problem persists, report it to the developers.')
-                    .setColor('#6d472b');
-
-                await i.editReply({ embeds: [errorEmbed], components: [] });
-            }
+            await i.editReply({ content: '', embeds: [errorEmbed], components: [] });
         });
 
         collector.on('end', collected => {

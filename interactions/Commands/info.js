@@ -1,9 +1,8 @@
-const { CommandInteraction, Client } = require('discord.js');
-const { SlashCommandBuilder } = require('discord.js');
+const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, InteractionType, EmbedBuilder } = require('discord.js');
 
 let servers_options = global.handling_game_servers.map(server => ({
     label: server.server_name,
-    value: server.db_name
+    value: server.server_name
 }));
 
 module.exports = {
@@ -27,7 +26,6 @@ module.exports = {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
 
         const user = interaction.options.getUser('user');
-
         // Create the select menu
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('select-server')
@@ -52,7 +50,9 @@ module.exports = {
 
             await i.deferUpdate();
 
-            const db_discord_link = await client.databaseRequest({ database: global.database, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [user.id]})
+            const game_server = global.servers_link[selectedServer];
+
+            const db_discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [i.user.id]})
 
             if (!db_discord_link[0] || !db_discord_link[0].discord_id) {
                 const noLinkEmbed = new EmbedBuilder()
@@ -60,20 +60,16 @@ module.exports = {
                     .setDescription('This user does not have a linked game profile')
                     .setColor('#6d472b');
 
-                await i.editReply({ embeds: [noLinkEmbed], components: [] });
+                await i.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
                 return;
             }
 
-            if (selectedServer in global.servers_link) {
-                global.servers_link[selectedServer].infoRequest({ request: db_discord_link }, i);
-            } else {
-                const errorEmbed = new EmbedBuilder()
-                    .setTitle('Information Request')
-                    .setDescription('Warning, server selection error. Try again later, and if the problem persists, report it to the developers.')
-                    .setColor('#6d472b');
-
-                await i.editReply({ embeds: [errorEmbed], components: [] });
-            }
+            const noLinkEmbed = new EmbedBuilder()
+            .setTitle('Information Request')
+            .setDescription('Retrieving')
+            .setColor('#6d472b');
+            await i.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
+            game_server.infoRequest({ request: db_discord_link }, i);
         });
 
         collector.on('end', collected => {
