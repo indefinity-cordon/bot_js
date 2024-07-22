@@ -1,10 +1,3 @@
--- --------------------------------------------------------
--- Хост:                         192.168.100.2
--- Версия сервера:               11.4.2-MariaDB-ubu2204 - mariadb.org binary distribution
--- Операционная система:         debian-linux-gnu
--- HeidiSQL Версия:              12.7.0.6850
--- --------------------------------------------------------
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET NAMES utf8 */;
 /*!50503 SET NAMES utf8mb4 */;
@@ -15,11 +8,9 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
--- Дамп структуры базы данных discord_bot
 CREATE DATABASE IF NOT EXISTS `discord_bot` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci */;
 USE `discord_bot`;
 
--- Дамп структуры для таблица discord_bot.servers
 CREATE TABLE IF NOT EXISTS `servers` (
   `server_name` varchar(20) DEFAULT NULL,
   `db_name` varchar(20) DEFAULT NULL,
@@ -30,11 +21,9 @@ CREATE TABLE IF NOT EXISTS `servers` (
   UNIQUE KEY `name_link` (`server_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
--- Дамп данных таблицы discord_bot.servers: ~1 rows (приблизительно)
 INSERT INTO `servers` (`server_name`, `db_name`, `file_name`, `guild`, `ip`, `port`) VALUES
 	('CM', 'cm13', 'cm.js', '614611020039585792', 'play.colonialmarines.ru', 4737);
 
--- Дамп структуры для таблица discord_bot.server_channels
 CREATE TABLE IF NOT EXISTS `server_channels` (
   `server_name` varchar(20) DEFAULT NULL,
   `type` varchar(20) DEFAULT NULL,
@@ -44,7 +33,6 @@ CREATE TABLE IF NOT EXISTS `server_channels` (
   CONSTRAINT `FK_server_channels_servers` FOREIGN KEY (`server_name`) REFERENCES `servers` (`server_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
--- Дамп данных таблицы discord_bot.server_channels: ~1 rows (приблизительно)
 INSERT INTO `server_channels` (`server_name`, `type`, `channel_id`, `message_id`) VALUES
 	('CM', 'status', '1252302664142819541', '1252302966254473328');
 	('CM', 'round', '614619975151517718', '1');
@@ -57,7 +45,6 @@ CREATE TABLE IF NOT EXISTS `settings` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1260279307788488798 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
--- Дамп данных таблицы discord_bot.settings: ~3 rows (приблизительно)
 INSERT INTO `settings` (`id`, `name`, `param`) VALUES
 	(1, 'main_server', 'CM');
 	(2, 'tgs_address', 'http://localhost:5000');
