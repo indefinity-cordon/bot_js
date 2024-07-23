@@ -52,7 +52,7 @@ module.exports = {
 
             const game_server = global.servers_link[selectedServer];
 
-            const db_discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [i.user.id]})
+            const db_discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [user.id]})
 
             if (!db_discord_link[0] || !db_discord_link[0].discord_id) {
                 const noLinkEmbed = new EmbedBuilder()
