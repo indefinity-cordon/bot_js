@@ -1,4 +1,4 @@
-const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, InteractionType, EmbedBuilder } = require('discord.js');
+const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, InteractionType, CommandInteraction, EmbedBuilder } = require('discord.js');
 
 let servers_options = global.handling_game_servers.map(server => ({
     label: server.server_name,
