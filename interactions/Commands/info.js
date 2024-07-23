@@ -14,7 +14,8 @@ module.exports = {
                 .setName('user')
                 .setDescription('Select user to show info about')
                 .setRequired(true)
-        ),
+        )
+    ,
 
     /** 
      * @param {Client} client
