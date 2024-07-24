@@ -1,7 +1,9 @@
 module.exports = (client, game_server) => {
     game_server.updateStatus = async function (client, game_server) {
         try {
-            const response = JSON.parse(await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip}));
+            const server_response = await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
+            if (!server_response) return;
+            const response = JSON.parse(server_response);
             const data = response.data
             const time = Math.floor(data.round_duration / 600)
             const desc = `**Round Name:** ${data.round_name}\n
@@ -21,7 +23,6 @@ module.exports = (client, game_server) => {
                 }, message)
             }
         } catch (error) {
-            
             for (const message of game_server.status_messages) {
                 await client.embed({
                     title: `${game_server.server_name} status`,

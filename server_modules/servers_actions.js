@@ -2,6 +2,7 @@ const fs = require('fs');
 
 module.exports = async (client) => {
     const GameServerClass = require('./index.s.mts');
+    await global.database;
     const servers = await client.databaseRequest({ database: global.database, query: "SELECT server_name, db_name, file_name, guild, ip, port FROM servers", params: []})
     if (!servers.length) {
         console.log(`Failed to find servers. Aborting.`);

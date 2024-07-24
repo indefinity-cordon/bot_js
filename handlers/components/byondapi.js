@@ -1,6 +1,8 @@
 const chalk = require('chalk');
 const net = require('net');
 
+let econn_error_skipper = [];
+
 module.exports = (client) => {
     client.prepareByondAPIRequest = async function ({
         request: request,
@@ -8,6 +10,17 @@ module.exports = (client) => {
         address: address
     }) {
         if (request && port && address) {
+            if (`${port}:${address}` in econn_error_skipper && econn_error_skipper[`${port}:${address}`]['locked']) {
+                if (econn_error_skipper[`${port}:${address}`]['req_attempts'] > econn_error_skipper[`${port}:${address}`]['attempts']) {
+                    econn_error_skipper[`${port}:${address}`]['attempts']++;
+                    console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Server req lock ${econn_error_skipper[`${port}:${address}`]['req_attempts'] - econn_error_skipper[`${port}:${address}`]['attempts']} attempts remaining for target: ${address}:${port}.`))
+                } else {
+                    econn_error_skipper[`${port}:${address}`]['attempts'] = 0;
+                    econn_error_skipper[`${port}:${address}`]['locked'] = false;
+                    console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Server req lock lowered for target: ${address}:${port}.`))
+                }
+                return;
+            }
             const textEncoder = new TextEncoder();
             const encodedText = textEncoder.encode(request);
             const length = encodedText.length + 7; // 7 байт: 2 для типа пакета (0, 131), 2 для длины, 1 для нулевого байта в конце, 1 байт для кода пакета и 1 байт для завершающего нуля
@@ -32,15 +45,23 @@ module.exports = (client) => {
                         } else if (packetType === 0x06) {
                             resolve(response.slice(1, -1).toString('ascii'));
                         } else {
-                            reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown BYOND data code: 0x${packetType.toString(16)}`)));
+                            console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown BYOND data code: 0x${packetType.toString(16)}`))
+                            reject('Unknown data code');
                         }
                     } else {
                         client.end();
-                        reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`BYOND server returned invalid data.`)));
+                        console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`BYOND server returned invalid data.`));
+                        reject('Failed to read data');
                     }
                 });
                 client.on('error', (err) => {
-                    reject(console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`)));
+                    if (!(`${port}:${address}` in econn_error_skipper)) econn_error_skipper[`${port}:${address}`] = [];
+                    econn_error_skipper[`${port}:${address}`]['req_attempts'] = 5; // Таймаут на 5 попыток, да бы JS не жаловался на лик озу
+                    econn_error_skipper[`${port}:${address}`]['attempts'] = 0;
+                    econn_error_skipper[`${port}:${address}`]['locked'] = true;
+                    client.end();
+                    console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`));
+                    reject(err);
                 });
             });
         } else {

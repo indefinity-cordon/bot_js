@@ -37,7 +37,6 @@ INSERT INTO `server_channels` (`server_name`, `type`, `channel_id`, `message_id`
 	('CM', 'status', '1252302664142819541', '1252302966254473328');
 	('CM', 'round', '614619975151517718', '1');
 
--- Дамп структуры для таблица discord_bot.settings
 CREATE TABLE IF NOT EXISTS `settings` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) DEFAULT NULL,

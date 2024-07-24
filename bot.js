@@ -3,6 +3,7 @@ const fs = require('fs');
 require('dotenv').config('.env');
 
 // TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
+process.on('warning', e => console.warn(e.stack));
 
 const client = new Discord.Client({
     autoReconnect: true,
