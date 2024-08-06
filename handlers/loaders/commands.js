@@ -21,7 +21,7 @@ module.exports = async (client) => {
         };
     });
 
-    const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+    const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
     try {
         console.log(chalk.blue(chalk.bold(`Commands`)), (chalk.white(`>>`)), chalk.green(`Started refreshing application (/) commands`))
