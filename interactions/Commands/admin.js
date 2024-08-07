@@ -15,7 +15,6 @@ module.exports = {
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
 
-        const user = interaction.options.getUser('user');
         const tgs_role_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_role_id'", params: []})
         let matchingRole = 0
         member.roles.cache.forEach(async (role) => {
