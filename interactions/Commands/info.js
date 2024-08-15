@@ -43,13 +43,13 @@ module.exports = {
         }); 
 
         // Handle the select menu interaction
-        const filter = i => i.customId === 'select-server' && i.user.id === interaction.user.id;
+        const filter = collected => collected.customId === 'select-server' && collected.user.id === interaction.user.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
-        collector.on('collect', async i => {
-            const selectedServer = i.values[0];
+        collector.on('collect', async collected => {
+            const selectedServer = collected.values[0];
 
-            await i.deferUpdate();
+            await collected.deferUpdate();
 
             const game_server = global.servers_link[selectedServer];
 
@@ -61,7 +61,7 @@ module.exports = {
                     .setDescription('This user does not have a linked game profile')
                     .setColor('#6d472b');
 
-                await i.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
+                await collected.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
                 return;
             }
 
@@ -73,9 +73,9 @@ module.exports = {
             game_server.infoRequest({ request: db_discord_link }, i);
         });
 
-        collector.on('end', collected => {
+        collector.on('end', async collected => {
             if (collected.size === 0) {
-                interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
+                await interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
             }
         });
     }
