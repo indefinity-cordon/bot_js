@@ -27,7 +27,7 @@ module.exports = {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
 
         const target_user = interaction.options.getUser('user');
-        // Create the select menu
+
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('select-server')
             .setPlaceholder('Select game server')
@@ -36,15 +36,20 @@ module.exports = {
         const row = new ActionRowBuilder()
             .addComponents(selectMenu);
 
+        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
+            client.activeCollectors[interaction.user.id].stop();
+        }
+
+        const filter = collected => collected.customId === 'select-server' && collected.user.id === interaction.user.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        client.activeCollectors = client.activeCollectors || {};
+        client.activeCollectors[interaction.user.id] = collector;
+
         await interaction.reply({
             content: 'Please select a game server:',
             components: [row],
             ephemeral: true
         }); 
-
-        // Handle the select menu interaction
-        const filter = collected => collected.customId === 'select-server' && collected.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
         collector.on('collect', async collected => {
             const selectedServer = collected.values[0];
@@ -69,14 +74,15 @@ module.exports = {
             .setTitle('Information Request')
             .setDescription('Retrieving')
             .setColor('#6d472b');
-            await i.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
-            game_server.infoRequest({ request: db_discord_link }, i);
+            await collected.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
+            game_server.infoRequest({ request: db_discord_link }, collected);
         });
 
         collector.on('end', async collected => {
             if (collected.size === 0) {
                 await interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
             }
+            delete client.activeCollectors[interaction.user.id];
         });
     }
 }

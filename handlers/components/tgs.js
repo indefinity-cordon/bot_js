@@ -100,17 +100,17 @@ module.exports = async (client) => {
         return response.data;
     }
 
-    global.handling_commands_actions = [
-        { "stop": [ client.tgs_stop ] },
-        { "start": [ client.tgs_start ] },
-        { "deploy": [ client.tgs_deploy ] }
-    ]
+    global.handling_commands_actions = {
+        "stop": client.tgs_stop,
+        "start": client.tgs_start,
+        "deploy": client.tgs_deploy
+    };
 
     global.handling_commands = [
-        { label: "stop", value: "stop" },
-        { label: "start", value: "start" },
-        { label:  "deploy", value:  "deploy" }
-    ]
+        { label: "Stop", value: "stop" },
+        { label: "Start", value: "start" },
+        { label: "Deploy", value: "deploy" }
+    ];
 
     client.on('messageCreate', async (message) => {
         const tgs_bot_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_id'", params: []})

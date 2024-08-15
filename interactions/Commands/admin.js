@@ -3,28 +3,30 @@ const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('admin')
-        .setDescription('Use admin command')
-    ,
+        .setDescription('Use admin command'),
 
     /** 
      * @param {Client} client
      * @param {CommandInteraction} interaction
      * @param {String[]} args
      */
-
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
 
-        const tgs_role_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_role_id'", params: []})
-        let matchingRole = 0
-        member.roles.cache.forEach(async (role) => {
-            if (role.id === tgs_role_id[0].param) {
-                matchingRole = 1
-            }
-        });
-        if (!matchingRole) return;
+        const tgs_role_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_role_id'", params: []});
+        const role_id = tgs_role_id[0].param;
 
-        // Create the select menu
+        const member = interaction.member;
+        let matchingRole = member.roles.cache.has(role_id);
+
+        if (!matchingRole) {
+            return interaction.reply({ content: "You don't have permission to use this command.", ephemeral: true });
+        }
+
+        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
+            client.activeCollectors[interaction.user.id].stop();
+        }
+
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('select-command')
             .setPlaceholder('Select command')
@@ -37,18 +39,21 @@ module.exports = {
             content: 'Please select a command:',
             components: [row],
             ephemeral: true
-        }); 
+        });
 
-        // Handle the select menu interaction
         const filter = i => i.customId === 'select-command' && i.user.id === interaction.user.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        client.activeCollectors = client.activeCollectors || {};
+        client.activeCollectors[interaction.user.id] = collector;
 
         collector.on('collect', async i => {
             const selectedCommand = i.values[0];
 
             await i.deferUpdate();
 
-            global.handling_commands_actions[selectedCommand]();
+            if (global.handling_commands_actions[selectedCommand]) {
+                global.handling_commands_actions[selectedCommand]();
+            }
 
             const errorEmbed = new EmbedBuilder()
                 .setTitle('Status')
@@ -62,6 +67,7 @@ module.exports = {
             if (collected.size === 0) {
                 interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
             }
+            delete client.activeCollectors[interaction.user.id];
         });
     }
 }
