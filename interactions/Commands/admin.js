@@ -13,27 +13,48 @@ module.exports = {
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
 
-        const tgs_role_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_role_id'", params: []});
-        const role_id = tgs_role_id[0].param;
-
         const member = interaction.member;
-        let matchingRole = member.roles.cache.has(role_id);
+        const roleCache = new Map();
 
-        if (!matchingRole) {
-            return interaction.reply({ content: "You don't have permission to use this command.", ephemeral: true });
+        const availableCommands = [];
+        for (const command of global.handling_commands) {
+            if (command.role_req) {
+                let roleId = roleCache.get(command.role_req);
+
+                if (!roleId) {
+                    const roleResult = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = ?", params: [command.role_req] });
+                    roleId = roleResult[0]?.param;
+                    roleCache.set(command.role_req, roleId);
+                }
+
+                if (roleId && member.roles.cache.has(roleId)) {
+                    availableCommands.push(command);
+                }
+            } else {
+                availableCommands.push(command);
+            }
         }
 
-        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
-            client.activeCollectors[interaction.user.id].stop();
+        if (availableCommands.length === 0) {
+            return interaction.reply({ content: "You don't have permission to use any admin commands.", ephemeral: true });
         }
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('select-command')
             .setPlaceholder('Select command')
-            .addOptions(global.handling_commands);
+            .addOptions(availableCommands);
 
         const row = new ActionRowBuilder()
             .addComponents(selectMenu);
+
+        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
+            client.activeCollectors[interaction.user.id].stop();
+        }
+
+        const filter = collected => collected.customId === 'select-command' && collected.user.id === interaction.user.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        client.activeCollectors = client.activeCollectors || {};
+        client.activeCollectors[interaction.user.id] = collector;
 
         await interaction.reply({
             content: 'Please select a command:',
@@ -41,18 +62,12 @@ module.exports = {
             ephemeral: true
         });
 
-        const filter = i => i.customId === 'select-command' && i.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
-        client.activeCollectors = client.activeCollectors || {};
-        client.activeCollectors[interaction.user.id] = collector;
-
-        collector.on('collect', async i => {
-            const selectedCommand = i.values[0];
-
-            await i.deferUpdate();
+        collector.on('collect', async collected => {
+            const selectedCommand = collected.values[0];
+            await collected.deferUpdate();
 
             if (global.handling_commands_actions[selectedCommand]) {
-                global.handling_commands_actions[selectedCommand]();
+                await global.handling_commands_actions[selectedCommand](collected);
             }
 
             const errorEmbed = new EmbedBuilder()
@@ -60,7 +75,7 @@ module.exports = {
                 .setDescription('Executed... probably.')
                 .setColor('#6d472b');
 
-            await i.editReply({ content: '', embeds: [errorEmbed], components: [] });
+            await collected.editReply({ content: '', embeds: [errorEmbed], components: [] });
         });
 
         collector.on('end', collected => {

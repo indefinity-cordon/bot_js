@@ -75,7 +75,7 @@ module.exports = {
             .setDescription('Retrieving')
             .setColor('#6d472b');
             await collected.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
-            game_server.infoRequest({ request: db_discord_link }, collected);
+            await game_server.infoRequest({ request: db_discord_link }, collected);
         });
 
         collector.on('end', async collected => {

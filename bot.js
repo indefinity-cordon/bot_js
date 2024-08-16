@@ -19,6 +19,9 @@ const client = new Discord.Client({
     restTimeOffset: 0
 });
 
+global.handling_commands_actions = [];
+global.handling_commands = [];
+
 require("./database/MySQL")(client);
 require("./socket/Redis")(client);
 
