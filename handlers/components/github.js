@@ -4,11 +4,6 @@ const chalk = require('chalk');
 const simpleGit = require('simple-git');
 const axios = require('axios');
 
-const repoOwner = 'your-github-username'; // GitHub username or organization
-const repoName = 'your-repo-name'; // Repository name
-const branchName = 'main'; // Branch to check for new commits
-const githubToken = 'your-github-token'; // GitHub Personal Access Token
-
 // Initialize simple-git with the repo path
 const git = simpleGit(process.cwd());
 
@@ -19,14 +14,16 @@ module.exports = async (client) => {
         client);
 };
 
-
 async function getLastCommit() {
     try {
+        const github_link = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
+        const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+        const github_token = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_token'", params: [] });
         const response = await axios.get(
-            `https://api.github.com/repos/${repoOwner}/${repoName}/commits/${branchName}`,
+            `${github_link[0].param}${github_branch[0].param}`,
             {
                 headers: {
-                    Authorization: `token ${githubToken}`,
+                    Authorization: `token ${github_token[0].param}`,
                 },
             }
         );
@@ -39,7 +36,8 @@ async function getLastCommit() {
 
 async function getLastLocalCommit() {
     try {
-        const log = await git.log([branchName]);
+        const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+        const log = await git.log([github_branch[0].param]);
         return log.latest.hash;
     } catch (error) {
         console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Fetching`), chalk.red(`Failed local: ${error}`));
@@ -49,7 +47,8 @@ async function getLastLocalCommit() {
 
 async function pullChanges() {
     try {
-        await git.pull('origin', branchName);
+        const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+        await git.pull('origin', github_branch[0].param);
         console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[DONE]`), (chalk.white(`>>`)), chalk.red(`Pulling`), chalk.red(`Pulled latest changes`));
     } catch (error) {
         console.error(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Pulling`), chalk.red(`Failed: ${error}`));
