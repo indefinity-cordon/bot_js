@@ -65,6 +65,11 @@ async function initializeMess(client) {
 client.commands = new Discord.Collection();
 
 
+const botLogs = new Discord.WebhookClient({
+    id: process.env.WEBHOOK_ID,
+    token: process.env.WEBHOOK_TOKEN,
+});
+
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
     if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
@@ -82,7 +87,7 @@ process.on('unhandledRejection', error => {
                 value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
             },
         ])
-    global.botLogs.send({
+    botLogs.send({
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {
@@ -101,7 +106,7 @@ process.on('warning', warn => {
                 value: `\`\`\`${warn}\`\`\``,
             },
         ])
-    global.botLogs.send({
+    botLogs.send({
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {
@@ -127,7 +132,7 @@ client.on(Discord.ShardEvents.Error, error => {
                 value: `\`\`\`${error.stack}\`\`\``,
             },
         ])
-    global.botLogs.send({
+    botLogs.send({
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {

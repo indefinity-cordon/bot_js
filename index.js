@@ -2,11 +2,6 @@ const Discord = require('discord.js');
 const chalk = require('chalk');
 require('dotenv').config('.env');
 
-global.botLogs = new Discord.WebhookClient({
-    id: process.env.WEBHOOK_ID,
-    token: process.env.WEBHOOK_TOKEN,
-});
-
 const manager = new Discord.ShardingManager('./bot.js', {
     totalShards: 'auto',
     token: process.env.DISCORD_TOKEN,
@@ -45,6 +40,12 @@ manager.on('shardCreate', shard => {
 
 manager.spawn();
 
+
+const botLogs = new Discord.WebhookClient({
+    id: process.env.WEBHOOK_ID,
+    token: process.env.WEBHOOK_TOKEN,
+});
+
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
     const embed = new Discord.EmbedBuilder()
@@ -59,7 +60,7 @@ process.on('unhandledRejection', error => {
                 value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
             },
         ])
-    global.botLogs.send({
+    botLogs.send({
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {
@@ -78,7 +79,7 @@ process.on('warning', warn => {
                 value: `\`\`\`${warn}\`\`\``,
             },
         ])
-    global.botLogs.send({
+    botLogs.send({
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {
