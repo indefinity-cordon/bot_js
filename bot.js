@@ -64,14 +64,74 @@ async function initializeMess(client) {
 
 client.commands = new Discord.Collection();
 
+
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
+    if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
+    if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
+    if (!error.stack) return
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`Unhandled promise rejection`)
+        .addFields([
+            {
+                name: "Error",
+                value: error ? Discord.codeBlock(error) : "No error",
+            },
+            {
+                name: "Stack error",
+                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
+            },
+        ])
+    global.botLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending unhandled promise rejection to webhook')
+        console.log(error)
+    })
 });
 
 process.on('warning', warn => {
     console.warn("Warning:", warn);
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`New warning found`)
+        .addFields([
+            {
+                name: `Warn`,
+                value: `\`\`\`${warn}\`\`\``,
+            },
+        ])
+    global.botLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending warning to webhook')
+        console.log(warn)
+    })
 });
 
 client.on(Discord.ShardEvents.Error, error => {
     console.log(error);
+    if (error) if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
+    if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
+    if (!error.stack) return
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`A websocket connection encountered an error`)
+        .addFields([
+            {
+                name: `Error`,
+                value: `\`\`\`${error}\`\`\``,
+            },
+            {
+                name: `Stack error`,
+                value: `\`\`\`${error.stack}\`\`\``,
+            },
+        ])
+    global.botLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending warning to webhook')
+        console.log(warn)
+    })
 });

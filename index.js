@@ -2,6 +2,11 @@ const Discord = require('discord.js');
 const chalk = require('chalk');
 require('dotenv').config('.env');
 
+global.botLogs = new Discord.WebhookClient({
+    id: process.env.WEBHOOK_ID,
+    token: process.env.WEBHOOK_TOKEN,
+});
+
 const manager = new Discord.ShardingManager('./bot.js', {
     totalShards: 'auto',
     token: process.env.DISCORD_TOKEN,
@@ -42,8 +47,42 @@ manager.spawn();
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`Unhandled promise rejection`)
+        .addFields([
+            {
+                name: "Error",
+                value: error ? Discord.codeBlock(error) : "No error",
+            },
+            {
+                name: "Stack error",
+                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
+            },
+        ])
+    global.botLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending unhandled promise rejection to webhook')
+        console.log(error)
+    })
 });
 
 process.on('warning', warn => {
     console.warn("Warning:", warn);
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`New warning found`)
+        .addFields([
+            {
+                name: `Warn`,
+                value: `\`\`\`${warn}\`\`\``,
+            },
+        ])
+    global.botLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending warning to webhook')
+        console.log(warn)
+    })
 });

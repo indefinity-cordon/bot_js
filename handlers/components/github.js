@@ -4,7 +4,6 @@ const chalk = require('chalk');
 const simpleGit = require('simple-git');
 const axios = require('axios');
 
-// Initialize simple-git with the repo path
 const git = simpleGit(process.cwd());
 
 module.exports = async (client) => {
@@ -16,10 +15,11 @@ module.exports = async (client) => {
 
 async function getLastCommit(client) {
     try {
+        await git.addConfig('credential.helper', 'store');
         const github_link = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
         const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
         const github_token = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_token'", params: [] });
-        git.remote(['set-url', 'origin', `https://${github_token[0].param}@github.com/${github_link[0].param}.git`]);
+        await git.remote(['set-url', 'origin', `https://${github_token[0].param}@github.com/${github_link[0].param}.git`]);
         const response = await axios.get(
             `https://api.github.com/repos/${github_link[0].param}/commits/${github_branch[0].param}`,
             {
