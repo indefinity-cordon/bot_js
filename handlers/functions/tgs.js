@@ -172,6 +172,7 @@ module.exports = async (client) => {
                 reject('No actions done');
             });
         });
+    };
 
     client.tgs_start = async function (instanceId) {
         await client.tgs_checkAuth();
