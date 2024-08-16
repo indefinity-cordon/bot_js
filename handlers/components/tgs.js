@@ -33,7 +33,7 @@ module.exports = async (client) => {
     };
 
     client.tgs_getInstances = async function () {
-        await client.checkAuth();
+        await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
         const response = await axios.get(`${tgs_address[0].param}/api/Instance/List`, { headers });
@@ -46,7 +46,7 @@ module.exports = async (client) => {
     };
 
     client.tgs_getInstance = async function (instId) {
-        await client.checkAuth();
+        await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
         const response = await axios.get(`${tgs_address[0].param}/api/Instance/${instId}`, { headers });
