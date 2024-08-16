@@ -82,7 +82,7 @@ module.exports = async (client) => {
         return response.data;
     };
 
-    async function handleServerSelection(interaction, command) {
+    async function handleServerSelection(interaction) {
         const instances = await client.tgs_getInstances();
         const options = instances.map(instance => ({
             label: instance.name,
@@ -90,7 +90,7 @@ module.exports = async (client) => {
         }));
 
         const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId(`select-server-${command}`)
+            .setCustomId(`select-server`)
             .setPlaceholder('Select a server instance')
             .addOptions(options);
 
@@ -101,7 +101,7 @@ module.exports = async (client) => {
             client.activeCollectors[interaction.user.id].stop();
         }
 
-        const filter = collected => collected.customId === `select-server-${command}` && collected.user.id === interaction.user.id;
+        const filter = collected => collected.customId === `select-server` && collected.user.id === interaction.user.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
         client.activeCollectors = client.activeCollectors || {};
         client.activeCollectors[interaction.user.id] = collector;
@@ -112,23 +112,67 @@ module.exports = async (client) => {
             ephemeral: true
         });
 
-        return new Promise((resolve, reject) => {
-            collector.on('collect', async collected => {
-                await collected.deferUpdate();
-                resolve({ instanceId: collected.values[0] });
-            });
+        collector.on('collect', async collected => {
+            const instanceId = collected.values[0];
+            await collected.deferUpdate();
+            return await handleCommandSelection(collected, instanceId);
+        });
 
-            collector.on('end', collected => {
-                if (collected.size === 0) {
-                    interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
-                    reject(new Error('Timeout during server selection.'));
-                }
-            });
+        collector.on('end', collected => {
+            if (collected.size === 0) {
+                interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
+            }
+            delete client.activeCollectors[interaction.user.id];
+            return 'No actions done';
         });
     }
 
-    client.tgs_start = async function (interaction) {
-        const { instanceId } = await handleServerSelection(interaction, 'start');
+    global.handling_commands_actions["tgs"] = client.handleServerSelection;
+    global.handling_commands.push({ label: "Manage TGS", value: "tgs", role_req: "tgs_role_id" });
+
+    async function handleCommandSelection(interaction, instanceId) {
+        const selectMenu = new StringSelectMenuBuilder()
+            .setCustomId(`select-action`)
+            .setPlaceholder('Select action')
+            .addOptions(global.handling_tgs);
+
+        const row = new ActionRowBuilder()
+            .addComponents(selectMenu);
+
+        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
+            client.activeCollectors[interaction.user.id].stop();
+        }
+
+        const filter = collected => collected.customId === `select-action` && collected.user.id === interaction.user.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        client.activeCollectors = client.activeCollectors || {};
+        client.activeCollectors[interaction.user.id] = collector;
+
+        await interaction.editReply({
+            content: 'Please select action to perform:',
+            components: [row],
+            ephemeral: true
+        });
+
+        collector.on('collect', async collected => {
+            const selectedCommand = collected.values[0];
+            await collected.deferUpdate();
+            if (global.handling_tgs_actions[selectedCommand]) {
+                return await global.handling_tgs_actions[selectedCommand](instanceId);
+            }
+            return 'No actions done';
+        });
+
+        collector.on('end', collected => {
+            if (collected.size === 0) {
+                interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
+            }
+            delete client.activeCollectors[interaction.user.id];
+            return 'No actions done';
+        });
+    }
+
+    client.tgs_start = async function (instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
@@ -136,8 +180,7 @@ module.exports = async (client) => {
         return response.data;
     };
 
-    client.tgs_stop = async function (interaction) {
-        const { instanceId } = await handleServerSelection(interaction, 'stop');
+    client.tgs_stop = async function (instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
@@ -145,8 +188,7 @@ module.exports = async (client) => {
         return response.data;
     };
 
-    client.tgs_deploy = async function (interaction) {
-        const { instanceId } = await handleServerSelection(interaction, 'deploy');
+    client.tgs_deploy = async function (instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
@@ -154,16 +196,17 @@ module.exports = async (client) => {
         return response.data;
     };
 
-    global.handling_commands_actions["tgs"] = client.tgs_stop;
-    global.handling_commands.push({ label: "Manage TGS", value: "tgs", role_req: "tgs_role_id" });
+    global.handling_tgs_actions = {
+        "stop": client.tgs_stop,
+        "start": client.tgs_start,
+        "deploy": client.tgs_deploy
+    };
 
-    global.handling_commands_actions["stop"] = client.tgs_stop;
-    global.handling_commands_actions["start"] = client.tgs_start;
-    global.handling_commands_actions["deploy"] = client.tgs_deploy;
-
-    global.handling_commands.push({ label: "Stop", value: "stop", role_req: "tgs_role_id" });
-    global.handling_commands.push({ label: "Start", value: "start", role_req: "tgs_role_id" });
-    global.handling_commands.push({ label: "Deploy", value: "deploy", role_req: "tgs_role_id" });
+    global.handling_tgs = [
+        { label: "Stop", value: "stop" },
+        { label: "Start", value: "start" },
+        { label: "Deploy", value: "deploy" }
+    ];
 
     client.on('messageCreate', async (message) => {
         const tgs_bot_id = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_id'", params: [] });

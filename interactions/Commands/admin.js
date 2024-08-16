@@ -72,12 +72,12 @@ module.exports = {
                 response = await global.handling_commands_actions[selectedCommand](collected);
             }
 
-            const errorEmbed = new EmbedBuilder()
+            const ResponseEmbed = new EmbedBuilder()
                 .setTitle('Response')
                 .setDescription(`Server response: ${response}`)
                 .setColor('#6d472b');
 
-            await collected.editReply({ content: '', embeds: [errorEmbed], components: [] });
+            await collected.editReply({ content: '', embeds: [ResponseEmbed], components: [] });
         });
 
         collector.on('end', collected => {
