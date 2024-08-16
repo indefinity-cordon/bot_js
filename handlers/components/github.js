@@ -12,7 +12,7 @@ const botLogs = new Discord.WebhookClient({
 });
 
 module.exports = async (client) => {
-    const commit = getLastCommit(client)
+    const commit = await getLastCommit(client)
     const embed = new Discord.EmbedBuilder()
         .setTitle(`START`)
         .addFields([
