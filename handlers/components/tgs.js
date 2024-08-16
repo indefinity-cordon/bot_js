@@ -22,7 +22,6 @@ module.exports = async (client) => {
 
     client.tgs_auth = async function () {
         const authHeader = await client.tgs_makeToken(process.env.TGS_LOGIN, process.env.TGS_PASS);
-        console.log('Auth Header:', authHeader);
         const headers = { ...defaultHeaders, ...authHeader };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
         try {
