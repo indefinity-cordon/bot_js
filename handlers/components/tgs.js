@@ -106,7 +106,7 @@ module.exports = async (client) => {
         client.activeCollectors = client.activeCollectors || {};
         client.activeCollectors[interaction.user.id] = collector;
 
-        await interaction.reply({
+        await interaction.editReply({
             content: 'Please select a server instance:',
             components: [row],
             ephemeral: true
