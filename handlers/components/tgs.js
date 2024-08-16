@@ -95,8 +95,14 @@ module.exports = async (client) => {
             ephemeral: true
         });
 
+        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
+            client.activeCollectors[interaction.user.id].stop();
+        }
+
         const filter = collected => collected.customId === `select-server-${command}` && collected.user.id === interaction.user.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        client.activeCollectors = client.activeCollectors || {};
+        client.activeCollectors[interaction.user.id] = collector;
 
         return new Promise((resolve, reject) => {
             collector.on('collect', async collected => {
