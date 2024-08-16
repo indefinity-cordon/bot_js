@@ -68,15 +68,8 @@ module.exports = {
             let response;
 
             if (global.handling_commands_actions[collected.values[0]]) {
-                response = await global.handling_commands_actions[collected.values[0]](collected);
+                await global.handling_commands_actions[collected.values[0]](collected);
             }
-
-            const ResponseEmbed = new EmbedBuilder()
-                .setTitle('Response')
-                .setDescription(`Server response: ${response}`)
-                .setColor('#6d472b');
-
-            await collected.editReply({ content: '', embeds: [ResponseEmbed], components: [] });
         });
 
         collector.on('end', collected => {
