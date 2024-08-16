@@ -86,7 +86,7 @@ module.exports = async (client) => {
         const instances = await client.tgs_getInstances();
         const options = instances.map(instance => ({
             label: instance.name,
-            value: instance.id
+            value: `${instance.id}`
         }));
 
         const selectMenu = new StringSelectMenuBuilder()
