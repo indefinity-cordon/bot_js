@@ -1,6 +1,9 @@
 const base64 = require('base-64');
 const axios = require('axios');
 const { DateTime } = require('luxon');
+const chalk = require('chalk');
+
+const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 let bearerValidUntil = DateTime.utc();
 let bearer = { Authorization: 'fixme' };
@@ -18,18 +21,21 @@ module.exports = async (client) => {
     };
 
     client.tgs_auth = async function () {
-        bearerValidUntil = DateTime.utc();
         const authHeader = await client.tgs_makeToken(process.env.TGS_LOGIN, process.env.TGS_PASS);
         console.log('Auth Header:', authHeader);
         const headers = { ...defaultHeaders, ...authHeader };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
-        const response = await axios.post(`${tgs_address[0].param}/api`, null, { headers });
-        bearer = { Authorization: `Bearer ${response.data.bearer}` };
-        return bearer;
+        try {
+            const response = await axios.post(`${tgs_address[0].param}/api`, null, { headers });
+            bearer = { Authorization: `Bearer ${response.data.bearer}` };
+            bearerValidUntil = DateTime.utc();
+        } catch (error) {
+            console.log(chalk.blue(chalk.bold(`TGS`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Auth`), chalk.red(`Failed: ${error}`));
+        }
     };
 
     client.tgs_checkAuth = async function () {
-        if (new Date() >= bearerValidUntil) {
+        if (DateTime.utc() >= bearerValidUntil) {
             await client.tgs_auth();
         }
     };
