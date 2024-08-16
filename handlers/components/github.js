@@ -19,8 +19,9 @@ async function getLastCommit(client) {
         const github_link = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
         const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
         const github_token = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_token'", params: [] });
+        git.remote(['set-url', 'origin', `https://${github_token[0].param}@github.com/${github_link[0].param}.git`]);
         const response = await axios.get(
-            `${github_link[0].param}${github_branch[0].param}`,
+            `https://api.github.com/repos/${github_link[0].param}/commits/${github_branch[0].param}`,
             {
                 headers: {
                     Authorization: `token ${github_token[0].param}`,
