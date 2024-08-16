@@ -13,13 +13,14 @@ const defaultHeaders = {
 module.exports = async (client) => {
     client.tgs_makeToken = async function (tgsLogin, tgsPass) {
         const authString = `${tgsLogin}:${tgsPass}`;
-        const authBytes = Buffer.from(authString, 'utf-8');
-        return { Authorization: `Basic ${base64.encode(authBytes)}` };
+        const authHeader = base64.encode(authString);
+        return { 'Authorization': `Basic ${authHeader}` };
     };
 
     client.tgs_auth = async function () {
         bearerValidUntil = DateTime.utc();
-        const authHeader = client.tgs_makeToken(process.env.TGS_LOGIN, process.env.TGS_PASS);
+        const authHeader = await client.tgs_makeToken(process.env.TGS_LOGIN, process.env.TGS_PASS);
+        console.log('Auth Header:', authHeader);
         const headers = { ...defaultHeaders, ...authHeader };
         const tgs_address = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
         const response = await axios.post(`${tgs_address[0].param}/api`, null, { headers });
@@ -28,8 +29,9 @@ module.exports = async (client) => {
     };
 
     client.tgs_checkAuth = async function () {
-        await client.tgs_auth();
-        return bearer;
+        if (new Date() >= bearerValidUntil) {
+            await client.tgs_auth();
+        }
     };
 
     client.tgs_getInstances = async function () {
