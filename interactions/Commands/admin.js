@@ -74,7 +74,7 @@ module.exports = {
 
             const errorEmbed = new EmbedBuilder()
                 .setTitle('Response')
-                .setDescription(`${response}`)
+                .setDescription(`Server response: ${response}`)
                 .setColor('#6d472b');
 
             await collected.editReply({ content: '', embeds: [errorEmbed], components: [] });
