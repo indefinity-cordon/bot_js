@@ -154,6 +154,9 @@ module.exports = async (client) => {
         return response.data;
     };
 
+    global.handling_commands_actions["tgs"] = client.tgs_stop;
+    global.handling_commands.push({ label: "Manage TGS", value: "tgs", role_req: "tgs_role_id" });
+
     global.handling_commands_actions["stop"] = client.tgs_stop;
     global.handling_commands_actions["start"] = client.tgs_start;
     global.handling_commands_actions["deploy"] = client.tgs_deploy;

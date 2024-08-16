@@ -6,7 +6,29 @@ const axios = require('axios');
 
 const git = simpleGit(process.cwd());
 
+const botLogs = new Discord.WebhookClient({
+    id: process.env.WEBHOOK_ID,
+    token: process.env.WEBHOOK_TOKEN,
+});
+
 module.exports = async (client) => {
+    const commit = getLastCommit(client)
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`START`)
+        .addFields([
+            {
+                name: "COMMIT",
+                value: `${commit}`,
+            }
+        ])
+    botLogs.send({
+        username: 'Bot Logs',
+        embeds: [embed],
+    }).catch(() => {
+        console.log('Error sending start info to webhook')
+        console.log(error)
+    })
+    console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.red(`Current commit: ${commit}`));
     setInterval(
         tryForUpdate,
         1 * 60 * 1000, // Каждые N минут (первое число)
