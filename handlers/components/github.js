@@ -70,7 +70,7 @@ async function tryForUpdate(client) {
                 throw error;
             }
         } else {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[SKIP]`), (chalk.white(`>>`)), chalk.red(`Fetching`), chalk.red(`No new commits found`));
+            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[SKIP]`), (chalk.white(`>>`)), chalk.red(`Fetching`), chalk.red(`Not found new commits`));
         }
     } catch (error) {
         console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[FAILED]`), (chalk.white(`>>`)), chalk.red(`Pulling`), chalk.red(`Failed update: ${error}`));
