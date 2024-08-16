@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs');
+const chalk = require('chalk');
 require('dotenv').config('.env');
 
 // TODO: Do the auto reconections on drop and some tries to be online with fucked up state plus auto update and restart in future
@@ -18,6 +19,22 @@ const client = new Discord.Client({
     ],
     restTimeOffset: 0
 });
+
+// Use in funny moments
+client.restartApp = function () {
+    console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Restarting process`), (chalk.white(`...`)));
+    exec('npm restart', (error, stdout, stderr) => {
+        if (error) {
+            console.error(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Error restarting process: ${error.message}`), (chalk.white(`...`)));
+            return;
+        }
+        if (stderr) {
+            console.error(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Stderr: ${stderr}`), (chalk.white(`...`)));
+            return;
+        }
+        console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Process restarted:\n${stdout}`));
+    });
+}
 
 global.handling_commands_actions = [];
 global.handling_commands = [];

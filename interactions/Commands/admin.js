@@ -66,13 +66,15 @@ module.exports = {
             const selectedCommand = collected.values[0];
             await collected.deferUpdate();
 
+            let response;
+
             if (global.handling_commands_actions[selectedCommand]) {
-                await global.handling_commands_actions[selectedCommand](collected);
+                response = await global.handling_commands_actions[selectedCommand](collected);
             }
 
             const errorEmbed = new EmbedBuilder()
-                .setTitle('Status')
-                .setDescription('Executed... probably.')
+                .setTitle('Response')
+                .setDescription(`${response}`)
                 .setColor('#6d472b');
 
             await collected.editReply({ content: '', embeds: [errorEmbed], components: [] });

@@ -27,6 +27,7 @@
     "node-fetch": "^3.3.2",
     "number-to-words": "^1.2.4",
     "redis": "^4.6.14",
+    "simple-git": "^3.25.0",
     "undici": "^6.19.0"
   }
 }

@@ -15,13 +15,13 @@ module.exports = async (client) => {
         await updateStatusMessages(client, game_server)
         game_server.update_status_messages_interval = setInterval(
             updateStatusMessages,
-            600000,
+            10 * 60 * 1000, // Каждые N минут (первое число)
             client,
             game_server
         );
         game_server.status_interval = setInterval(
             game_server.updateStatus,
-            30000,
+            0.5 * 60 * 1000, // Каждые N минут (первое число)
             client,
             game_server
         );

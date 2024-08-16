@@ -6,7 +6,7 @@ module.exports = async (client) => {
         await updateRoles(client, game_server)
         game_server.update_roles_interval = setInterval(
             updateRoles,
-            3600000,
+            60 * 60 * 1000, // Каждые N минут (первое число)
             client,
             game_server
         );
