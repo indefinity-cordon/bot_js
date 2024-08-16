@@ -115,7 +115,7 @@ module.exports = async (client) => {
         return new Promise((resolve, reject) => {
             collector.on('collect', async collected => {
                 await collected.deferUpdate();
-                resolve(await handleCommandSelection(collected, collected.values[0]));
+                resolve(await handleCommandSelection(collected, collected.values[0], client));
             });
 
             collector.on('end', collected => {
@@ -182,7 +182,7 @@ module.exports = async (client) => {
     });
 };
 
-async function handleCommandSelection(interaction, instanceId) {
+async function handleCommandSelection(interaction, instanceId, client) {
     const selectMenu = new StringSelectMenuBuilder()
         .setCustomId(`select-action`)
         .setPlaceholder('Select action')
