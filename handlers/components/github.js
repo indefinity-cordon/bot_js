@@ -14,7 +14,7 @@ module.exports = async (client) => {
         client);
 };
 
-async function getLastCommit() {
+async function getLastCommit(client) {
     try {
         const github_link = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
         const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
@@ -34,7 +34,7 @@ async function getLastCommit() {
     }
 }
 
-async function getLastLocalCommit() {
+async function getLastLocalCommit(client) {
     try {
         const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
         const log = await git.log([github_branch[0].param]);
@@ -45,7 +45,7 @@ async function getLastLocalCommit() {
     }
 }
 
-async function pullChanges() {
+async function pullChanges(client) {
     try {
         const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
         await git.pull('origin', github_branch[0].param);
@@ -58,13 +58,13 @@ async function pullChanges() {
 
 async function tryForUpdate(client) {
     try {
-        const remoteCommit = await getLastCommit();
-        const localCommit = await getLastLocalCommit();
+        const remoteCommit = await getLastCommit(client);
+        const localCommit = await getLastLocalCommit(client);
 
         if (remoteCommit !== localCommit) {
             console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[PROGRESS]`), (chalk.white(`>>`)), chalk.red(`Pulling`), chalk.red(`New commit found, pulling changes`));
             try {
-                await pullChanges();
+                await pullChanges(client);
                 client.restartApp();
             } catch (error) {
                 throw error;
