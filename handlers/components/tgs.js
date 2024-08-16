@@ -94,13 +94,8 @@ module.exports = async (client) => {
             .setPlaceholder('Select a server instance')
             .addOptions(options);
 
-        const row = new ActionRowBuilder().addComponents(selectMenu);
-
-        await interaction.reply({
-            content: 'Please select a server instance:',
-            components: [row],
-            ephemeral: true
-        });
+        const row = new ActionRowBuilder()
+            .addComponents(selectMenu);
 
         if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
             client.activeCollectors[interaction.user.id].stop();
@@ -110,6 +105,12 @@ module.exports = async (client) => {
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
         client.activeCollectors = client.activeCollectors || {};
         client.activeCollectors[interaction.user.id] = collector;
+
+        await interaction.reply({
+            content: 'Please select a server instance:',
+            components: [row],
+            ephemeral: true
+        });
 
         return new Promise((resolve, reject) => {
             collector.on('collect', async collected => {
