@@ -22,17 +22,7 @@ const client = new Discord.Client({
 // Use in funny moments
 client.restartApp = function () {
     console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Restarting process`), (chalk.white(`...`)));
-    exec('npm restart', (error, stdout, stderr) => {
-        if (error) {
-            console.error(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Error restarting process: ${error.message}`), (chalk.white(`...`)));
-            return;
-        }
-        if (stderr) {
-            console.error(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Stderr: ${stderr}`), (chalk.white(`...`)));
-            return;
-        }
-        console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Process restarted:\n${stdout}`));
-    });
+    process.exit(1);
 }
 
 global.handling_commands_actions = [];
