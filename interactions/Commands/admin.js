@@ -63,13 +63,12 @@ module.exports = {
         });
 
         collector.on('collect', async collected => {
-            const selectedCommand = collected.values[0];
             await collected.deferUpdate();
 
             let response;
 
-            if (global.handling_commands_actions[selectedCommand]) {
-                response = await global.handling_commands_actions[selectedCommand](collected);
+            if (global.handling_commands_actions[collected.values[0]]) {
+                response = await global.handling_commands_actions[collected.values[0]](collected);
             }
 
             const ResponseEmbed = new EmbedBuilder()
