@@ -29,7 +29,9 @@ async function updateRoles(client, game_server) {
                     rank_id = matchingRole.rank_id;
                 }
             });
-            await client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, member.id]})
+            client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, member.id]})
+            delete(discord_link)
         }
     });
+    delete(members)
 };
