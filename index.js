@@ -48,6 +48,11 @@ const botLogs = new Discord.WebhookClient({
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
+    if (!botLogs) return;
+    if (error) {
+        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
+        if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
+    }
     const embed = new Discord.EmbedBuilder()
         .setTitle(`Unhandled promise rejection`)
         .addFields([
@@ -69,14 +74,23 @@ process.on('unhandledRejection', error => {
     })
 });
 
-process.on('warning', warn => {
-    console.warn("Warning:", warn);
+process.on('warning', error => {
+    console.warn("Warning:", error);
+    if (!botLogs) return;
+    if (error) {
+        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
+        if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
+    }
     const embed = new Discord.EmbedBuilder()
         .setTitle(`New warning found`)
         .addFields([
             {
                 name: `Warn`,
-                value: `\`\`\`${warn}\`\`\``,
+                value: error ? Discord.codeBlock(error) : "No warning",
+            },
+            {
+                name: `Stack error`,
+                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
             },
         ])
     botLogs.send({
@@ -84,6 +98,6 @@ process.on('warning', warn => {
         embeds: [embed],
     }).catch(() => {
         console.log('Error sending warning to webhook')
-        console.log(warn)
+        console.log(error)
     })
 });
