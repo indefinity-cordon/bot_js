@@ -39,8 +39,8 @@ module.exports = async (client) => {
                 require(`./servers/${game_server.init_file_name}`)(client, game_server);
             }
             updated_servers[`${game_server.server_name}`] = game_server;
-            client.serverStatus({ game_server: game_server })
-            client.serverRoles({ game_server: game_server })
+            if (!game_server.status_interval) client.serverStatus({ game_server: game_server })
+            if (game_server.guild && !game_server.update_roles_interval) client.serverRoles({ game_server: game_server })
         }
         if ( global.servers_link.length ) {
             global.servers_link -= updated_servers
