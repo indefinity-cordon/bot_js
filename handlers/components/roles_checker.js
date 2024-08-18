@@ -14,13 +14,14 @@ module.exports = async (client) => {
 }
 
 async function updateRoles(client, game_server) {
-    const db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", params: []})
-    if (!db_roles[0]) return
+    const db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", params: []});
+    if (!db_roles[0]) return;
     const guild = await client.guilds.cache.get(game_server.guild);
+    if (!guild) return;
     const members = await guild.members.fetch();
-    if (!guild || !members) return
+    if ( !members) return;
     members.forEach(async (member) => {
-        let discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT stable_rank FROM discord_links WHERE discord_id = ?", params: [member.id]})
+        let discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT stable_rank FROM discord_links WHERE discord_id = ?", params: [member.id]});
         if (discord_link[0]) {
             let rank_id = discord_link[0].stable_rank;
             member.roles.cache.forEach(async (role) => {
@@ -29,9 +30,9 @@ async function updateRoles(client, game_server) {
                     rank_id = matchingRole.rank_id;
                 }
             });
-            client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, member.id]})
-            delete(discord_link)
+            client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, member.id]});
         }
+        delete(discord_link);
     });
-    delete(members)
+    delete(members);
 };
