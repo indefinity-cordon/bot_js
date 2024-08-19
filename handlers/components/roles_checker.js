@@ -24,7 +24,7 @@ async function updateRoles(client, game_server) {
     db_roles.forEach(row => {
         roleMap.set(row.role_id, row.rank_id);
     });
-    members.forEach(async (member) => {
+    for (const [memberId, member] of members) {
         let discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT stable_rank FROM discord_links WHERE discord_id = ?", params: [member.id]});
         if (discord_link[0]) {
             let rank_id = discord_link[0].stable_rank;
