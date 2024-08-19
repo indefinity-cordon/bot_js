@@ -70,7 +70,7 @@ async function updateRoles(client, game_server) {
         async function fetchAndProcessMembers() {
             let after = null;
             do {
-                const members = await guild.members.list({ limit: 100, time: 5 * 60 * 1000, after });
+                const members = await guild.members.list({ limit: 400, time: 5 * 60 * 1000, after });
                 if (members.size === 0) break;
 
                 await processBatch(members);
@@ -86,6 +86,6 @@ async function updateRoles(client, game_server) {
 
         console.log(chalk.blue(chalk.bold(`Roles Sync`)), (chalk.white(`>>`)), chalk.blue(`[DONE]`), (chalk.white(`>>`)), chalk.red(`Processed total of ${totalMembers} members`));
     } catch (error) {
-        console.log(chalk.blue(chalk.bold(`Roles Sync`)), (chalk.white(`>>`)), chalk.blue(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Something went wrong`));
+        console.log(chalk.blue(chalk.bold(`Roles Sync`)), (chalk.white(`>>`)), chalk.blue(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Something went wrong, error: ${error}`));
     }
 };
