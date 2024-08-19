@@ -25,7 +25,7 @@ async function updateRoles(client, game_server) {
         roleMap.set(row.role_id, row.rank_id);
     });
     for (const [memberId, member] of members) {
-        let discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT stable_rank FROM discord_links WHERE discord_id = ?", params: [member.id]});
+        let discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT stable_rank FROM discord_links WHERE discord_id = ?", params: [memberId]});
         if (discord_link[0]) {
             let rank_id = discord_link[0].stable_rank;
             member.roles.cache.forEach(role => {
@@ -34,7 +34,7 @@ async function updateRoles(client, game_server) {
                     rank_id = matchingRankId;
                 }
             });
-            client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, member.id]});
+            client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, memberId]});
         }
     });
 };
