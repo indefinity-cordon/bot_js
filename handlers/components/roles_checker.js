@@ -62,7 +62,7 @@ async function updateRoles(client, game_server) {
 
             if (updates.length) {
                 for (const update of updates) {
-                    client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: update.params });
+                    await client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: update.params });
                 }
             }
         }
@@ -70,7 +70,7 @@ async function updateRoles(client, game_server) {
         async function fetchAndProcessMembers() {
             let after = null;
             do {
-                const members = await guild.members.list({ limit: BATCH_SIZE, time: 5 * 60 * 1000, after });
+                const members = await guild.members.list({ limit: 100, time: 5 * 60 * 1000, after });
                 if (members.size === 0) break;
 
                 await processBatch(members);
