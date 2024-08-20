@@ -21,7 +21,7 @@ module.exports = async (client) => {
         );
         game_server.status_interval = setInterval(
             game_server.updateStatus,
-            0.5 * 60 * 1000, // Каждые N минут (первое число)
+            1 * 60 * 1000, // Каждые N минут (первое число)
             client,
             game_server
         );
