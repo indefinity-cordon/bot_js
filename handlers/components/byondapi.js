@@ -7,7 +7,8 @@ module.exports = (client) => {
     client.prepareByondAPIRequest = async function ({
         request: request,
         port: port,
-        address: address
+        address: address,
+        client
     }) {
         if (request && port && address) {
             if (client.connections_in_proggress[`${port}:${address}`]) {

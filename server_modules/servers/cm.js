@@ -1,7 +1,7 @@
 module.exports = (client, game_server) => {
     game_server.updateStatus = async function (client, game_server) {
         try {
-            const server_response = await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
+            const server_response = await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip, client: client});
             if (!server_response) return;
             const response = JSON.parse(server_response);
             const data = response.data
