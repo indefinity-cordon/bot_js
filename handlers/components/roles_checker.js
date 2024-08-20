@@ -20,9 +20,9 @@ async function updateRoles(client, game_server) {
     try {
         console.log(chalk.blue(chalk.bold(`Roles Sync`)), (chalk.white(`>>`)), chalk.blue(`[STARTING]`), (chalk.white(`>>`)), chalk.red(`Prepairing for roles update`));
         const db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", params: [] });
-        if ( !db_roles[0] ) return;
+        if (!db_roles[0]) return;
         const guild = await client.guilds.cache.get(game_server.guild);
-        if ( !guild ) return;
+        if (!guild) return;
 
         const roleMap = new Map();
         db_roles.forEach(row => {
@@ -55,14 +55,14 @@ async function updateRoles(client, game_server) {
                     });
 
                     if (rank_id !== stable_rank) {
-                        updates.push([{ params: [rank_id, member.id] }]);
+                        updates.push([rank_id, member.id]);
                     }
                 }
             }
 
             if (updates.length) {
-                for (const update of updates) {
-                    await client.databaseRequest({ database: game_server.game_connection, query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: update.params });
+                for (const [rank_id, discord_id] of updates) {
+                    await client.databaseRequest({ database: game_server.game_connection,  query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, discord_id] });
                 }
             }
         }
