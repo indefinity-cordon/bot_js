@@ -1,16 +1,16 @@
 const chalk = require('chalk');
 const net = require('net');
 
-let connections_in_proggress = [];
-
 module.exports = (client) => {
+    client.client.connections_in_proggress = [];
+    client.notified = [];
     client.prepareByondAPIRequest = async function ({
         request: request,
         port: port,
         address: address
     }) {
         if (request && port && address) {
-            if (connections_in_proggress[`${port}:${address}`]) {
+            if (client.connections_in_proggress[`${port}:${address}`]) {
                 return; // Удостоверяемся что у нас не будет ошибок из-за частых попыток соединения, когда оно идет слишком долго
             }
             const textEncoder = new TextEncoder();
@@ -26,12 +26,13 @@ module.exports = (client) => {
                 const client_api = net.connect(port, address, () => {
                     client_api.write(packet);
                 });
-                connections_in_proggress[`${port}:${address}`] = client_api;
+                client.connections_in_proggress[`${port}:${address}`] = client_api;
                 client_api.on('data', (data) => {
                     if (data.slice(0, 2).equals(Buffer.from([0x00, 0x83]))) {
                         const size = data.readUInt16BE(2);
                         const response = data.slice(4, 4 + size);
-                        connections_in_proggress[`${port}:${address}`] = null;
+                        client.connections_in_proggress[`${port}:${address}`] = null;
+                        client.notified[`${port}:${address}`] = false;
                         client_api.end();
                         const packetType = response[0];
                         if (packetType === 0x2a) {
@@ -43,16 +44,18 @@ module.exports = (client) => {
                             reject('Unknown data code');
                         }
                     } else {
-                        connections_in_proggress[`${port}:${address}`] = null;
+                        client.connections_in_proggress[`${port}:${address}`] = null;
                         client_api.end();
                         console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`BYOND server returned invalid data.`));
                         reject('Failed to read data');
                     }
                 });
                 client_api.on('error', (err) => {
-                    connections_in_proggress[`${port}:${address}`] = null;
+                    client.connections_in_proggress[`${port}:${address}`] = null;
                     client_api.end();
-                    console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`));
+                    if(!client.notified[`${port}:${address}`])
+                        client.notified[`${port}:${address}`] = true;
+                        console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`));
                     reject(err);
                 });
             });
