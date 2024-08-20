@@ -17,12 +17,12 @@ module.exports = {
         const roleCache = new Map();
 
         const availableCommands = [];
-        for (const command of global.handling_commands) {
+        for (const command of client.handling_commands) {
             if (command.role_req) {
                 let roleId = roleCache.get(command.role_req);
 
                 if (!roleId) {
-                    const roleResult = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = ?", params: [command.role_req] });
+                    const roleResult = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = ?", params: [command.role_req] });
                     roleId = roleResult[0]?.param;
                     roleCache.set(command.role_req, roleId);
                 }
@@ -67,8 +67,8 @@ module.exports = {
 
             let response;
 
-            if (global.handling_commands_actions[collected.values[0]]) {
-                await global.handling_commands_actions[collected.values[0]](collected);
+            if (client.handling_commands_actions[collected.values[0]]) {
+                await client.handling_commands_actions[collected.values[0]](collected);
             }
         });
 

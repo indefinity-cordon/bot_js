@@ -25,8 +25,8 @@ client.restartApp = function () {
     process.exit(1);
 }
 
-global.handling_commands_actions = [];
-global.handling_commands = [];
+client.handling_commands_actions = [];
+client.handling_commands = [];
 
 require("./database/MySQL")(client);
 require("./socket/Redis")(client);
@@ -36,10 +36,14 @@ initializeMess(client)
 async function initializeMess(client) {
     await new Promise(resolve => {
         let interval = setInterval( async () => {
-            if (!global.database) return;
+            if (!client.database) return;
             clearInterval(interval);
             (async () => {
-                global.handling_game_servers = await client.databaseRequest({ database: global.database, query: "SELECT server_name, db_name FROM servers", params: []})
+                client.handling_game_servers = await client.databaseRequest({ database: client.database, query: "SELECT server_name, db_name FROM servers", params: []})
+                client.servers_options = client.handling_game_servers.map(server => ({
+                    label: server.server_name,
+                    value: server.server_name
+                }));
             })();
             await client.login(process.env.DISCORD_TOKEN);
             fs.readdirSync('./handlers').forEach((dir) => {

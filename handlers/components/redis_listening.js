@@ -14,7 +14,7 @@ module.exports = async (client) => {
 };
 
 async function startListining(client) {
-    if (!global.redis_connection) {
+    if (!client.redis_connection) {
         return;
     }
 
@@ -23,28 +23,28 @@ async function startListining(client) {
         subscriber.disconnect();
     }
 
-    subscriber = global.redis_connection.duplicate();
+    subscriber = client.redis_connection.duplicate();
     subscribers.push(subscriber);
     await subscriber.connect();
     subscriber.subscribe('byond.round', async (data) => {
         client.redisCallback({data: JSON.parse(data)});
     });
 
-    subscriber = global.redis_connection.duplicate();
+    subscriber = client.redis_connection.duplicate();
     subscribers.push(subscriber);
     await subscriber.connect();
     subscriber.subscribe('byond.admin', async (data) => {
         client.redisCallback({data: JSON.parse(data)});
     });
 
-    subscriber = global.redis_connection.duplicate();
+    subscriber = client.redis_connection.duplicate();
     subscribers.push(subscriber);
     await subscriber.connect();
     subscriber.subscribe('byond.asay', async (data) => {
         client.redisCallback({data: JSON.parse(data)});
     });
 
-    subscriber = global.redis_connection.duplicate();
+    subscriber = client.redis_connection.duplicate();
     subscribers.push(subscriber);
     await subscriber.connect();
     subscriber.subscribe('byond.access', async (data) => {

@@ -3,7 +3,7 @@ const ServerActions = require(`${process.cwd()}/server_modules/servers_actions.j
 
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
-        global.servers_link = []
+        client.servers_link = []
         ServerActions(client);
     });
 
@@ -30,7 +30,7 @@ module.exports = async (client) => {
 
 async function updateStatusMessages(client, game_server) {
     game_server.status_messages = [];
-    const statuses = await client.databaseRequest({ database: global.database, query: "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'status'", params: [game_server.server_name] })
+    const statuses = await client.databaseRequest({ database: client.database, query: "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'status'", params: [game_server.server_name] })
     if (!statuses.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
@@ -53,7 +53,7 @@ async function updateStatusMessages(client, game_server) {
                 desc: `prepairing...`
             }, channel).then((message) => {
                 found_message = message;
-                client.databaseRequest({ database: global.database, query: "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = 'status' AND channel_id = ?", params: [message.id, game_server.server_name, status.channel_id]})
+                client.databaseRequest({ database: client.database, query: "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = 'status' AND channel_id = ?", params: [message.id, game_server.server_name, status.channel_id]})
             });
         }
         game_server.status_messages.push(found_message);

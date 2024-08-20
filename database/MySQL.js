@@ -6,14 +6,14 @@ connection.on('error', err => console.log(chalk.blue(chalk.bold(`Database`)), (c
 
 module.exports = async (client) => {
     console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`starting connecting...`));
-    global.database = null;
+    client.database = null;
     new Promise((resolve, reject) => {
         connection.connect((err, result) => {
             if (err) {
                 console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed connect to the Main database.`));
                 reject(err);
             } else {
-                global.database = connection;
+                client.database = connection;
                 console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.green(`Connected to the Main database.`));
                 resolve(result);
             }

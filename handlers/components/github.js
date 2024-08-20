@@ -38,9 +38,9 @@ module.exports = async (client) => {
 async function getLastCommit(client) {
     try {
         await git.addConfig('credential.helper', 'store');
-        const github_link = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
-        const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
-        const github_token = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_token'", params: [] });
+        const github_link = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
+        const github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+        const github_token = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_token'", params: [] });
         await git.remote(['set-url', 'origin', `https://${github_token[0].param}@github.com/${github_link[0].param}.git`]);
         const response = await axios.get(
             `https://api.github.com/repos/${github_link[0].param}/commits/${github_branch[0].param}`,
@@ -59,7 +59,7 @@ async function getLastCommit(client) {
 
 async function getLastLocalCommit(client) {
     try {
-        const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+        const github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
         const log = await git.log([github_branch[0].param]);
         return log.latest.hash;
     } catch (error) {
@@ -70,7 +70,7 @@ async function getLastLocalCommit(client) {
 
 async function pullChanges(client) {
     try {
-        const github_branch = await client.databaseRequest({ database: global.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+        const github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
         await git.pull('origin', github_branch[0].param);
         console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[DONE]`), (chalk.white(`>>`)), chalk.red(`Pulled latest changes`));
     } catch (error) {

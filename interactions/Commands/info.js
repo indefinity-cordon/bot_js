@@ -1,10 +1,5 @@
 const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, InteractionType, CommandInteraction, EmbedBuilder } = require('discord.js');
 
-let servers_options = global.handling_game_servers.map(server => ({
-    label: server.server_name,
-    value: server.server_name
-}));
-
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('info')
@@ -31,7 +26,7 @@ module.exports = {
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('select-server')
             .setPlaceholder('Select game server')
-            .addOptions(servers_options);
+            .addOptions(client.servers_options);
 
         const row = new ActionRowBuilder()
             .addComponents(selectMenu);
@@ -56,7 +51,7 @@ module.exports = {
 
             await collected.deferUpdate();
 
-            const game_server = global.servers_link[selectedServer];
+            const game_server = client.servers_link[selectedServer];
 
             const db_discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [target_user.id]})
 
