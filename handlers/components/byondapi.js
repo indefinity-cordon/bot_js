@@ -2,7 +2,7 @@ const chalk = require('chalk');
 const net = require('net');
 
 module.exports = (client) => {
-    client.client.connections_in_proggress = [];
+    client.connections_in_proggress = [];
     client.notified = [];
     client.prepareByondAPIRequest = async function ({
         request: request,
