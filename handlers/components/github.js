@@ -32,7 +32,8 @@ module.exports = async (client) => {
     setInterval(
         tryForUpdate,
         5 * 60 * 1000, // Каждые N минут (первое число)
-        client);
+        client
+    );
 };
 
 async function getLastCommit(client) {
