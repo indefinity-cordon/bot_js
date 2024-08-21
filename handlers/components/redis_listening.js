@@ -7,21 +7,17 @@ module.exports = async (client) => {
         startListining(client);
         setInterval(
             startListining,
-            1200000,
+            20 * 60 * 1000, // Каждые N минут (первое число),
             client
         );
     });
 };
 
 async function startListining(client) {
-    if (!client.redis_connection) {
-        return;
-    }
+    if (!client.redis_connection) return;
 
     var subscriber;
-    for (subscriber in subscribers) {
-        subscriber.disconnect();
-    }
+    for (subscriber in subscribers) subscriber.disconnect();
 
     subscriber = client.redis_connection.duplicate();
     subscribers.push(subscriber);
