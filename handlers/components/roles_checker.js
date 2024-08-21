@@ -6,7 +6,6 @@ module.exports = async (client) => {
         game_server: game_server
     }) {
         clearInterval(game_server.update_roles_interval);
-        await game_server.game_connection
         await updateRoles(client, game_server)
         game_server.update_roles_interval = setInterval(
             updateRoles,

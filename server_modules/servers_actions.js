@@ -27,7 +27,7 @@ module.exports = async (client) => {
                 game_server = new GameServerClass();
                 game_server.server_name = server.server_name;
                 game_server.database = server.db_name;
-                game_server.game_connection = client.createDBConnection({ game_server: game_server });
+                await client.createDBConnection({ game_server: game_server });
                 game_server.init_file_name = server.file_name;
                 game_server.guild = server.guild;
                 game_server.ip = server.ip;
