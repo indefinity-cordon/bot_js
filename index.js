@@ -40,7 +40,8 @@ manager.on('shardCreate', shard => {
 
 manager.spawn();
 
-require("./LogsHandler.js")();
+const LogsHandlerclass = require('./LogsHandler.js');
+global.LogsHandler = new LogsHandlerclass();
 global.LogsHandler.botLogs = new Discord.WebhookClient({
     id: process.env.WEBHOOK_ID,
     token: process.env.WEBHOOK_TOKEN,
