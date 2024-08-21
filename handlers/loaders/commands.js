@@ -6,7 +6,7 @@ const fs = require('fs');
 module.exports = async (client) => {
     const commands = [];
 
-    if (client.shard.ids[0] === 0) console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`Loading commands`)), (chalk.white(`...`)))
+    if (client.shard.ids[0] === 0) console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`Loading commands`)), (chalk.white(`...`)));
     if (client.shard.ids[0] === 0) console.log(`\u001b[0m`);
 
     fs.readdirSync('./interactions').forEach(dirs => {
@@ -24,11 +24,11 @@ module.exports = async (client) => {
     const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
     try {
-        console.log(chalk.blue(chalk.bold(`Commands`)), (chalk.white(`>>`)), chalk.green(`Started refreshing application (/) commands`))
+        console.log(chalk.blue(chalk.bold(`Commands`)), (chalk.white(`>>`)), chalk.green(`Started refreshing application (/) commands`));
         const data = await rest.put(Routes.applicationCommands(process.env.DISCORD_ID), {body: commands});
-        const bot_settings = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'main_server'", params: []})
+        const bot_settings = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'main_server'", params: [] });
         const dataf = await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_ID, client.servers_link[bot_settings[0].param].guild), {body: []}); // commands
-        console.log(chalk.blue(chalk.bold(`Commands`)), (chalk.white(`>>`)), chalk.green(`Successfully reloaded ${data.length} application (/) commands and forced reload in ${client.servers_link[bot_settings[0].param].guild} guild for ${dataf.length} application (/) commands`))
+        console.log(chalk.blue(chalk.bold(`Commands`)), (chalk.white(`>>`)), chalk.green(`Successfully reloaded ${data.length} application (/) commands and forced reload in ${client.servers_link[bot_settings[0].param].guild} guild for ${dataf.length} application (/) commands`));
     } catch (error) {
         console.log(error);
     }

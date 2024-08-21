@@ -29,21 +29,24 @@ const botLogs = new Discord.WebhookClient({
 // Use in funny moments
 client.restartApp = function (reason) {
     console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Restarting process`), (chalk.white(`...`)));
-    const embed = new Discord.EmbedBuilder()
-    .setTitle(`System`)
-    .addFields([
-        {
-            name: "Restart",
-            value: reason ? `Reason: ${reason}` : "Reason is not provided",
-        }
-    ])
+    
+    if (botLogs) {
+        const embed = new Discord.EmbedBuilder()
+        .setTitle(`System`)
+        .addFields([
+            {
+                name: "Restart",
+                value: reason ? `Reason: ${reason}` : "Reason is not provided",
+            }
+        ])
 
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending start info to webhook')
-    })
+        botLogs.send({
+            username: 'Bot Logs',
+            embeds: [embed],
+        }).catch(() => {
+            console.log('Error sending start info to webhook');
+        })
+    }
     process.exit(1);
 }
 
@@ -61,31 +64,31 @@ async function initializeMess(client) {
             if (!client.database) return;
             clearInterval(interval);
             (async () => {
-                client.handling_game_servers = await client.databaseRequest({ database: client.database, query: "SELECT server_name, db_name FROM servers", params: []})
+                client.handling_game_servers = await client.databaseRequest({ database: client.database, query: "SELECT server_name, db_name FROM servers", params: [] });
                 client.servers_options = client.handling_game_servers.map(server => ({
                     label: server.server_name,
                     value: server.server_name
                 }));
             })();
             await client.login(process.env.DISCORD_TOKEN);
-            const commit = await getLastCommit(client)
-            const embed = new Discord.EmbedBuilder()
-                .setTitle(`System`)
-                .addFields([
-                    {
-                        name: "Start",
-                        value: `Commit SHA: ${commit}`,
-                    }
-                ])
-            
-            botLogs.send({
-                username: 'Bot Logs',
-                embeds: [embed],
-            }).catch(() => {
-                console.log('Error sending start info to webhook')
-            })
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.red(`Current commit: ${commit}`));
-            
+            const commit = await getLastCommit(client);
+            if(botLogs) {
+                const embed = new Discord.EmbedBuilder()
+                    .setTitle(`System`)
+                    .addFields([
+                        {
+                            name: "Start",
+                            value: `Commit SHA: ${commit}`,
+                        }
+                    ])
+                botLogs.send({
+                    username: 'Bot Logs',
+                    embeds: [embed],
+                }).catch(() => {
+                    console.log('Error sending start info to webhook');
+                })
+                console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.red(`Current commit: ${commit}`));
+            }
             setInterval(
                 tryForUpdate,
                 5 * 60 * 1000, // Каждые N минут (первое число)
@@ -192,8 +195,8 @@ process.on('unhandledRejection', error => {
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {
-        console.log('Error sending unhandled promise rejection to webhook')
-        console.log(error)
+        console.log('Error sending unhandled promise rejection to webhook');
+        console.log(error);
     })
 });
 
@@ -223,8 +226,8 @@ process.on('warning', error => {
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {
-        console.log('Error sending warning to webhook')
-        console.log(error)
+        console.log('Error sending warning to webhook');
+        console.log(error);
     })
 });
 
@@ -254,7 +257,7 @@ client.on(Discord.ShardEvents.Error, error => {
         username: 'Bot Logs',
         embeds: [embed],
     }).catch(() => {
-        console.log('Error sending warning to webhook')
-        console.log(error)
+        console.log('Error sending warning to webhook');
+        console.log(error);
     })
 });

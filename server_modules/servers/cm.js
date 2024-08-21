@@ -29,11 +29,10 @@ module.exports = (client, game_server) => {
                     desc: `# SERVER OFFLINE`,
                     color: `#a00f0f`,
                     type: 'edit'
-                }, message)
+                }, message);
             }
         }
     }
-
 
 
     game_server.infoRequest = async function ({
@@ -41,21 +40,21 @@ module.exports = (client, game_server) => {
     }, interaction) {
         let rank_info = ``;
         if (request[0].role_rank) {
-            const db_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].role_rank]})
+            const db_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].role_rank] });
             let db_stable_role;
             if (request[0].stable_rank != request[0].role_rank) {
-                db_stable_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].stable_rank]})
+                db_stable_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].stable_rank] });
             }
             if(request[0].stable_rank && !db_stable_role) {
-                rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`
+                rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`;
             } else {
                 if (db_stable_role) {
-                    rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`
+                    rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`;
                 }
-                rank_info = `Supported Rank: ${db_role[0].rank_name}\n`
+                rank_info = `Supported Rank: ${db_role[0].rank_name}\n`;
             }
         }
-        const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", params: [request[0].player_id]})
+        const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", params: [request[0].player_id] });
         if (!db_player_profile[0]) {
             client.ephemeralEmbed({
                 title: `Information Request`,
@@ -70,10 +69,10 @@ module.exports = (client, game_server) => {
         } else if (db_player_profile[0].is_time_banned) {
             player_info += `## **Banned**\n**Reason:** ${db_player_profile[0].time_ban_reason}, **Exp:** ${db_player_profile[0].time_ban_expiration}, **Date:** ${db_player_profile[0].time_ban_date}\n`;
         }
-        const db_player_playtime = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", params: [db_player_profile[0].id]})
+        const db_player_playtime = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", params: [db_player_profile[0].id] });
         let player_playtime = 0;
         for (const playtime of db_player_playtime) {
-            player_playtime += playtime.total_minutes
+            player_playtime += playtime.total_minutes;
         }
         //TODO: Admins
         client.ephemeralEmbed({

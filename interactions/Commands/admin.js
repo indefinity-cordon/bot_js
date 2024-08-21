@@ -64,9 +64,6 @@ module.exports = {
 
         collector.on('collect', async collected => {
             await collected.deferUpdate();
-
-            let response;
-
             if (client.handling_commands_actions[collected.values[0]]) {
                 await client.handling_commands_actions[collected.values[0]](collected);
             }

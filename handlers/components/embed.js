@@ -13,58 +13,6 @@ module.exports = (client) => {
     }
 
     //----------------------------------------------------------------//
-    //                        ERROR MESSAGES                          //
-    //----------------------------------------------------------------//
-
-    // Missing perms
-
-    client.errMissingPerms = async function ({
-        embed: embed = client.templateEmbed(),
-        perms: perms,
-        type: type,
-        content: content,
-        components: components
-    }, interaction) {
-        embed.setTitle(`Error!`);
-        embed.setDescription(`You don't have the right permissions`);
-        embed.addFields(
-            { name: "🔑┆Required Permission", value: `\`\`\`${perms}\`\`\``},
-        );
-        embed.setColor("#ab3e3e");
-
-        return client.sendEmbed({
-            embeds: [embed],
-            content: content,
-            components: components,
-            type: type
-        }, interaction);
-    }
-
-    // No bot perms
-
-    client.errNoPerms = async function ({
-        embed: embed = client.templateEmbed(),
-        perms: perms,
-        type: type,
-        content: content,
-        components: components
-    }, interaction) {
-        embed.setTitle(`Error!`);
-        embed.setDescription(`I don't have the right permissions`);
-        embed.addFields(
-            { name: "🔑┆Required Permission", value: `\`\`\`${perms}\`\`\``},
-        );
-        embed.setColor("#ab3e3e");
-
-        return client.sendEmbed({
-            embeds: [embed],
-            content: content,
-            components: components,
-            type: type
-        }, interaction);
-    }
-
-    //----------------------------------------------------------------//
     //                        BASIC MESSAGES                          //
     //----------------------------------------------------------------//
 

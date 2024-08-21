@@ -18,7 +18,7 @@ async function startListining(client) {
         return;
     }
 
-    var subscriber
+    var subscriber;
     for (subscriber in subscribers) {
         subscriber.disconnect();
     }

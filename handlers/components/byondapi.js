@@ -41,7 +41,7 @@ module.exports = (client) => {
                         } else if (packetType === 0x06) {
                             resolve(response.slice(1, -1).toString('ascii'));
                         } else {
-                            console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown BYOND data code: 0x${packetType.toString(16)}`))
+                            console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown BYOND data code: 0x${packetType.toString(16)}`));
                             reject('Unknown data code');
                         }
                     } else {
@@ -61,7 +61,7 @@ module.exports = (client) => {
                 });
             });
         } else {
-            console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Malformed ByondAPI request, with request: ${request}, target: ${address}:${port}.`))
+            console.log(chalk.blue(chalk.bold(`ByondAPI`)), (chalk.white(`>>`)), chalk.red(`Request`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Malformed ByondAPI request, with request: ${request}, target: ${address}:${port}.`));
         }
     }
 }
