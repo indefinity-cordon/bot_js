@@ -29,7 +29,7 @@ module.exports = async (client) => {
             bearer = { Authorization: `Bearer ${response.data.bearer}` };
             bearerValidUntil = DateTime.utc();
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`TGS`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Auth`), chalk.red(`Failed: ${error}`));
+            console.log(chalk.blue(chalk.bold(`TGS`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Auth`), chalk.red(`Failed: ${error}`));
         }
     };
 

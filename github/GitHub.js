@@ -28,8 +28,7 @@ module.exports = async (client) => {
             );
             return response.data.sha;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed remote: ${error}`));
-            throw error;
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed remote: ${error}`));
         }
     };
 
@@ -39,8 +38,7 @@ module.exports = async (client) => {
             const log = await client.git.log([github_branch[0].param]);
             return log.latest.hash;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed local: ${error}`));
-            throw error;
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed local: ${error}`));
         }
     };
 
@@ -48,29 +46,20 @@ module.exports = async (client) => {
         try {
             let github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
             await client.git.pull('origin', github_branch[0].param);
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[DONE]`), (chalk.white(`>>`)), chalk.red(`Pulled latest changes`));
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`Pulled latest changes`));
         } catch (error) {
-            console.error(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed: ${error}`));
-            throw error;
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed: ${error}`));
         }
     };
 
     client.tryForUpdate = async function (client) {
-        try {
-            const remoteCommit = await client.getLastCommit(client);
-            const localCommit = await client.getLastLocalCommit(client);
+        const remoteCommit = await client.getLastCommit(client);
+        const localCommit = await client.getLastLocalCommit(client);
 
-            if (remoteCommit !== localCommit) {
-                console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[PROGRESS]`), (chalk.white(`>>`)), chalk.red(`New commit found, pulling changes`));
-                try {
-                    await client.pullChanges(client);
-                    client.restartApp();
-                } catch (error) {
-                    throw error;
-                }
-            }
-        } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[FAILED]`), (chalk.white(`>>`)), chalk.red(`Failed update: ${error}`));
+        if (remoteCommit !== localCommit) {
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`New commit found, pulling changes`));
+            await client.pullChanges(client);
+            client.restartApp();
         }
     };
 
@@ -86,7 +75,7 @@ module.exports = async (client) => {
             }
         ])
     global.LogsHandler.send_log(embed);
-    console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.green(`Current commit: ${client.git_commit}`));
+    console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.green(`Current commit: ${client.git_commit}`));
     setInterval(
         client.tryForUpdate,
         5 * 60 * 1000, // Каждые N минут (первое число)

@@ -7,7 +7,7 @@ module.exports = (client) => {
         if (data) {
             const status = await client.databaseRequest({ database: client.database, query: "SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", params: [data.source, data.type] });
             if (!status.length) {
-                console.log(chalk.blue(chalk.bold(`Database`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${[data]}.`));
+                console.log(chalk.blue(chalk.bold(`Database`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${[data]}.`));
             } else {
                 const channel = await client.channels.fetch(status[0].channel_id);
                 switch (data.state) {
@@ -107,7 +107,7 @@ module.exports = (client) => {
                 }
             }
         } else {
-            console.log(chalk.blue(chalk.bold(`Socket`)), (chalk.white(`>>`)), chalk.red(`Redis`), (chalk.white(`>>`)), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Malformed Redis message, without data.`));
+            console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Malformed Redis message, without data.`));
         }
     }
 }
