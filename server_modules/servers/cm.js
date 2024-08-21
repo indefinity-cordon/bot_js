@@ -84,19 +84,6 @@ module.exports = (client, game_server) => {
 
 
     //HANDLING COMMMANDS
-
-    client.handling_tgs_actions = {
-        "stop": client.tgs_stop,
-        "start": client.tgs_start,
-        "deploy": client.tgs_deploy
-    };
-
-    client.handling_tgs = [
-        { label: "Stop", value: "stop" },
-        { label: "Start", value: "start" },
-        { label: "Deploy", value: "deploy" }
-    ];
-
     game_server.admins = async function (client, interaction) {
         const handling_commands = [
             { label: "View Admins", value: "v_admins" },
@@ -137,15 +124,15 @@ module.exports = (client, game_server) => {
                         //Замапить админов, линкануть с players таблицей ckey админа, а так же с его рангом и вывести список всех админов
                         break;
                     case "v_ranks":
+                        let text = "";
                         for (const db_rank of db_request_ranks) {
-                            
+                            text += `Name: ${db_rank.rank_name}, Rights: ${db_rank.text_rights}\n`
                         }
-                        const embed = new Discord.EmbedBuilder()
+                        const Embed = new Discord.EmbedBuilder()
                         .setTitle('View Ranks')
                         .setDescription(info_string)
                         .setColor('#6d472b');
                         await collected.editReply({ content: '', embeds: [Embed], components: [] });
-                        //Вывести каждый ранг
                         break;
                 }
                 resolve();
@@ -160,7 +147,7 @@ module.exports = (client, game_server) => {
             });
         });
     }
-
+/*
     game_server.realtime_list_handler_admins = async function (client, interaction) {
         const bot_settings = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'new_round_message'", params: [] });
     }
@@ -192,6 +179,12 @@ module.exports = (client, game_server) => {
     game_server.user_battlepass = async function (client, interaction) {
         
     }
+*/
+    game_server.handling_view_actions = {
+        "admins": client.admins
+    };
 
-
+    game_server.handling_view_commands = [
+        { label: "Admin Settings", value: "admins" }
+    ];
 }

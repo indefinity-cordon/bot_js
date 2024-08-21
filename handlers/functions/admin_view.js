@@ -50,7 +50,7 @@ module.exports = async (client) => {
 }
 
 async function handleCommandSelection(client, interaction, game_server) {
-    if(!game_server.handling_view_commands.length) {
+    if(!game_server.handling_view_commands || !game_server.handling_view_commands.length) {
         interaction.editReply({ content: 'No commands found for this server.', components: [] });
         return;
     }
