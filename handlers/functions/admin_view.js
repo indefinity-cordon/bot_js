@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = async (client) => {
     client.handleServerDataSelection = async function (interaction) {

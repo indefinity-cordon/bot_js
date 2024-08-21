@@ -1,3 +1,4 @@
+const Discord = require('discord.js');
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = (client, game_server) => {
@@ -89,9 +90,7 @@ module.exports = (client, game_server) => {
     game_server.admins = async function (client, interaction) {
         const handling_commands = [
             { label: "View Admins", value: "v_admins" },
-            { label: "View Ranks", value: "v_ranks" },
-            { label: "Adminst", value: "admins" }, //Потом добавить интеракции с добавлением админов/удалением/изменением
-            { label: "Ranks", value: "ranks" } //Так же как и выше
+            { label: "View Ranks", value: "v_ranks" }
         ];
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(`select-action`)
@@ -135,10 +134,6 @@ module.exports = (client, game_server) => {
                         .setDescription(info_string)
                         .setColor('#6d472b');
                         await collected.editReply({ content: '', embeds: [Embed], components: [] });
-                        break;
-                    case "admins":
-                        break;
-                    case "ranks":
                         break;
                 }
                 resolve();
