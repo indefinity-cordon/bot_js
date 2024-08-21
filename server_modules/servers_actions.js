@@ -34,7 +34,7 @@ module.exports = async (client) => {
                 game_server.guild = server.guild;
                 game_server.ip = server.ip;
                 game_server.port = server.port;
-                remove_game_server.status_messages = [];
+                game_server.status_messages = [];
                 require(`./servers/${game_server.init_file_name}`)(client, game_server);
             }
             updated_servers[`${game_server.server_name}`] = game_server;
