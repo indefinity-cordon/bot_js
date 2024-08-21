@@ -40,65 +40,18 @@ manager.on('shardCreate', shard => {
 
 manager.spawn();
 
-const botLogs = new Discord.WebhookClient({
+require("./LogsHandler.js")();
+global.LogsHandler.botLogs = new Discord.WebhookClient({
     id: process.env.WEBHOOK_ID,
     token: process.env.WEBHOOK_TOKEN,
 });
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
-    global.errorHandler.error(error)
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`Unhandled promise rejection`)
-        .addFields([
-            {
-                name: "Error",
-                value: error ? Discord.codeBlock(error) : "No error",
-            },
-            {
-                name: "Stack error",
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending unhandled promise rejection to webhook')
-        console.log(error)
-    })
+    global.LogsHandler.error(error, "Unhandled promise rejection", "error");
 });
 
 process.on('warning', error => {
     console.warn("Warning:", error);
-    global.errorHandler.warning(error)
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`New warning found`)
-        .addFields([
-            {
-                name: `Warn`,
-                value: error ? Discord.codeBlock(error) : "No warning",
-            },
-            {
-                name: `Stack error`,
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending warning to webhook')
-        console.log(error)
-    })
+    global.LogsHandler.error(error, "New warning found", "warning");
 });

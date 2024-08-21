@@ -74,130 +74,27 @@ async function initializeMess (client) {
 
 client.commands = new Discord.Collection();
 
+global.LogsHandler.botLogs = new Discord.WebhookClient({
+    id: process.env.WEBHOOK_ID,
+    token: process.env.WEBHOOK_TOKEN,
+});
+
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
-    global.errorHandler.error(error)
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) {
-            console.error(error.stack);
-            if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-        }
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`Unhandled promise rejection`)
-        .addFields([
-            {
-                name: "Error",
-                value: error ? Discord.codeBlock(error) : "No error",
-            },
-            {
-                name: "Stack error",
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending unhandled promise rejection to webhook');
-        console.log(error);
-    })
+    global.LogsHandler.error(error, "Unhandled promise rejection", "error");
 });
 
 process.on('uncaughtException', error => {
     console.error("uncaughtException:", error);
-    global.errorHandler.critical_error(error)
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) {
-            console.warn(error.stack);
-            if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-        }
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`New critical error found`)
-        .addFields([
-            {
-                name: `Critical Error`,
-                value: error ? Discord.codeBlock(error) : "No error",
-            },
-            {
-                name: `Stack error`,
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending critical error to webhook');
-        console.log(error);
-    })
+    global.LogsHandler.error(error, "New critical error found", "critical error");
 });
 
 process.on('warning', error => {
     console.warn("Warning:", error);
-    global.errorHandler.warning(error)
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) {
-            console.warn(error.stack);
-            if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-        }
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`New warning found`)
-        .addFields([
-            {
-                name: `Warn`,
-                value: error ? Discord.codeBlock(error) : "No warning",
-            },
-            {
-                name: `Stack error`,
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending warning to webhook');
-        console.log(error);
-    })
+    global.LogsHandler.error(error, "New warning found", "warning");
 });
 
 client.on(Discord.ShardEvents.Error, error => {
     console.log(error);
-    global.errorHandler.minor_error(error)
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) {
-            console.log(error.stack);
-            if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-        }
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`A websocket connection encountered an error`)
-        .addFields([
-            {
-                name: `Error`,
-                value: error ? Discord.codeBlock(error) : "No error",
-            },
-            {
-                name: `Stack error`,
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending warning to webhook');
-        console.log(error);
-    })
+    global.LogsHandler.error(error, "A websocket connection encountered an error", "error");
 });
