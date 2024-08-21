@@ -23,7 +23,7 @@ module.exports = async (client) => {
     client.tgs_auth = async function () {
         const authHeader = await client.tgs_makeToken(process.env.TGS_LOGIN, process.env.TGS_PASS);
         const headers = { ...defaultHeaders, ...authHeader };
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         try {
             const response = await axios.post(`${tgs_address[0].param}/api`, null, { headers });
             bearer = { Authorization: `Bearer ${response.data.bearer}` };
@@ -42,7 +42,7 @@ module.exports = async (client) => {
     client.tgs_getInstances = async function () {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer };
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.get(`${tgs_address[0].param}/api/Instance/List`, { headers });
         const instances = response.data.content.map(instance => ({
             id: instance.id,
@@ -55,7 +55,7 @@ module.exports = async (client) => {
     client.tgs_getInstance = async function (instId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer };
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.get(`${tgs_address[0].param}/api/Instance/${instId}`, { headers });
         return response.data;
     };
@@ -63,7 +63,7 @@ module.exports = async (client) => {
     client.tgs_getActiveJobs = async function () {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer };
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.get(`${tgs_address[0].param}/api/Job`, { headers });
         return response.data;
     };
@@ -77,7 +77,7 @@ module.exports = async (client) => {
         } else {
             params = { ...params, updateFromOrigin: 'true' };
         }
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.post(`${tgs_address[0].param}/api/Repository/${instId}`, null, { headers, params });
         return response.data;
     };
@@ -134,7 +134,7 @@ module.exports = async (client) => {
     client.tgs_start = async function (instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.put(`${tgs_address[0].param}/api/DreamDaemon`, null, { headers });
         return response.data;
     };
@@ -142,7 +142,7 @@ module.exports = async (client) => {
     client.tgs_stop = async function (instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.delete(`${tgs_address[0].param}/api/DreamDaemon`, { headers });
         return response.data;
     };
@@ -150,7 +150,7 @@ module.exports = async (client) => {
     client.tgs_deploy = async function (instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
-        const tgs_address = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_address'", params: [] });
+        const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.put(`${tgs_address[0].param}/api/DreamMaker`, null, { headers });
         return response.data;
     };
@@ -168,14 +168,14 @@ module.exports = async (client) => {
     ];
 
     client.on('messageCreate', async (message) => {
-        const tgs_bot_id = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_id'", params: [] });
-        const tgs_bot_message = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'tgs_bot_message'", params: [] });
+        const tgs_bot_id = await client.databaseSettingsRequest("tgs_bot_id");
+        const tgs_bot_message = await client.databaseSettingsRequest("tgs_bot_message");
         if (message.author.id === tgs_bot_id[0].param && message.content === tgs_bot_message[0].param) {
             const related_feed_channel = await client.databaseRequest({ database: client.database, query: "SELECT channel_id, message_id FROM server_channels WHERE name = 'round'", params: [] });
             if (!related_feed_channel[0] || !related_feed_channel[0].message_id) return;
             const channel = client.channels.cache.get(related_feed_channel[0].channel_id);
             if (channel) {
-                const new_round_message = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'new_round_message'", params: [] });
+                const new_round_message = await client.databaseSettingsRequest("new_round_message");
                 await channel.send(new_round_message[0].param);
             }
         }

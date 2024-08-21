@@ -22,7 +22,7 @@ module.exports = {
                 let roleId = roleCache.get(command.role_req);
 
                 if (!roleId) {
-                    const roleResult = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = ?", params: [command.role_req] });
+                    const roleResult = await client.databaseSettingsRequest(command.role_req);
                     roleId = roleResult[0]?.param;
                     roleCache.set(command.role_req, roleId);
                 }

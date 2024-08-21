@@ -56,13 +56,13 @@ module.exports = async (client) => {
             });
         });
     };
-    client.databaseSettingsRequest = async function (client, query) {
+    client.databaseSettingsRequest = async function (query) {
         if (!client.database) {
             console.log(chalk.blue(chalk.bold(`Database`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`MySQL`), chalk.red(`No DB at request`));
             return;
         }
         return await new Promise((resolve, reject) => {
-            database.query(query, [], (err, result) => {
+            client.database.query("SELECT param FROM settings WHERE name = ?", [query], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {

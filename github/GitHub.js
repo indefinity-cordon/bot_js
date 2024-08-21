@@ -13,8 +13,9 @@ module.exports = async (client) => {
 
             let github_link, github_branch, github_token;
 
-            github_link = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
-            github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+            github_link = await client.databaseSettingsRequest("github_link");
+            
+            github_branch = await client.databaseSettingsRequest("github_branch");
             github_token = process.env.GITHUB_PAT;
 
             await client.git.remote(['set-url', 'origin', `https://${github_token}@github.com/${github_link[0].param}.git`]);
@@ -34,7 +35,7 @@ module.exports = async (client) => {
 
     client.getLastLocalCommit = async function (client) {
         try {
-            let github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+            let github_branch = await client.databaseSettingsRequest("github_branch");
             const log = await client.git.log([github_branch[0].param]);
             return log.latest.hash;
         } catch (error) {
@@ -44,7 +45,7 @@ module.exports = async (client) => {
 
     client.pullChanges = async function (client) {
         try {
-            let github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+            let github_branch = await client.databaseSettingsRequest("github_branch");
             await client.git.pull('origin', github_branch[0].param);
             console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`Pulled latest changes`));
         } catch (error) {
