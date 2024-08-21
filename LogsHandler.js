@@ -67,17 +67,18 @@ module.exports = async () => {
                 return embed;
             };
             this.error = async function (error, title, name) {
-                this.handle_message(error)
-                this.send_log(this.build_error_embed(error, title, name))
+                this.handle_message(error);
+                const embed = await this.build_error_embed(error, title, name);
+                this.send_log(embed);
             };
             this.send_log = async function (embed) {
                 this.botLogs.send({
                     username: 'Bot Logs',
                     embeds: [embed],
-                }).catch(() => {
-                    console.log('Error sending to webhook')
-                    console.log(error)
-                })
+                }).catch((error) => {
+                    console.log('Error sending to webhook');
+                    console.log(error);
+                });
             };
         }
     }
