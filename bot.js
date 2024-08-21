@@ -94,6 +94,9 @@ async function initializeMess(client) {
                 5 * 60 * 1000, // Каждые N минут (первое число)
                 client
             );
+            client.servers_link = [];
+            client.ServerActions = require(`${process.cwd()}/server_modules/servers_actions.js`);
+            client.ServerActions(client);
             fs.readdirSync('./handlers').forEach((dir) => {
                 fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
                     require(`./handlers/${dir}/${handler}`)(client);

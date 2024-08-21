@@ -1,12 +1,6 @@
 const Discord = require('discord.js');
 
 module.exports = async (client) => {
-    client.on(Discord.Events.ClientReady, async () => {
-        client.servers_link = [];
-        client.ServerActions = require(`${process.cwd()}/server_modules/servers_actions.js`);
-        client.ServerActions(client);
-    });
-
     client.serverStatus = async function ({
         game_server: game_server
     }) {
