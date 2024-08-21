@@ -88,8 +88,8 @@ module.exports = (client, game_server) => {
         const handling_commands = [
             { label: "View Admins", value: "v_admins" },
             { label: "View Ranks", value: "v_ranks" },
-//            { label: "Adminst", value: "admins" }, Потом добавить интеракции с добавлением админов/удалением/изменением
-//            { label: "Ranks", value: "ranks" } Так же как и выше
+            { label: "Adminst", value: "admins" }, //Потом добавить интеракции с добавлением админов/удалением/изменением
+            { label: "Ranks", value: "ranks" } //Так же как и выше
         ];
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(`select-action`)
@@ -126,13 +126,17 @@ module.exports = (client, game_server) => {
                     case "v_ranks":
                         let text = "";
                         for (const db_rank of db_request_ranks) {
-                            text += `Name: ${db_rank.rank_name}, Rights: ${db_rank.text_rights}\n`;
+                            text += `Rank: ${db_rank.rank_name}, Rights: ${db_rank.text_rights}\n`;
                         }
                         const Embed = new Discord.EmbedBuilder()
                         .setTitle('View Ranks')
                         .setDescription(info_string)
                         .setColor('#6d472b');
                         await collected.editReply({ content: '', embeds: [Embed], components: [] });
+                        break;
+                    case "admins":
+                        break;
+                    case "ranks":
                         break;
                 }
                 resolve();
