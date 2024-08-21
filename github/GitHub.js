@@ -1,3 +1,4 @@
+const Discord = require('discord.js');
 const chalk = require('chalk');
 const simpleGit = require('simple-git');
 const axios = require('axios');
