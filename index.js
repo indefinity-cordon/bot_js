@@ -42,10 +42,12 @@ manager.spawn();
 
 const LogsHandlerclass = require('./LogsHandler.js');
 global.LogsHandler = new LogsHandlerclass();
-global.LogsHandler.botLogs = new Discord.WebhookClient({
-    id: process.env.WEBHOOK_ID,
-    token: process.env.WEBHOOK_TOKEN,
-});
+if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
+    global.LogsHandler.botLogs = new Discord.WebhookClient({
+        id: process.env.WEBHOOK_ID,
+        token: process.env.WEBHOOK_TOKEN,
+    });
+}
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);

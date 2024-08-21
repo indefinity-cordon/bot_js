@@ -6,6 +6,7 @@ module.exports = async (client) => {
     }) {
         clearInterval(game_server.status_interval);
         clearInterval(game_server.update_status_messages_interval);
+        await game_server.game_connection
         await updateStatusMessages(client, game_server);
         game_server.update_status_messages_interval = setInterval(
             updateStatusMessages,

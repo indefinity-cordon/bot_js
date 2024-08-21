@@ -17,32 +17,27 @@ const client = new Discord.Client({
     restTimeOffset: 0
 });
 
-const botLogs = new Discord.WebhookClient({
-    id: process.env.WEBHOOK_ID,
-    token: process.env.WEBHOOK_TOKEN,
-});
+const LogsHandlerclass = require('./LogsHandler.js');
+global.LogsHandler = new LogsHandlerclass();
+if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
+    global.LogsHandler.botLogs = new Discord.WebhookClient({
+        id: process.env.WEBHOOK_ID,
+        token: process.env.WEBHOOK_TOKEN,
+    });
+}
 
 // Use in funny moments
 client.restartApp = function (reason) {
     console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Restarting process`), (chalk.white(`...`)));
-    
-    if (botLogs) {
-        const embed = new Discord.EmbedBuilder()
-        .setTitle(`System`)
-        .addFields([
-            {
-                name: "Restart",
-                value: reason ? `Reason: ${reason}` : "Reason is not provided",
-            }
-        ])
-
-        botLogs.send({
-            username: 'Bot Logs',
-            embeds: [embed],
-        }).catch(() => {
-            console.log('Error sending start info to webhook');
-        })
-    }
+    const embed = new Discord.EmbedBuilder()
+    .setTitle(`System`)
+    .addFields([
+        {
+            name: "Restart",
+            value: reason ? `Reason: ${reason}` : "Reason is not provided",
+        }
+    ])
+    global.LogsHandler.send_log(embed);
     process.exit(1);
 }
 
@@ -50,8 +45,8 @@ client.handling_commands_actions = [];
 client.handling_commands = [];
 
 require("./database/MySQL")(client);
-require("./socket/Redis")(client);
-require("./github/GitHub")(client);
+if (process.env.REDIS_USER && process.env.REDIS_PASSWORD && process.env.REDIS_SERVER && process.env.REDIS_PORT) require("./socket/Redis")(client);
+if (process.env.GITHUB_PAT) require("./github/GitHub")(client);
 
 initializeMess(client)
 
@@ -73,11 +68,6 @@ async function initializeMess (client) {
 }
 
 client.commands = new Discord.Collection();
-
-global.LogsHandler.botLogs = new Discord.WebhookClient({
-    id: process.env.WEBHOOK_ID,
-    token: process.env.WEBHOOK_TOKEN,
-});
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);

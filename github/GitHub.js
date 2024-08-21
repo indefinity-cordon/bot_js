@@ -77,29 +77,16 @@ module.exports = async (client) => {
     await client.database;
 
     client.git_commit = await client.getLastLocalCommit(client);
-
-    const botLogs = new Discord.WebhookClient({
-        id: process.env.WEBHOOK_ID,
-        token: process.env.WEBHOOK_TOKEN,
-    });
-
-    if(botLogs) {
-        const embed = new Discord.EmbedBuilder()
-            .setTitle(`System`)
-            .addFields([
-                {
-                    name: "Start",
-                    value: `Commit SHA: ${client.git_commit}`,
-                }
-            ])
-        botLogs.send({
-            username: 'Bot Logs',
-            embeds: [embed],
-        }).catch(() => {
-            console.log('Error sending start info to webhook');
-        })
-        console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.red(`Current commit: ${client.git_commit}`));
-    }
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`System`)
+        .addFields([
+            {
+                name: "Start",
+                value: `Commit SHA: ${client.git_commit}`,
+            }
+        ])
+    global.LogsHandler.send_log(embed);
+    console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.green(`Current commit: ${client.git_commit}`));
     setInterval(
         client.tryForUpdate,
         5 * 60 * 1000, // Каждые N минут (первое число)

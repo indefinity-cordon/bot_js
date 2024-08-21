@@ -20,22 +20,7 @@ module.exports = class LogsHandlerclass {
     /**
      * @type {Function}
      */
-    critical_error;
-
-    /**
-     * @type {Function}
-     */
     error;
-
-    /**
-     * @type {Function}
-     */
-    warning;
-
-    /**
-     * @type {Function}
-     */
-    minor_error;
 
     /**
      * @type {Function}
@@ -71,12 +56,15 @@ module.exports = class LogsHandlerclass {
             this.send_log(embed);
         };
         this.send_log = async function (embed) {
+            if (!this.botLogs) {
+                console.log(chalk.blue(chalk.bold(`Webhook`)), (chalk.white(`>>`)), chalk.blue(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`no webhook`));
+                return;
+            }
             this.botLogs.send({
                 username: 'Bot Logs',
                 embeds: [embed],
             }).catch((error) => {
-                console.log('Error sending to webhook');
-                console.log(error);
+                console.log(chalk.blue(chalk.bold(`Webhook`)), (chalk.white(`>>`)), chalk.blue(`[ERROR]`), (chalk.white(`>>`)), chalk.red(error));
             });
         };
     }
