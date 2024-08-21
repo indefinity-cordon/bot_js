@@ -1,7 +1,7 @@
 module.exports = (client, game_server) => {
     game_server.updateStatus = async function (client, game_server) {
         try {
-            const server_response = await client.prepareByondAPIRequest({request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip, client: client});
+            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
             if (!server_response) return;
             const response = JSON.parse(server_response);
             const data = response.data
@@ -81,4 +81,117 @@ module.exports = (client, game_server) => {
             color: `#6d472b`
         }, interaction);
     }
+
+
+    //HANDLING COMMMANDS
+
+    client.handling_tgs_actions = {
+        "stop": client.tgs_stop,
+        "start": client.tgs_start,
+        "deploy": client.tgs_deploy
+    };
+
+    client.handling_tgs = [
+        { label: "Stop", value: "stop" },
+        { label: "Start", value: "start" },
+        { label: "Deploy", value: "deploy" }
+    ];
+
+    game_server.admins = async function (client, interaction) {
+        const handling_commands = [
+            { label: "View Admins", value: "v_admins" },
+            { label: "View Ranks", value: "v_ranks" },
+//            { label: "Adminst", value: "admins" }, Потом добавить интеракции с добавлением админов/удалением/изменением
+//            { label: "Ranks", value: "ranks" } Так же как и выше
+        ];
+        const selectMenu = new StringSelectMenuBuilder()
+            .setCustomId(`select-action`)
+            .setPlaceholder('Select action')
+            .addOptions(handling_commands);
+
+        const row = new ActionRowBuilder()
+            .addComponents(selectMenu);
+
+        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
+            client.activeCollectors[interaction.user.id].stop();
+        }
+
+        const filter = collected => collected.customId === `select-action` && collected.user.id === interaction.user.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        client.activeCollectors = client.activeCollectors || {};
+        client.activeCollectors[interaction.user.id] = collector;
+
+        await interaction.editReply({
+            content: 'Please select action to perform:',
+            components: [row],
+            ephemeral: true
+        });
+
+        return new Promise((resolve, reject) => {
+            collector.on('collect', async collected => {
+                await collected.deferUpdate();
+                const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
+                const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+                switch(handling_commands[collected.values[0]]) {
+                    case "v_admins":
+                        //Замапить админов, линкануть с players таблицей ckey админа, а так же с его рангом и вывести список всех админов
+                        break;
+                    case "v_ranks":
+                        for (const db_rank of db_request_ranks) {
+                            
+                        }
+                        const embed = new Discord.EmbedBuilder()
+                        .setTitle('View Ranks')
+                        .setDescription(info_string)
+                        .setColor('#6d472b');
+                        await collected.editReply({ content: '', embeds: [Embed], components: [] });
+                        //Вывести каждый ранг
+                        break;
+                }
+                resolve();
+            });
+
+            collector.on('end', collected => {
+                if (collected.size === 0) {
+                    interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
+                }
+                delete client.activeCollectors[interaction.user.id];
+                reject('No actions done');
+            });
+        });
+    }
+
+    game_server.realtime_list_handler_admins = async function (client, interaction) {
+        const bot_settings = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'new_round_message'", params: [] });
+    }
+
+    game_server.admin_playtimes = async function (client, interaction) {
+        
+    }
+    game_server.playtimes = async function (client, interaction) {
+        
+    }
+
+    // Если админ, то можем выбрать другой любой ID игрока и запросить через notes
+    game_server.admin_notes = async function (client, interaction) {
+        
+    }
+    // Запрашиваем информацию по нотесам игрока (его ID)
+    game_server.notes = async function (client, interaction) {
+        
+    }
+
+    game_server.admin_battlepass = async function (client, interaction) {
+        
+    }
+
+    game_server.server_battlepass = async function (client, interaction) {
+        
+    }
+
+    game_server.user_battlepass = async function (client, interaction) {
+        
+    }
+
+
 }

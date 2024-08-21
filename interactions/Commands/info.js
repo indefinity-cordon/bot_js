@@ -56,20 +56,20 @@ module.exports = {
             const db_discord_link = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [target_user.id] });
 
             if (!db_discord_link[0] || !db_discord_link[0].discord_id) {
-                const noLinkEmbed = new EmbedBuilder()
+                const Embed = new EmbedBuilder()
                     .setTitle('Information Request')
                     .setDescription('This user does not have a linked game profile')
                     .setColor('#6d472b');
 
-                await collected.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
+                await collected.editReply({ content: '', embeds: [Embed], components: [] });
                 return;
             }
 
-            const noLinkEmbed = new EmbedBuilder()
+            const Embed = new EmbedBuilder()
             .setTitle('Information Request')
             .setDescription('Retrieving')
             .setColor('#6d472b');
-            await collected.editReply({ content: '', embeds: [noLinkEmbed], components: [] });
+            await collected.editReply({ content: '', embeds: [Embed], components: [] });
             await game_server.infoRequest({ request: db_discord_link }, collected);
         });
 

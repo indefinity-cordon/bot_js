@@ -5,10 +5,10 @@ module.exports = (client) => {
     client.connections_in_proggress = [];
     client.notified = [];
     client.prepareByondAPIRequest = async function ({
+        client: client,
         request: request,
         port: port,
-        address: address,
-        client
+        address: address
     }) {
         if (request && port && address) {
             if (client.connections_in_proggress[`${port}:${address}`]) {

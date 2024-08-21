@@ -53,6 +53,7 @@ INSERT INTO `settings` (`id`, `name`, `param`) VALUES
   (6, 'tgs_bot_id', '0');
   (7, 'tgs_bot_message', '');
   (8, 'tgs_role_id', '1260284596365426771');
+  (9, 'admin_role_id', '1260284596365426771');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
