@@ -63,7 +63,8 @@ module.exports = async () => {
                         name: `Stack ${name}`,
                         value: error.stack ? Discord.codeBlock(error.stack) : `No stack ${name}`,
                     },
-                ])
+                ]);
+                return embed;
             };
             this.error = async function (error, title, name) {
                 this.handle_message(error)
