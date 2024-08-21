@@ -58,53 +58,47 @@ require("./socket/Redis")(client);
 
 initializeMess(client)
 
-async function initializeMess(client) {
-    await new Promise(resolve => {
-        let interval = setInterval( async () => {
-            if (!client.database) return;
-            clearInterval(interval);
-            (async () => {
-                client.handling_game_servers = await client.databaseRequest({ database: client.database, query: "SELECT server_name, db_name FROM servers", params: [] });
-                client.servers_options = client.handling_game_servers.map(server => ({
-                    label: server.server_name,
-                    value: server.server_name
-                }));
-            })();
-            await client.login(process.env.DISCORD_TOKEN);
-            const commit = await getLastCommit(client);
-            if(botLogs) {
-                const embed = new Discord.EmbedBuilder()
-                    .setTitle(`System`)
-                    .addFields([
-                        {
-                            name: "Start",
-                            value: `Commit SHA: ${commit}`,
-                        }
-                    ])
-                botLogs.send({
-                    username: 'Bot Logs',
-                    embeds: [embed],
-                }).catch(() => {
-                    console.log('Error sending start info to webhook');
-                })
-                console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.red(`Current commit: ${commit}`));
-            }
-            setInterval(
-                tryForUpdate,
-                5 * 60 * 1000, // Каждые N минут (первое число)
-                client
-            );
-            client.servers_link = [];
-            client.ServerActions = require(`${process.cwd()}/server_modules/servers_actions.js`);
-            client.ServerActions(client);
-            fs.readdirSync('./handlers').forEach((dir) => {
-                fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
-                    require(`./handlers/${dir}/${handler}`)(client);
-                });
-            });
-            resolve();
-        }, 5000)
-    })
+async function initializeMess (client) {
+    await client.database
+    clearInterval(interval);
+    client.handling_game_servers = await client.databaseRequest({ database: client.database, query: "SELECT server_name, db_name FROM servers", params: [] });
+    client.servers_options = client.handling_game_servers.map(server => ({
+        label: server.server_name,
+        value: server.server_name
+    }));
+    await client.login(process.env.DISCORD_TOKEN);
+    const commit = await getLastCommit(client);
+    if(botLogs) {
+        const embed = new Discord.EmbedBuilder()
+            .setTitle(`System`)
+            .addFields([
+                {
+                    name: "Start",
+                    value: `Commit SHA: ${commit}`,
+                }
+            ])
+        botLogs.send({
+            username: 'Bot Logs',
+            embeds: [embed],
+        }).catch(() => {
+            console.log('Error sending start info to webhook');
+        })
+        console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.red(`Current commit: ${commit}`));
+    }
+    setInterval(
+        tryForUpdate,
+        5 * 60 * 1000, // Каждые N минут (первое число)
+        client
+    );
+    client.servers_link = [];
+    client.ServerActions = require(`${process.cwd()}/server_modules/servers_actions.js`);
+    client.ServerActions(client);
+    fs.readdirSync('./handlers').forEach((dir) => {
+        fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
+            require(`./handlers/${dir}/${handler}`)(client);
+        });
+    });
+    resolve();
 }
 
 async function getLastCommit(client) {
