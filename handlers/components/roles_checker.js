@@ -20,15 +20,9 @@ async function updateRoles(client, game_server) {
     try {
         console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Prepairing for roles update`));
 
-        console.log(chalk.yellow(`game_server.game_connection:`), game_server.game_connection);
-
-        if (!game_server.game_connection) {
-            console.log(chalk.red(`Error: game_server.game_connection is undefined`));
-            return;
-        }
-
         const db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", params: [] });
         if (!db_roles[0]) return;
+        if (!client.guilds || client.guilds.cache) return;
         const guild = await client.guilds.cache.get(game_server.guild);
         if (!guild) return;
 
