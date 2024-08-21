@@ -40,7 +40,6 @@ manager.on('shardCreate', shard => {
 
 manager.spawn();
 
-
 const botLogs = new Discord.WebhookClient({
     id: process.env.WEBHOOK_ID,
     token: process.env.WEBHOOK_TOKEN,
