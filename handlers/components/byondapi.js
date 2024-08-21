@@ -42,13 +42,13 @@ module.exports = (client) => {
                             resolve(response.slice(1, -1).toString('ascii'));
                         } else {
                             console.log(chalk.blue(chalk.bold(`ByondAPI`)), chalk.white(`>>`), chalk.red(`Request`), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown BYOND data code: 0x${packetType.toString(16)}`));
-                            resolve('Unknown data code');
+                            resolve();
                         }
                     } else {
                         client.connections_in_proggress[`${port}:${address}`] = null;
                         client_api.end();
                         console.log(chalk.blue(chalk.bold(`ByondAPI`)), chalk.white(`>>`), chalk.red(`Request`), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`BYOND server returned invalid data.`));
-                        resolve('Failed to read data');
+                        resolve();
                     }
                 });
                 client_api.on('error', (err) => {
@@ -58,7 +58,7 @@ module.exports = (client) => {
                         client.notified[`${port}:${address}`] = true;
                         console.log(chalk.blue(chalk.bold(`ByondAPI`)), chalk.white(`>>`), chalk.red(`Request`), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`));
                     }
-                    resolve(err);
+                    resolve();
                 });
             });
         } else {
