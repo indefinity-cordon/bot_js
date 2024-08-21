@@ -79,7 +79,7 @@ module.exports = async (client) => {
     console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.green(`Current commit: ${client.git_commit}`));
     setInterval(
         client.tryForUpdate,
-        5 * 60 * 1000, // Каждые N минут (первое число)
+        1 * 60 * 1000, // Каждые N минут (первое число)
         client
     );
 }
