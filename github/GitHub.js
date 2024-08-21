@@ -14,7 +14,7 @@ module.exports = async (client) => {
 
             github_link = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
             github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
-            github_token = process.env.GITHUB_TOKEN;
+            github_token = process.env.GITHUB_PAT;
 
             await git.remote(['set-url', 'origin', `https://${github_token}@github.com/${github_link[0].param}.git`]);
             const response = await axios.get(
