@@ -1,14 +1,14 @@
-
-const git = simpleGit(process.cwd());
 const chalk = require('chalk');
 const simpleGit = require('simple-git');
 const axios = require('axios');
 require('dotenv').config('.env');
 
 module.exports = async (client) => {
+    client.git = simpleGit(process.cwd());
+
     client.getLastCommit = async function (client) {
         try {
-            await git.addConfig('credential.helper', 'store');
+            await client.git.addConfig('credential.helper', 'store');
 
             let github_link, github_branch, github_token;
 
@@ -16,7 +16,7 @@ module.exports = async (client) => {
             github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
             github_token = process.env.GITHUB_PAT;
 
-            await git.remote(['set-url', 'origin', `https://${github_token}@github.com/${github_link[0].param}.git`]);
+            await client.git.remote(['set-url', 'origin', `https://${github_token}@github.com/${github_link[0].param}.git`]);
             const response = await axios.get(
                 `https://api.github.com/repos/${github_link[0].param}/commits/${github_branch[0].param}`,
                 {
@@ -35,7 +35,7 @@ module.exports = async (client) => {
     client.getLastLocalCommit = async function (client) {
         try {
             let github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
-            const log = await git.log([github_branch[0].param]);
+            const log = await client.git.log([github_branch[0].param]);
             return log.latest.hash;
         } catch (error) {
             console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed local: ${error}`));
@@ -46,7 +46,7 @@ module.exports = async (client) => {
     client.pullChanges = async function (client) {
         try {
             let github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
-            await git.pull('origin', github_branch[0].param);
+            await client.git.pull('origin', github_branch[0].param);
             console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[DONE]`), (chalk.white(`>>`)), chalk.red(`Pulled latest changes`));
         } catch (error) {
             console.error(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed: ${error}`));
