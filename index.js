@@ -47,6 +47,7 @@ const botLogs = new Discord.WebhookClient({
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
+    global.errorHandler.error(error)
     if (!botLogs) return;
     if (error) {
         if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
@@ -75,6 +76,7 @@ process.on('unhandledRejection', error => {
 
 process.on('warning', error => {
     console.warn("Warning:", error);
+    global.errorHandler.warning(error)
     if (!botLogs) return;
     if (error) {
         if (error.length > 950) error = error.slice(0, 950) + '... view console for details';

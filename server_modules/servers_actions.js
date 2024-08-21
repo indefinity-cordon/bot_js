@@ -1,5 +1,5 @@
 module.exports = async (client) => {
-    const GameServerClass = require('./index.s.mts');
+    const GameServerClass = require('./index.js');
     const servers = await client.databaseRequest({ database: client.database, query: "SELECT server_name, db_name, file_name, guild, ip, port FROM servers", params: [] });
     if (!servers.length) {
         console.log(`Failed to find servers. Aborting.`);
@@ -27,8 +27,7 @@ module.exports = async (client) => {
                 game_server = new GameServerClass();
                 game_server.server_name = server.server_name;
                 game_server.database = server.db_name;
-                game_server.game_connection = null;
-                await client.createDBConnection({ game_server: game_server });
+                game_server.game_connection = await client.createDBConnection({ game_server: game_server });
                 game_server.init_file_name = server.file_name;
                 game_server.guild = server.guild;
                 game_server.ip = server.ip;
