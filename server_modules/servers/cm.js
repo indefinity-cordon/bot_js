@@ -1,3 +1,5 @@
+const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
+
 module.exports = (client, game_server) => {
     game_server.updateStatus = async function (client, game_server) {
         try {
