@@ -19,7 +19,8 @@ module.exports = async (client) => {
             client,
             game_server
         );
-    }
+    };
+    client.ServerActions(client);
 };
 
 async function updateStatusMessages(client, game_server) {

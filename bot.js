@@ -64,7 +64,6 @@ async function initializeMess (client) {
     }));
     client.servers_link = [];
     client.ServerActions = require(`${process.cwd()}/server_modules/servers_actions.js`);
-    client.ServerActions(client);
     await client.login(process.env.DISCORD_TOKEN);
     fs.readdirSync('./handlers').forEach((dir) => {
         fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
