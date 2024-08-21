@@ -126,7 +126,7 @@ module.exports = (client, game_server) => {
                     case "v_ranks":
                         let text = "";
                         for (const db_rank of db_request_ranks) {
-                            text += `Name: ${db_rank.rank_name}, Rights: ${db_rank.text_rights}\n`
+                            text += `Name: ${db_rank.rank_name}, Rights: ${db_rank.text_rights}\n`;
                         }
                         const Embed = new Discord.EmbedBuilder()
                         .setTitle('View Ranks')
