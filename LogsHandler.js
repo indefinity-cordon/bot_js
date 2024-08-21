@@ -27,8 +27,14 @@ module.exports = class LogsHandlerclass {
      */
     send_log;
 
+    /**
+     * @type {boolean}
+     */
+    notified;
+
     constructor() {
         this.botLogs = null;
+        this.notified = false;
         this.handle_message = async function (error) {
             if (error) {
                 if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
@@ -57,7 +63,10 @@ module.exports = class LogsHandlerclass {
         };
         this.send_log = async function (embed) {
             if (!this.botLogs) {
-                console.log(chalk.blue(chalk.bold(`Webhook`)), (chalk.white(`>>`)), chalk.blue(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`no webhook`));
+                if (!this.notified) {
+                    console.log(chalk.blue(chalk.bold(`Webhook`)), (chalk.white(`>>`)), chalk.blue(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`no webhook`));
+                    this.notified = true;
+                }
                 return;
             }
             this.botLogs.send({
