@@ -20,7 +20,7 @@ module.exports = class Server {
     init_file_name;
 
     /**
-     * @type {bigint}
+     * @type {string}
      */
     guild;
 
