@@ -123,7 +123,7 @@ module.exports = async (client) => {
                     interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
                 }
                 delete client.activeCollectors[interaction.user.id];
-                reject('No actions done');
+                resolve();
             });
         });
     }
@@ -210,10 +210,10 @@ async function handleCommandSelection(client, interaction, instanceId) {
         collector.on('collect', async collected => {
             await collected.deferUpdate();
             if (client.handling_tgs_actions[collected.values[0]]) {
-                interaction.editReply({ content: 'Action performed.', components: [] });
-                resolve(await client.handling_tgs_actions[collected.values[0]](instanceId));
+                collected.editReply({ content: 'Action performed.', components: [] });
+                resolve(await client.handling_tgs_actions[collected.values[0]](instanceId, ));
             }
-            reject('No actions done');
+            resolve();
         });
 
         collector.on('end', collected => {
@@ -221,7 +221,7 @@ async function handleCommandSelection(client, interaction, instanceId) {
                 interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
             }
             delete client.activeCollectors[interaction.user.id];
-            reject('No actions done');
+            resolve();
         });
     });
 };

@@ -3,14 +3,14 @@ const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = async (client) => {
     client.handleServerDataSelection = async function (interaction) {
-        const options = client.servers_link.map(server => ({
-            label: server.server_name,
-            value: server.server_name
-        }));
+        let options = []
+        for (const server_name in client.servers_link) {
+            options.push({ label: server_name, value: server_name});
+        }
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(`select-server`)
-            .setPlaceholder('Select a server')
+            .setPlaceholder('Select a game server')
             .addOptions(options);
 
         const row = new ActionRowBuilder()
@@ -42,7 +42,7 @@ module.exports = async (client) => {
                     interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
                 }
                 delete client.activeCollectors[interaction.user.id];
-                reject('No actions done');
+                resolve();
             });
         });
     };
@@ -82,10 +82,9 @@ async function handleCommandSelection(client, interaction, game_server) {
         collector.on('collect', async collected => {
             await collected.deferUpdate();
             if (game_server.handling_view_actions[collected.values[0]]) {
-                interaction.editReply({ content: 'Action performed.', components: [] });
-                resolve(await game_server.handling_view_actions[collected.values[0]](client, interaction));
+                resolve(await game_server.handling_view_actions[collected.values[0]](client, collected));
             }
-            reject('No actions done');
+            resolve();
         });
 
         collector.on('end', collected => {
@@ -93,7 +92,7 @@ async function handleCommandSelection(client, interaction, game_server) {
                 interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
             }
             delete client.activeCollectors[interaction.user.id];
-            reject('No actions done');
+            resolve();
         });
     });
 };

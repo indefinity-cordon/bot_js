@@ -87,66 +87,41 @@ module.exports = (client, game_server) => {
 
 
     //HANDLING COMMMANDS
-    game_server.admins = async function (client, interaction) {
-        const handling_commands = [
-            { label: "View Admins", value: "v_admins" },
-            { label: "View Ranks", value: "v_ranks" }
-        ];
-        const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId(`select-action`)
-            .setPlaceholder('Select action')
-            .addOptions(handling_commands);
-
-        const row = new ActionRowBuilder()
-            .addComponents(selectMenu);
-
-        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
-            client.activeCollectors[interaction.user.id].stop();
+    game_server.view_admins = async function (client, interaction) {
+        const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
+        const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+        const roleMap = new Map();
+        db_request_ranks.forEach(row => {
+            roleMap.set(row.id, row.rank_name);
+        });
+        const fields = [];
+        for (const db_admin of db_request_admin) {
+            const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT ckey, last_login FROM players WHERE id = ?", params: [db_admin.player_id] });
+            let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
+            if(db_admin.extra_titles_encoded.length > 4) {
+                info += `**Extra Ranks:** ${db_admin.extra_titles_encoded}\n`;
+            }
+            info += `**Last login:** ${db_player_profile[0].last_login}\n`;
+            fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
         }
+        const Embed = new Discord.EmbedBuilder()
+        .setTitle('View Ranks')
+        .addFields(fields)
+        .setColor('#6d472b');
+        await interaction.editReply({ content: '', embeds: [Embed], components: [], ephemeral: true });
+    }
 
-        const filter = collected => collected.customId === `select-action` && collected.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
-        client.activeCollectors = client.activeCollectors || {};
-        client.activeCollectors[interaction.user.id] = collector;
-
-        await interaction.editReply({
-            content: 'Please select action to perform:',
-            components: [row],
-            ephemeral: true
-        });
-
-        return new Promise((resolve, reject) => {
-            collector.on('collect', async collected => {
-                await collected.deferUpdate();
-                const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
-                const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
-                switch(handling_commands[collected.values[0]]) {
-                    case "v_admins":
-                        //Замапить админов, линкануть с players таблицей ckey админа, а так же с его рангом и вывести список всех админов
-                        break;
-                    case "v_ranks":
-                        let text = "";
-                        for (const db_rank of db_request_ranks) {
-                            text += `Rank: ${db_rank.rank_name}, Rights: ${db_rank.text_rights}\n`;
-                        }
-                        const Embed = new Discord.EmbedBuilder()
-                        .setTitle('View Ranks')
-                        .setDescription(info_string)
-                        .setColor('#6d472b');
-                        await collected.editReply({ content: '', embeds: [Embed], components: [] });
-                        break;
-                }
-                resolve();
-            });
-
-            collector.on('end', collected => {
-                if (collected.size === 0) {
-                    interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
-                }
-                delete client.activeCollectors[interaction.user.id];
-                reject('No actions done');
-            });
-        });
+    game_server.view_ranks = async function (client, interaction) {
+        const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+        const fields = [];
+        for (const db_rank of db_request_ranks) {
+            fields.push({ name: `${db_rank.rank_name}`, value: `**Rights:** ${db_rank.text_rights}` });
+        }
+        const Embed = new Discord.EmbedBuilder()
+        .setTitle('View Ranks')
+        .addFields(fields)
+        .setColor('#6d472b');
+        await interaction.editReply({ content: '', embeds: [Embed], components: [], ephemeral: true });
     }
 /*
     game_server.realtime_list_handler_admins = async function (client, interaction) {
@@ -182,10 +157,12 @@ module.exports = (client, game_server) => {
     }
 */
     game_server.handling_view_actions = {
-        "admins": client.admins
+        "admins": game_server.view_admins,
+        "ranks": game_server.view_ranks
     };
 
     game_server.handling_view_commands = [
-        { label: "Admin Settings", value: "admins" }
+        { label: "View Admins", value: "admins" },
+        { label: "View Ranks", value: "ranks" }
     ];
 }
