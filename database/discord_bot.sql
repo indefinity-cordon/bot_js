@@ -36,6 +36,10 @@ CREATE TABLE IF NOT EXISTS `server_channels` (
 INSERT INTO `server_channels` (`server_name`, `type`, `channel_id`, `message_id`) VALUES
 	('CM', 'status', '1252302664142819541', '1252302966254473328');
 	('CM', 'round', '614619975151517718', '1');
+	('CM', 'admin', '614619975151517718', '0');
+	('CM', 'whitelist_c', '614619975151517718', '0');
+	('CM', 'whitelist_s', '614619975151517718', '0');
+	('CM', 'whitelist_p', '614619975151517718', '0');
 
 CREATE TABLE IF NOT EXISTS `settings` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,

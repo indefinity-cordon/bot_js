@@ -32,20 +32,21 @@ module.exports = async (client) => {
                 game_server.guild = server.guild;
                 game_server.ip = server.ip;
                 game_server.port = server.port;
-                game_server.status_messages = [];
                 require(`./servers/${game_server.init_file_name}`)(client, game_server);
             }
             updated_servers[`${game_server.server_name}`] = game_server;
-            if (!game_server.status_interval) client.serverStatus({ game_server: game_server });
+            if (!game_server.message_updater_intervals) client.serverStatus({ game_server: game_server });
             if (game_server.guild && !game_server.update_roles_interval) client.serverRoles({ game_server: game_server });
         }
         for (const server_name in client.servers_link) {
             if (!updated_servers[server_name]) {
                 let remove_game_server = client.servers_link[server_name];
-                clearInterval(remove_game_server.status_interval);
+                for(const type of game_server.updater_messages) {
+                    clearInterval(game_server.message_updater_intervals[type]);
+                }
                 clearInterval(remove_game_server.update_status_messages_interval);
                 clearInterval(remove_game_server.update_roles_interval);
-                remove_game_server.status_messages = [];
+                remove_game_server.updater_messages.splice();
                 delete client.servers_link[server_name];
             }
         }

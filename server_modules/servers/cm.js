@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = (client, game_server) => {
-    game_server.updateStatus = async function (client, game_server) {
+    game_server.updateStatus = async function (type) {
         try {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
             if (!server_response) return;
@@ -17,7 +17,7 @@ module.exports = (client, game_server) => {
                 **Gamemode:** ${data.mode}\n
                 **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')}\n
                 ${data.round_end_state ? `\n**Rouned End State:** ${data.round_end_state}` : ``}`
-            for (const message of game_server.status_messages) {
+            for (const message of game_server.updater_messages[type]) {
                 await client.embed({
                     title: `${game_server.server_name} status`,
                     desc: desc,
@@ -26,7 +26,7 @@ module.exports = (client, game_server) => {
                 }, message)
             }
         } catch (error) {
-            for (const message of game_server.status_messages) {
+            for (const message of game_server.updater_messages[type]) {
                 await client.embed({
                     title: `${game_server.server_name} status`,
                     desc: `# SERVER OFFLINE`,
@@ -36,6 +36,83 @@ module.exports = (client, game_server) => {
             }
         }
     }
+
+    game_server.updateAdmins = async function (type) {
+        try {
+            const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
+            const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+            const roleMap = new Map();
+            db_request_ranks.forEach(row => {
+                roleMap.set(row.id, row.rank_name);
+            });
+            const embeds = [];
+            let fields = [];
+            for (const db_admin of db_request_admin) {
+                const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT ckey, last_login FROM players WHERE id = ?", params: [db_admin.player_id] });
+                let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
+                let extra_ranks;
+                if (db_admin.extra_titles_encoded) {
+                    for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
+                        extra_ranks += `(${roleMap.get(db_admin.rank_id)}) `;
+                    }
+                }
+                if (extra_ranks) info += `**Extra Ranks:** ${extra_ranks}`
+                info += `**Last login:** ${db_player_profile[0].last_login}\n`;
+                fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
+                if (fields.length === 25) {
+                    embeds.push(
+                        new Discord.EmbedBuilder()
+                            .setTitle(``)
+                            .addFields(fields)
+                            .setColor('#6d472b')
+                    );
+                    fields = [];
+                }
+            }
+            if (fields.length > 0) {
+                embeds.push(
+                    new Discord.EmbedBuilder()
+                        .setTitle(``)
+                        .addFields(fields)
+                        .setColor('#6d472b')
+                );
+            }
+            for (const message of game_server.updater_messages[type]) {
+                await client.sendEmbed({
+                    embeds: embeds,
+                    content: `${game_server.server_name} Actual Admins`,
+                    components: [],
+                    type: `edit`
+                }, message);
+            }
+            await interaction.editReply({ content: 'View Admins', embeds: embeds, components: [], ephemeral: true });
+        } catch (error) {
+            for (const message of game_server.updater_messages[type]) {
+                await client.embed({
+                    content: `${game_server.server_name} Actual Admins`,
+                    title: ``,
+                    desc: `# ERROR`,
+                    color: `#a00f0f`,
+                    type: 'edit'
+                }, message);
+            }
+        }
+    }
+
+    game_server.updateWhitelists = async function (type) {
+        const actual_wls_channels = JSON.parse(game_server.whitelist_channel);
+        const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
+        const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+    }
+
+
+    game_server.handling_updaters = {
+        "status": game_server.updateStatus,
+        "admin": game_server.updateAdmins,
+        "whitelist_c": game_server.updateWhitelists,
+        "whitelist_s": game_server.updateWhitelists,
+        "whitelist_p": game_server.updateWhitelists
+    };
 
 
     game_server.infoRequest = async function ({
@@ -87,47 +164,72 @@ module.exports = (client, game_server) => {
 
 
     //HANDLING COMMMANDS
-    game_server.view_admins = async function (client, interaction) {
+    game_server.viewAdmins = async function (interaction) {
         const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
         const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
         const roleMap = new Map();
         db_request_ranks.forEach(row => {
             roleMap.set(row.id, row.rank_name);
         });
-        const fields = [];
+        const embeds = [];
+        let fields = [];
         for (const db_admin of db_request_admin) {
             const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT ckey, last_login FROM players WHERE id = ?", params: [db_admin.player_id] });
             let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
-            if(db_admin.extra_titles_encoded.length > 4) {
+            if(db_admin.extra_titles_encoded) {
                 info += `**Extra Ranks:** ${db_admin.extra_titles_encoded}\n`;
             }
             info += `**Last login:** ${db_player_profile[0].last_login}\n`;
             fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
+            if (fields.length === 25) {
+                embeds.push(
+                    new Discord.EmbedBuilder()
+                        .setTitle(``)
+                        .addFields(fields)
+                        .setColor('#6d472b')
+                );
+                fields = [];
+            }
         }
-        const Embed = new Discord.EmbedBuilder()
-        .setTitle('View Ranks')
-        .addFields(fields)
-        .setColor('#6d472b');
-        await interaction.editReply({ content: '', embeds: [Embed], components: [], ephemeral: true });
+        if (fields.length > 0) {
+            embeds.push(
+                new Discord.EmbedBuilder()
+                    .setTitle(``)
+                    .addFields(fields)
+                    .setColor('#6d472b')
+            );
+        }
+        await interaction.editReply({ content: 'View Admins', embeds: embeds, components: [], ephemeral: true });
     }
 
-    game_server.view_ranks = async function (client, interaction) {
+    game_server.viewRanks = async function (interaction) {
         const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
-        const fields = [];
+        const embeds = [];
+        let fields = [];
         for (const db_rank of db_request_ranks) {
             fields.push({ name: `${db_rank.rank_name}`, value: `**Rights:** ${db_rank.text_rights}` });
+            if (fields.length === 25) {
+                embeds.push(
+                    new Discord.EmbedBuilder()
+                        .setTitle(``)
+                        .addFields(fields)
+                        .setColor('#6d472b')
+                );
+                fields = [];
+            }
         }
-        const Embed = new Discord.EmbedBuilder()
-        .setTitle('View Ranks')
-        .addFields(fields)
-        .setColor('#6d472b');
-        await interaction.editReply({ content: '', embeds: [Embed], components: [], ephemeral: true });
-    }
-/*
-    game_server.realtime_list_handler_admins = async function (client, interaction) {
-        const bot_settings = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'new_round_message'", params: [] });
-    }
+        if (fields.length > 0) {
+            embeds.push(
+                new Discord.EmbedBuilder()
+                    .setTitle(``)
+                    .addFields(fields)
+                    .setColor('#6d472b')
+            );
+        }
+        await interaction.editReply({ content: 'View Ranks', embeds: embeds, components: [], ephemeral: true });
+    };
 
+/*
     game_server.admin_playtimes = async function (client, interaction) {
         
     }
@@ -157,8 +259,8 @@ module.exports = (client, game_server) => {
     }
 */
     game_server.handling_view_actions = {
-        "admins": game_server.view_admins,
-        "ranks": game_server.view_ranks
+        "admins": game_server.viewAdmins,
+        "ranks": game_server.viewRanks
     };
 
     game_server.handling_view_commands = [

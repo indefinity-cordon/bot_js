@@ -82,7 +82,7 @@ async function handleCommandSelection(client, interaction, game_server) {
         collector.on('collect', async collected => {
             await collected.deferUpdate();
             if (game_server.handling_view_actions[collected.values[0]]) {
-                resolve(await game_server.handling_view_actions[collected.values[0]](client, collected));
+                resolve(await game_server.handling_view_actions[collected.values[0]](collected));
             }
             resolve();
         });

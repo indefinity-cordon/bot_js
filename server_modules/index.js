@@ -37,12 +37,12 @@ module.exports = class Server {
     /**
      * @type {Array}
      */
-    status_messages;
+    updater_messages;
 
     /**
      * @type {NodeJS.Timer}
      */
-    status_interval;
+    message_updater_intervals;
 
     /**
      * @type {NodeJS.Timer}
@@ -59,11 +59,11 @@ module.exports = class Server {
         this.database = '';
         this.game_connection = null;
         this.init_file_name = '';
-        this.guild = BigInt(0);
+        this.guild = '';
         this.ip = '';
         this.port = 0;
-        this.status_messages = [];
-        this.status_interval = null;
+        this.updater_messages = {};
+        this.message_updater_intervals = null;
         this.update_status_messages_interval = null;
         this.update_roles_interval = null;
     }
