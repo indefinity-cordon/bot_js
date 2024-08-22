@@ -85,7 +85,6 @@ module.exports = (client, game_server) => {
                     type: `edit`
                 }, message);
             }
-            await interaction.editReply({ content: 'View Admins', embeds: embeds, components: [], ephemeral: true });
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
@@ -100,9 +99,88 @@ module.exports = (client, game_server) => {
     }
 
     game_server.updateWhitelists = async function (type) {
-        const actual_wls_channels = JSON.parse(game_server.whitelist_channel);
-        const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
-        const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+        try {
+            let acting_wls;
+            switch (type) {
+                case "whitelist_c": {
+                    acting_wls = [
+                        "WHITELIST_COMMANDER",
+                        "WHITELIST_COMMANDER_COUNCIL",
+                        "WHITELIST_COMMANDER_COUNCIL_LEGACY",
+                        "WHITELIST_COMMANDER_COLONEL",
+                        "WHITELIST_COMMANDER_LEADER"
+                    ]
+                } break;
+                case "whitelist_s": {
+                    acting_wls = [
+                        "WHITELIST_SYNTHETIC",
+                        "WHITELIST_SYNTHETIC_COUNCIL",
+                        "WHITELIST_SYNTHETIC_COUNCIL_LEGACY",
+                        "WHITELIST_SYNTHETIC_LEADER"
+                    ]
+                } break;
+                case "whitelist_j": {
+                    acting_wls = [
+                        "WHITELIST_JOE"
+                    ]
+                } break;
+                case "whitelist_p": {
+                    acting_wls = [
+                        "WHITELIST_YAUTJA",
+                        "WHITELIST_YAUTJA_LEGACY",
+                        "WHITELIST_YAUTJA_COUNCIL",
+                        "WHITELIST_YAUTJA_COUNCIL_LEGACY",
+                        "WHITELIST_YAUTJA_LEADER"
+                    ]
+                } break;
+            }
+            const embeds = [];
+            let fields = [];
+            const db_player_profiles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"", params: [] });
+            for(const player of db_player_profiles) {
+                const wl_fields = player.whitelist_status.split('|');
+                const actual_wl_fields = wl_fields.filter(field => acting_wls.includes(field));
+    
+                if (actual_wl_fields.length > 0) {
+                    fields.push({ name: `**${player.ckey}**`, value: `**Status:** ${actual_wl_fields.join(', ')}` });
+                    if (fields.length === 25) {
+                        embeds.push(
+                            new Discord.EmbedBuilder()
+                                .setTitle(``)
+                                .addFields(fields)
+                                .setColor('#6d472b')
+                        );
+                        fields = [];
+                    }
+                }
+            }
+            if (fields.length > 0) {
+                embeds.push(
+                    new Discord.EmbedBuilder()
+                        .setTitle(``)
+                        .addFields(fields)
+                        .setColor('#6d472b')
+                );
+            }
+            for (const message of game_server.updater_messages[type]) {
+                await client.sendEmbed({
+                    embeds: embeds,
+                    content: `${game_server.server_name} Actual Whitelists`,
+                    components: [],
+                    type: `edit`
+                }, message);
+            }
+        } catch (error) {
+            for (const message of game_server.updater_messages[type]) {
+                await client.embed({
+                    content: `${game_server.server_name} Actual Whitelists`,
+                    title: ``,
+                    desc: `# ERROR`,
+                    color: `#a00f0f`,
+                    type: 'edit'
+                }, message);
+            }
+        }
     }
 
 
@@ -111,6 +189,7 @@ module.exports = (client, game_server) => {
         "admin": game_server.updateAdmins,
         "whitelist_c": game_server.updateWhitelists,
         "whitelist_s": game_server.updateWhitelists,
+        "whitelist_j": game_server.updateWhitelists,
         "whitelist_p": game_server.updateWhitelists
     };
 
