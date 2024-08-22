@@ -13,8 +13,9 @@ module.exports = async (client) => {
 
             let github_link, github_branch, github_token;
 
-            github_link = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_link'", params: [] });
-            github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+            github_link = await client.databaseSettingsRequest("github_link");
+            
+            github_branch = await client.databaseSettingsRequest("github_branch");
             github_token = process.env.GITHUB_PAT;
 
             await client.git.remote(['set-url', 'origin', `https://${github_token}@github.com/${github_link[0].param}.git`]);
@@ -28,81 +29,57 @@ module.exports = async (client) => {
             );
             return response.data.sha;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed remote: ${error}`));
-            throw error;
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed remote: ${error}`));
         }
     };
 
     client.getLastLocalCommit = async function (client) {
         try {
-            let github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+            let github_branch = await client.databaseSettingsRequest("github_branch");
             const log = await client.git.log([github_branch[0].param]);
             return log.latest.hash;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed local: ${error}`));
-            throw error;
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed local: ${error}`));
         }
     };
 
     client.pullChanges = async function (client) {
         try {
-            let github_branch = await client.databaseRequest({ database: client.database, query: "SELECT param FROM settings WHERE name = 'github_branch'", params: [] });
+            let github_branch = await client.databaseSettingsRequest("github_branch");
             await client.git.pull('origin', github_branch[0].param);
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[DONE]`), (chalk.white(`>>`)), chalk.red(`Pulled latest changes`));
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`Pulled latest changes`));
         } catch (error) {
-            console.error(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[ERROR]`), (chalk.white(`>>`)), chalk.red(`Failed: ${error}`));
-            throw error;
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed: ${error}`));
         }
     };
 
     client.tryForUpdate = async function (client) {
-        try {
-            const remoteCommit = await client.getLastCommit(client);
-            const localCommit = await client.getLastLocalCommit(client);
+        const remoteCommit = await client.getLastCommit(client);
+        const localCommit = await client.getLastLocalCommit(client);
 
-            if (remoteCommit !== localCommit) {
-                console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.green(`[PROGRESS]`), (chalk.white(`>>`)), chalk.red(`New commit found, pulling changes`));
-                try {
-                    await client.pullChanges(client);
-                    client.restartApp();
-                } catch (error) {
-                    throw error;
-                }
-            }
-        } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.red(`[FAILED]`), (chalk.white(`>>`)), chalk.red(`Failed update: ${error}`));
+        if (remoteCommit !== localCommit) {
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`New commit found, pulling changes`));
+            await client.pullChanges(client);
+            client.restartApp();
         }
     };
 
     await client.database;
 
     client.git_commit = await client.getLastLocalCommit(client);
-
-    const botLogs = new Discord.WebhookClient({
-        id: process.env.WEBHOOK_ID,
-        token: process.env.WEBHOOK_TOKEN,
-    });
-
-    if(botLogs) {
-        const embed = new Discord.EmbedBuilder()
-            .setTitle(`System`)
-            .addFields([
-                {
-                    name: "Start",
-                    value: `Commit SHA: ${client.git_commit}`,
-                }
-            ])
-        botLogs.send({
-            username: 'Bot Logs',
-            embeds: [embed],
-        }).catch(() => {
-            console.log('Error sending start info to webhook');
-        })
-        console.log(chalk.blue(chalk.bold(`GitHub`)), (chalk.white(`>>`)), chalk.blue(`[INFO]`), (chalk.white(`>>`)), chalk.red(`Current commit: ${client.git_commit}`));
-    }
+    const embed = new Discord.EmbedBuilder()
+        .setTitle(`System`)
+        .addFields([
+            {
+                name: "Start",
+                value: `Commit SHA: ${client.git_commit}`,
+            }
+        ])
+    global.LogsHandler.send_log(embed);
+    console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.green(`Current commit: ${client.git_commit}`));
     setInterval(
         client.tryForUpdate,
-        5 * 60 * 1000, // Каждые N минут (первое число)
+        1 * 60 * 1000, // Каждые N минут (первое число)
         client
     );
 }

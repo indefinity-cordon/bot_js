@@ -17,32 +17,27 @@ const client = new Discord.Client({
     restTimeOffset: 0
 });
 
-const botLogs = new Discord.WebhookClient({
-    id: process.env.WEBHOOK_ID,
-    token: process.env.WEBHOOK_TOKEN,
-});
+const LogsHandlerclass = require('./LogsHandler.js');
+global.LogsHandler = new LogsHandlerclass();
+if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
+    global.LogsHandler.botLogs = new Discord.WebhookClient({
+        id: process.env.WEBHOOK_ID,
+        token: process.env.WEBHOOK_TOKEN,
+    });
+}
 
 // Use in funny moments
 client.restartApp = function (reason) {
-    console.log(chalk.blue(chalk.bold(`System`)), (chalk.white(`>>`)), (chalk.green(`App`)), chalk.red(`Restarting process`), (chalk.white(`...`)));
-    
-    if (botLogs) {
-        const embed = new Discord.EmbedBuilder()
-        .setTitle(`System`)
-        .addFields([
-            {
-                name: "Restart",
-                value: reason ? `Reason: ${reason}` : "Reason is not provided",
-            }
-        ])
-
-        botLogs.send({
-            username: 'Bot Logs',
-            embeds: [embed],
-        }).catch(() => {
-            console.log('Error sending start info to webhook');
-        })
-    }
+    console.log(chalk.blue(chalk.bold(`System`)), chalk.white(`>>`), chalk.green(`App`), chalk.white(`...`), chalk.red(`Restarting process`), chalk.white(`...`));
+    const embed = new Discord.EmbedBuilder()
+    .setTitle(`System`)
+    .addFields([
+        {
+            name: "Restart",
+            value: reason ? `Reason: ${reason}` : "Reason is not provided",
+        }
+    ])
+    global.LogsHandler.send_log(embed);
     process.exit(1);
 }
 
@@ -50,8 +45,8 @@ client.handling_commands_actions = [];
 client.handling_commands = [];
 
 require("./database/MySQL")(client);
-require("./socket/Redis")(client);
-require("./github/GitHub")(client);
+if (process.env.REDIS_USER && process.env.REDIS_PASSWORD && process.env.REDIS_SERVER && process.env.REDIS_PORT) require("./socket/Redis")(client);
+if (process.env.GITHUB_PAT) require("./github/GitHub")(client);
 
 initializeMess(client)
 
@@ -62,7 +57,7 @@ async function initializeMess (client) {
         label: server.server_name,
         value: server.server_name
     }));
-    client.servers_link = [];
+    client.servers_link = {};
     client.ServerActions = require(`${process.cwd()}/server_modules/servers_actions.js`);
     await client.login(process.env.DISCORD_TOKEN);
     fs.readdirSync('./handlers').forEach((dir) => {
@@ -76,93 +71,20 @@ client.commands = new Discord.Collection();
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) {
-            console.error(error.stack);
-            if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-        }
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`Unhandled promise rejection`)
-        .addFields([
-            {
-                name: "Error",
-                value: error ? Discord.codeBlock(error) : "No error",
-            },
-            {
-                name: "Stack error",
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending unhandled promise rejection to webhook');
-        console.log(error);
-    })
+    global.LogsHandler.error(error, "Unhandled promise rejection", "error");
+});
+
+process.on('uncaughtException', error => {
+    console.error("uncaughtException:", error);
+    global.LogsHandler.error(error, "New critical error found", "critical error");
 });
 
 process.on('warning', error => {
     console.warn("Warning:", error);
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) {
-            console.warn(error.stack);
-            if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-        }
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`New warning found`)
-        .addFields([
-            {
-                name: `Warn`,
-                value: error ? Discord.codeBlock(error) : "No warning",
-            },
-            {
-                name: `Stack error`,
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending warning to webhook');
-        console.log(error);
-    })
+    global.LogsHandler.error(error, "New warning found", "warning");
 });
 
 client.on(Discord.ShardEvents.Error, error => {
     console.log(error);
-    if (!botLogs) return;
-    if (error) {
-        if (error.length > 950) error = error.slice(0, 950) + '... view console for details';
-        if (error.stack) {
-            console.log(error.stack);
-            if (error.stack.length > 950) error.stack = error.stack.slice(0, 950) + '... view console for details';
-        }
-    }
-    const embed = new Discord.EmbedBuilder()
-        .setTitle(`A websocket connection encountered an error`)
-        .addFields([
-            {
-                name: `Error`,
-                value: error ? Discord.codeBlock(error) : "No error",
-            },
-            {
-                name: `Stack error`,
-                value: error.stack ? Discord.codeBlock(error.stack) : "No stack error",
-            },
-        ])
-    botLogs.send({
-        username: 'Bot Logs',
-        embeds: [embed],
-    }).catch(() => {
-        console.log('Error sending warning to webhook');
-        console.log(error);
-    })
+    global.LogsHandler.error(error, "A websocket connection encountered an error", "error");
 });
