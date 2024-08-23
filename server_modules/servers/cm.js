@@ -34,7 +34,7 @@ module.exports = (client, game_server) => {
                 }, message);
             }
         }
-    }
+    };
 
     game_server.updateAdmins = async function (type) {
         try {
@@ -49,13 +49,13 @@ module.exports = (client, game_server) => {
             for (const db_admin of db_request_admin) {
                 const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT ckey, last_login FROM players WHERE id = ?", params: [db_admin.player_id] });
                 let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
-                let extra_ranks;
+                const extra_ranks = [];
                 if (db_admin.extra_titles_encoded) {
                     for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
-                        extra_ranks += `(${roleMap.get(rank_id)}) `;
+                        extra_ranks += `${roleMap.get(rank_id)}`;
                     }
                 }
-                if (extra_ranks) info += `**Extra Ranks:** ${extra_ranks}`;
+                if (extra_ranks.length > 0) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
                 info += `**Last login:** ${db_player_profile[0].last_login}\n`;
                 fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
                 if (fields.length === 25) {
@@ -95,11 +95,58 @@ module.exports = (client, game_server) => {
                 }, message);
             }
         }
-    }
+    };
+
+    game_server.updateRanks = async function (type) {
+        try {
+            const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+            const embeds = [];
+            let fields = [];
+            for (const db_rank of db_request_ranks) {
+                const rank_fields = db_rank.text_rights.split('|');
+                fields.push({ name: `${db_rank.rank_name}`, value: `**Rights:** ${rank_fields.join(' & ')}` });
+                if (fields.length === 25) {
+                    embeds.push(
+                        new Discord.EmbedBuilder()
+                            .setTitle(` `)
+                            .addFields(fields)
+                            .setColor('#6d472b')
+                    );
+                    fields = [];
+                }
+            }
+            if (fields.length > 0) {
+                embeds.push(
+                    new Discord.EmbedBuilder()
+                        .setTitle(` `)
+                        .addFields(fields)
+                        .setColor('#6d472b')
+                );
+            }
+            for (const message of game_server.updater_messages[type]) {
+                await client.sendEmbed({
+                    embeds: embeds,
+                    content: `${game_server.server_name} Actual Ranks`,
+                    components: [],
+                    type: `edit`
+                }, message);
+            }
+        } catch (error) {
+            for (const message of game_server.updater_messages[type]) {
+                await client.embed({
+                    content: `${game_server.server_name} Actual Ranks`,
+                    title: ``,
+                    desc: `# ERROR`,
+                    color: `#a00f0f`,
+                    type: 'edit'
+                }, message);
+            }
+        }
+    };
 
     game_server.updateWhitelists = async function (type) {
         try {
-            let acting_wls;
+            let acting_wls, replacements;
             switch (type) {
                 case "whitelist_c": {
                     acting_wls = [
@@ -108,7 +155,14 @@ module.exports = (client, game_server) => {
                         "WHITELIST_COMMANDER_COUNCIL_LEGACY",
                         "WHITELIST_COMMANDER_COLONEL",
                         "WHITELIST_COMMANDER_LEADER"
-                    ]
+                    ];
+                    replacements = {
+                        "WHITELIST_COMMANDER": "CO",
+                        "WHITELIST_COMMANDER_COUNCIL": "CO Council",
+                        "WHITELIST_COMMANDER_COUNCIL_LEGACY": "CO Council Legacy",
+                        "WHITELIST_COMMANDER_COLONEL": "Colonel",
+                        "WHITELIST_COMMANDER_LEADER": "CO Leader"
+                    };
                 } break;
                 case "whitelist_s": {
                     acting_wls = [
@@ -116,12 +170,17 @@ module.exports = (client, game_server) => {
                         "WHITELIST_SYNTHETIC_COUNCIL",
                         "WHITELIST_SYNTHETIC_COUNCIL_LEGACY",
                         "WHITELIST_SYNTHETIC_LEADER"
-                    ]
+                    ];
+                    replacements = {
+                        "WHITELIST_SYNTHETIC": "Synthetic",
+                        "WHITELIST_SYNTHETIC_COUNCIL": "Synthetic Council",
+                        "WHITELIST_SYNTHETIC_COUNCIL_LEGACY": "Synthetic Council Legacy",
+                        "WHITELIST_SYNTHETIC_LEADER": "Synthetic Leader"
+                    };
                 } break;
                 case "whitelist_j": {
-                    acting_wls = [
-                        "WHITELIST_JOE"
-                    ]
+                    acting_wls = ["WHITELIST_JOE"];
+                    replacements = { "WHITELIST_JOE": "Joe" };
                 } break;
                 case "whitelist_p": {
                     acting_wls = [
@@ -130,18 +189,30 @@ module.exports = (client, game_server) => {
                         "WHITELIST_YAUTJA_COUNCIL",
                         "WHITELIST_YAUTJA_COUNCIL_LEGACY",
                         "WHITELIST_YAUTJA_LEADER"
-                    ]
+                    ];
+                    replacements = {
+                        "WHITELIST_YAUTJA": "Yautja",
+                        "WHITELIST_YAUTJA_LEGACY": "Yautja Legacy",
+                        "WHITELIST_YAUTJA_COUNCIL": "Yautja Council",
+                        "WHITELIST_YAUTJA_COUNCIL_LEGACY": "Yautja Council Legacy",
+                        "WHITELIST_YAUTJA_LEADER": "Yautja Leader"
+                    };
                 } break;
             }
             const embeds = [];
             let fields = [];
-            const db_player_profiles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"", params: [] });
-            for(const player of db_player_profiles) {
+            const db_player_profiles = await client.databaseRequest({
+                database: game_server.game_connection,
+                query: "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"",
+                params: []
+            });
+            for (const player of db_player_profiles) {
                 const wl_fields = player.whitelist_status.split('|');
-                const actual_wl_fields = wl_fields.filter(field => acting_wls.includes(field));
-    
+                const actual_wl_fields = wl_fields
+                    .filter(field => acting_wls.includes(field))
+                    .map(field => replacements[field] || field);
                 if (actual_wl_fields.length > 0) {
-                    fields.push({ name: `**${player.ckey}**`, value: `**Status:** ${actual_wl_fields.join(', ')}` });
+                    fields.push({ name: `**${player.ckey}**`, value: `**Status:** ${actual_wl_fields.join(' & ')}` });
                     if (fields.length === 25) {
                         embeds.push(
                             new Discord.EmbedBuilder()
@@ -180,12 +251,13 @@ module.exports = (client, game_server) => {
                 }, message);
             }
         }
-    }
+    };
 
 
     game_server.handling_updaters = {
         "status": game_server.updateStatus,
         "admin": game_server.updateAdmins,
+        "rank": game_server.updateRanks,
         "whitelist_c": game_server.updateWhitelists,
         "whitelist_s": game_server.updateWhitelists,
         "whitelist_j": game_server.updateWhitelists,
@@ -239,93 +311,24 @@ module.exports = (client, game_server) => {
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
             });
-            player_info += `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
-            let extra_ranks;
+            player_info += `**Rank:** ${roleMap.get(db_request_admin[0].rank_id)}\n`;
+            const extra_ranks = [];
             if (db_admin.extra_titles_encoded) {
-                for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
-                    extra_ranks += `(${roleMap.get(rank_id)}) `;
+                for(const rank_id of JSON.parse(db_request_admin[0].extra_titles_encoded)) {
+                    extra_ranks += `${roleMap.get(rank_id)}`;
                 }
             }
-            if (extra_ranks) player_info += `**Extra Ranks:** ${extra_ranks}`;
+            if (extra_ranks.length > 0) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
         }
         client.ephemeralEmbed({
             title: `**${request[0].role_rank ? `HIDDEN` : db_player_profile[0].ckey}** player info`,
             desc: `\n${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`,
             color: `#6d472b`
         }, interaction);
-    }
+    };
 
 
     //HANDLING COMMMANDS
-    game_server.viewAdmins = async function (interaction) {
-        const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
-        const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
-        const roleMap = new Map();
-        db_request_ranks.forEach(row => {
-            roleMap.set(row.id, row.rank_name);
-        });
-        const embeds = [];
-        let fields = [];
-        for (const db_admin of db_request_admin) {
-            const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT ckey, last_login FROM players WHERE id = ?", params: [db_admin.player_id] });
-            let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
-            let extra_ranks;
-            if (db_admin.extra_titles_encoded) {
-                for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
-                    extra_ranks += `(${roleMap.get(rank_id)}) `;
-                }
-            }
-            if (extra_ranks) info += `**Extra Ranks:** ${extra_ranks}`;
-            info += `**Last login:** ${db_player_profile[0].last_login}\n`;
-            fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
-            if (fields.length === 25) {
-                embeds.push(
-                    new Discord.EmbedBuilder()
-                        .setTitle(` `)
-                        .addFields(fields)
-                        .setColor('#6d472b')
-                );
-                fields = [];
-            }
-        }
-        if (fields.length > 0) {
-            embeds.push(
-                new Discord.EmbedBuilder()
-                    .setTitle(` `)
-                    .addFields(fields)
-                    .setColor('#6d472b')
-            );
-        }
-        await interaction.editReply({ content: 'View Admins', embeds: embeds, components: [], ephemeral: true });
-    }
-
-    game_server.viewRanks = async function (interaction) {
-        const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
-        const embeds = [];
-        let fields = [];
-        for (const db_rank of db_request_ranks) {
-            fields.push({ name: `${db_rank.rank_name}`, value: `**Rights:** ${db_rank.text_rights}` });
-            if (fields.length === 25) {
-                embeds.push(
-                    new Discord.EmbedBuilder()
-                        .setTitle(` `)
-                        .addFields(fields)
-                        .setColor('#6d472b')
-                );
-                fields = [];
-            }
-        }
-        if (fields.length > 0) {
-            embeds.push(
-                new Discord.EmbedBuilder()
-                    .setTitle(` `)
-                    .addFields(fields)
-                    .setColor('#6d472b')
-            );
-        }
-        await interaction.editReply({ content: 'View Ranks', embeds: embeds, components: [], ephemeral: true });
-    };
-
 /*
     game_server.admin_playtimes = async function (client, interaction) {
         
@@ -355,13 +358,215 @@ module.exports = (client, game_server) => {
         
     }
 */
-    game_server.handling_view_actions = {
-        "admins": game_server.viewAdmins,
-        "ranks": game_server.viewRanks
+
+    game_server.manageAdmins = async function (interaction) {
+        const actionOptions = [
+            { label: 'Add Admin', value: 'add' },
+            { label: 'Remove Admin', value: 'remove' },
+            { label: 'Update Admin', value: 'update' }
+        ];
+
+        const collected = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', actionOptions, 'Choose an action for admin management:');
+        if (collected) {
+            await interaction.deferUpdate();
+            switch (collected) {
+                case 'add': {
+                    await client.sendInteractionInput({
+                        content: 'Enter the ckey of the player to add as admin:',
+                        interaction: interaction
+                    });
+                    client.onInteractionInput(interaction, async (ckey) => {
+                        const playerData = await client.databaseRequest({ 
+                            database: game_server.game_connection, 
+                            query: "SELECT id, ckey FROM players WHERE ckey LIKE ?", 
+                            params: [`%${ckey}%`] 
+                        });
+                        if (!playerData.length) {
+                            await client.sendErrorEmbed({ 
+                                content: 'No players found with that ckey. Please try again.', 
+                                interaction: interaction 
+                            });
+                            return;
+                        }
+                        const playerOptions = playerData.map(player => ({
+                            label: player.ckey,
+                            value: player.id.toString()
+                        }));
+                        await client.sendInteractionSelectMenu({
+                            content: 'Select the player to add as admin:',
+                            options: playerOptions,
+                            interaction: interaction
+                        });
+                        client.onSelectMenu(interaction, async (selectedPlayerId) => {
+                            const rankOptions = await getRankOptions(game_server.game_connection);
+                            await client.sendInteractionSelectMenu({
+                                content: 'Select the rank to assign:',
+                                options: rankOptions,
+                                interaction: interaction
+                            });
+                            client.onSelectMenu(interaction, async (selectedRankId) => {
+                                await client.databaseRequest({ 
+                                    database: game_server.game_connection, 
+                                    query: "INSERT INTO admins (player_id, rank_id) VALUES (?, ?)", 
+                                    params: [selectedPlayerId, selectedRankId] 
+                                });
+                                await client.sendSuccessEmbed({
+                                    content: 'Admin added successfully!',
+                                    interaction: interaction
+                                });
+                            });
+                        });
+                    });
+                } break;
+                case 'remove': {
+                    const adminList = await getAdminOptions(game_server.game_connection);
+                    if (adminList.length === 0) {
+                        await client.sendErrorEmbed({
+                            content: 'No admins found to remove.',
+                            interaction: interaction
+                        });
+                        return;
+                    }
+                    await client.sendInteractionSelectMenu({
+                        content: 'Select the admin to remove:',
+                        options: adminList,
+                        interaction: interaction
+                    });
+                    client.onSelectMenu(interaction, async (selectedAdminId) => {
+                        await client.sendInteractionConfirm({
+                            content: `Are you sure you want to remove this admin?`,
+                            interaction: interaction
+                        });
+                        client.onInteractionConfirm(interaction, async (confirmed) => {
+                            if (confirmed) {
+                                await client.databaseRequest({ 
+                                    database: game_server.game_connection, 
+                                    query: "DELETE FROM admins WHERE player_id = ?", 
+                                    params: [selectedAdminId] 
+                                });
+                                await client.sendSuccessEmbed({
+                                    content: 'Admin removed successfully!',
+                                    interaction: interaction
+                                });
+                            }
+                        });
+                    });
+                } break;
+                case 'update': {
+                    const adminList = await getAdminOptions(game_server.game_connection);
+                    if (adminList.length === 0) {
+                        await client.sendErrorEmbed({
+                            content: 'No admins found to update.',
+                            interaction: interaction
+                        });
+                        return;
+                    }
+                    await client.sendInteractionSelectMenu({
+                        content: 'Select the admin to update:',
+                        options: adminList,
+                        interaction: interaction
+                    });
+                    client.onSelectMenu(interaction, async (selectedAdminId) => {
+                        const rankOptions = await getRankOptions(game_server.game_connection);
+                        await client.sendInteractionSelectMenu({
+                            content: 'Select the new rank or rights to assign:',
+                            options: rankOptions,
+                            interaction: interaction
+                        });
+                        client.onSelectMenu(interaction, async (selectedRankId) => {
+                            await client.databaseRequest({ 
+                                database: game_server.game_connection, 
+                                query: "UPDATE admins SET rank_id = ? WHERE player_id = ?", 
+                                params: [selectedRankId, selectedAdminId] 
+                            });
+                            await client.sendSuccessEmbed({
+                                content: 'Admin updated successfully!',
+                                interaction: interaction
+                            });
+                        });
+                    });
+                } break;
+            }
+        };
     };
 
-    game_server.handling_view_commands = [
-        { label: "View Admins", value: "admins" },
-        { label: "View Ranks", value: "ranks" }
+    game_server.manageRanks = async function (interaction, action, rankData) {
+        try {
+            switch (action) {
+                case 'add': {
+                    const { rank_name, text_rights } = rankData;
+                    await client.databaseRequest({
+                        database: game_server.game_connection,
+                        query: "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)",
+                        params: [rank_name, text_rights]
+                    });
+                    await interaction.reply({ content: `Rank ${rank_name} added successfully.`, ephemeral: true });
+                    break;
+                }
+                case 'remove': {
+                    const { rank_id } = rankData;
+                    await client.databaseRequest({
+                        database: game_server.game_connection,
+                        query: "DELETE FROM admin_ranks WHERE id = ?",
+                        params: [rank_id]
+                    });
+                    await interaction.reply({ content: `Rank removed successfully.`, ephemeral: true });
+                    break;
+                }
+                case 'update': {
+                    const { rank_id, rank_name, text_rights } = rankData;
+                    await client.databaseRequest({
+                        database: game_server.game_connection,
+                        query: "UPDATE admin_ranks SET rank_name = ?, text_rights = ? WHERE id = ?",
+                        params: [rank_name, text_rights, rank_id]
+                    });
+                    await interaction.reply({ content: `Rank updated successfully.`, ephemeral: true });
+                    break;
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: `An error occurred while managing ranks.`, ephemeral: true });
+        }
+    };
+
+    game_server.handling_actions = {
+        "manage_admins": game_server.manageAdmins,
+        "manage_ranks": game_server.manageRanks,
+        "view_admins": game_server.viewAdmins,
+        "view_ranks": game_server.viewRanks
+    };
+
+    game_server.handling_commands = [
+        { label: "Manage Admins", value: "manage_admins" },
+        { label: "Manage Ranks", value: "manage_ranks" },
+        { label: "View Admins", value: "view_admins" },
+        { label: "View Ranks", value: "view_ranks" }
     ];
 }
+
+async function getAdminOptions(database_connection) {
+    const admins = await client.databaseRequest({
+        database: database_connection,
+        query: "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id",
+        params: []
+    });
+
+    return admins.map(admin => ({
+        label: admin.ckey,
+        value: admin.player_id.toString()
+    }));
+};
+
+async function getRankOptions(database_connection) {
+    const ranks = await client.databaseRequest({
+        database: database_connection,
+        query: "SELECT id, rank_name FROM admin_ranks",
+        params: []
+    });
+
+    return ranks.map(rank => ({
+        label: rank.rank_name,
+        value: rank.id.toString()
+    }));
+};

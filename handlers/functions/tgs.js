@@ -89,70 +89,54 @@ module.exports = async (client) => {
             value: `${instance.id}`
         }));
 
-        const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId(`select-server`)
-            .setPlaceholder('Select a server instance')
-            .addOptions(options);
-
-        const row = new ActionRowBuilder()
-            .addComponents(selectMenu);
-
-        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
-            client.activeCollectors[interaction.user.id].stop();
+        const instanceId = await client.sendInteractionSelectMenu(interaction, `select-server-instance`, 'Select a server instance', options, 'Please select a server instance:');
+        if (instanceId) {
+            await interaction.deferUpdate();
+            const collected = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', client.handling_tgs, 'Please select action to perform:');
+            if (collected) {
+                await interaction.deferUpdate();
+                await await client.handling_tgs_actions[collected](interaction, instanceId);
+            }
         }
-
-        const filter = collected => collected.customId === `select-server` && collected.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
-        client.activeCollectors = client.activeCollectors || {};
-        client.activeCollectors[interaction.user.id] = collector;
-
-        await interaction.editReply({
-            content: 'Please select a server instance:',
-            components: [row],
-            ephemeral: true
-        });
-
-        return new Promise((resolve, reject) => {
-            collector.on('collect', async collected => {
-                await collected.deferUpdate();
-                resolve(await handleCommandSelection(client, collected, collected.values[0]));
-            });
-
-            collector.on('end', collected => {
-                if (collected.size === 0) {
-                    interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
-                }
-                delete client.activeCollectors[interaction.user.id];
-                resolve();
-            });
-        });
-    }
+    };
 
     client.handling_commands_actions["tgs"] = client.handleServerSelection;
     client.handling_commands.push({ label: "Manage TGS", value: "tgs", role_req: "tgs_role_id" });
 
-    client.tgs_start = async function (instanceId) {
+    client.tgs_start = async function (interaction, instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.put(`${tgs_address[0].param}/api/DreamDaemon`, null, { headers });
-        return response.data;
+        await client.ephemeralEmbed({
+            title: `Action`,
+            desc: `${response.data}`,
+            color: `#6d472b`
+        }, interaction);
     };
 
-    client.tgs_stop = async function (instanceId) {
+    client.tgs_stop = async function (interaction, instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.delete(`${tgs_address[0].param}/api/DreamDaemon`, { headers });
-        return response.data;
+        await client.ephemeralEmbed({
+            title: `Action`,
+            desc: `${response.data}`,
+            color: `#6d472b`
+        }, interaction);
     };
 
-    client.tgs_deploy = async function (instanceId) {
+    client.tgs_deploy = async function (interaction, instanceId) {
         await client.tgs_checkAuth();
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.put(`${tgs_address[0].param}/api/DreamMaker`, null, { headers });
-        return response.data;
+        await client.ephemeralEmbed({
+            title: `Action`,
+            desc: `${response.data}`,
+            color: `#6d472b`
+        }, interaction);
     };
 
     client.handling_tgs_actions = {
@@ -179,49 +163,5 @@ module.exports = async (client) => {
                 await channel.send(new_round_message[0].param);
             }
         }
-    });
-};
-
-async function handleCommandSelection(client, interaction, instanceId) {
-    const selectMenu = new StringSelectMenuBuilder()
-        .setCustomId(`select-action`)
-        .setPlaceholder('Select action')
-        .addOptions(client.handling_tgs);
-
-    const row = new ActionRowBuilder()
-        .addComponents(selectMenu);
-
-    if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
-        client.activeCollectors[interaction.user.id].stop();
-    }
-
-    const filter = collected => collected.customId === `select-action` && collected.user.id === interaction.user.id;
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
-    client.activeCollectors = client.activeCollectors || {};
-    client.activeCollectors[interaction.user.id] = collector;
-
-    await interaction.editReply({
-        content: 'Please select action to perform:',
-        components: [row],
-        ephemeral: true
-    });
-
-    return new Promise((resolve, reject) => {
-        collector.on('collect', async collected => {
-            await collected.deferUpdate();
-            if (client.handling_tgs_actions[collected.values[0]]) {
-                collected.editReply({ content: 'Action performed.', components: [] });
-                resolve(await client.handling_tgs_actions[collected.values[0]](instanceId, ));
-            }
-            resolve();
-        });
-
-        collector.on('end', collected => {
-            if (collected.size === 0) {
-                interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
-            }
-            delete client.activeCollectors[interaction.user.id];
-            resolve();
-        });
     });
 };
