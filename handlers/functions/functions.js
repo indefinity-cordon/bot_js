@@ -165,10 +165,10 @@ module.exports = async (client) => {
         client.activeCollectors[interaction.user.id] = collector;
         return new Promise((resolve) => {
             collector.on('collect', async collected => {
-                if (i.customId === 'button_prev' && currentPage > 0) {
+                if (collected.customId === 'button_prev' && currentPage > 0) {
                     currentPage--;
                     await sendPage(currentPage);
-                } else if (i.customId === 'button_next' && currentPage < totalPages - 1) {
+                } else if (collected.customId === 'button_next' && currentPage < totalPages - 1) {
                     currentPage++;
                     await sendPage(currentPage);
                 } else {
