@@ -18,7 +18,7 @@ module.exports = async (client) => {
 
 async function updateRoles(client, game_server) {
     try {
-        console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Prepairing for roles update`));
+        console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Preparing for roles update`));
 
         let db_roles, db_links, guild;
 
@@ -43,7 +43,7 @@ async function updateRoles(client, game_server) {
             discordLinksMap.set(link.discord_id, link.stable_rank);
         });
 
-        const totalMembers = await guild.memberCount;
+        const totalMembers = guild.memberCount;
         let processedMembers = 0;
 
         async function processBatch(membersBatch) {
@@ -92,7 +92,7 @@ async function updateRoles(client, game_server) {
 
         await fetchAndProcessMembers();
 
-        console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Processed total of ${totalMembers} members`));
+        console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Processed a total of ${totalMembers} members`));
     } catch (error) {
         console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Something went wrong, error: ${error}`));
     }
