@@ -463,7 +463,6 @@ module.exports = (client, game_server) => {
                                     await client.databaseRequest(game_server.game_connection, "UPDATE players SET extra_titles_encoded = ? WHERE id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
                                 }
                             }
-    
                             await client.ephemeralEmbed({
                                 title: `Request`,
                                 desc: `Admin updated successfully!`,
