@@ -48,7 +48,7 @@ async function updateUpdatersMessages(client, game_server) {
         }
         if (found_message === null) {
             await client.embed({
-                title: `${game_server.server_name} ${updater.type}`,
+                title: `${game_server.server_name}`,
                 desc: `prepairing...`
             }, channel).then((message) => {
                 found_message = message;

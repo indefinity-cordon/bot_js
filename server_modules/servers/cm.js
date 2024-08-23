@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = (client, game_server) => {
     game_server.updateStatus = async function (type) {
@@ -53,7 +52,7 @@ module.exports = (client, game_server) => {
                 let extra_ranks;
                 if (db_admin.extra_titles_encoded) {
                     for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
-                        extra_ranks += `(${roleMap.get(db_admin.rank_id)}) `;
+                        extra_ranks += `(${roleMap.get(rank_id)}) `;
                     }
                 }
                 if (extra_ranks) info += `**Extra Ranks:** ${extra_ranks}`
@@ -62,7 +61,7 @@ module.exports = (client, game_server) => {
                 if (fields.length === 25) {
                     embeds.push(
                         new Discord.EmbedBuilder()
-                            .setTitle(``)
+                            .setTitle('')
                             .addFields(fields)
                             .setColor('#6d472b')
                     );
@@ -72,7 +71,7 @@ module.exports = (client, game_server) => {
             if (fields.length > 0) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle(``)
+                        .setTitle('')
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -146,7 +145,7 @@ module.exports = (client, game_server) => {
                     if (fields.length === 25) {
                         embeds.push(
                             new Discord.EmbedBuilder()
-                                .setTitle(``)
+                                .setTitle('')
                                 .addFields(fields)
                                 .setColor('#6d472b')
                         );
@@ -157,7 +156,7 @@ module.exports = (client, game_server) => {
             if (fields.length > 0) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle(``)
+                        .setTitle('')
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -263,7 +262,7 @@ module.exports = (client, game_server) => {
             if (fields.length === 25) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle(``)
+                        .setTitle('')
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -273,7 +272,7 @@ module.exports = (client, game_server) => {
         if (fields.length > 0) {
             embeds.push(
                 new Discord.EmbedBuilder()
-                    .setTitle(``)
+                    .setTitle('')
                     .addFields(fields)
                     .setColor('#6d472b')
             );
@@ -290,7 +289,7 @@ module.exports = (client, game_server) => {
             if (fields.length === 25) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle(``)
+                        .setTitle('')
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -300,7 +299,7 @@ module.exports = (client, game_server) => {
         if (fields.length > 0) {
             embeds.push(
                 new Discord.EmbedBuilder()
-                    .setTitle(``)
+                    .setTitle('')
                     .addFields(fields)
                     .setColor('#6d472b')
             );
