@@ -11,7 +11,7 @@ module.exports = (client) => {
             } else {
                 const channel = await client.channels.fetch(status[0].channel_id);
                 switch (data.state) {
-                    case "start":
+                    case "start": {
                         if (status[0].message_id) {
                             await channel.messages.fetch().then((messages) => {
                                 for (const message of messages) {
@@ -29,9 +29,9 @@ module.exports = (client) => {
                         }, channel).then((message) => {
                             client.databaseRequest({ database: client.database, query: "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", params: [message.id, data.source, data.type, status[0].channel_id] });
                         });
-                        break;
+                    } break;
 
-                    case "statistic":
+                    case "statistic": {
                         await channel.messages.fetch().then((messages) => {
                             for (const message of messages) {
                                 message[1].delete();
@@ -43,9 +43,9 @@ module.exports = (client) => {
                                 desc: stat.desc
                             }, channel);
                         }
-                        break;
+                    } break;
 
-                    case "ahelp":
+                    case "ahelp": {
                         await client.embed({
                             title: data.embed.title,
                             desc: data.embed.desc,
@@ -56,54 +56,54 @@ module.exports = (client) => {
                             author: data.embed.author,
                             color: `#5a2944`
                         }, channel);
-                        break;
+                    } break;
 
-                    case "ban":
+                    case "ban": {
                         await client.embed({
                             title: data.title,
                             desc: data.desc,
                             color: data.color
                         }, channel);
-                        break;
+                    } break;
 
-                    case "fflog":
+                    case "fflog": {
                         await client.embed({
                             title: data.title,
                             desc: data.desc,
                             color: data.color
                         }, channel);
-                        break;
+                    } break;
 
-                    case "asay":
+                    case "asay": {
                         await client.embed({
                             title: `Asay of ${data.author}`,
                             desc: `Message ${data.message}\n Rank: ${data.rank}`,
                             color: `#261395`
                         }, channel);
-                        break;
+                    } break;
 
-                    case "fax":
+                    case "fax": {
                         await client.embed({
                             title: data.title,
                             desc: data.desc,
                             fields: data.fields,
                             color: `#76b0a8`
                         }, channel);
-                        break;
+                    } break;
 
-                    case "login":
+                    case "login": {
                         await client.embed({
                             title: `Admin Login`,
                             desc: data.key
                         }, channel);
-                        break;
+                    } break;
 
-                    case "logout":
+                    case "logout": {
                         await client.embed({
                             title: `Admin logout`,
                             desc: data.key
                         }, channel);
-                        break;
+                    } break;
                 }
             }
         } else {

@@ -20,20 +20,26 @@ async function updateRoles(client, game_server) {
     try {
         console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Prepairing for roles update`));
 
-        const db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks ORDER BY rank_id", params: [] });
-        if (!db_roles[0] || !db_roles[0].length) return;
-        if (!client.guilds || client.guilds.cache) return;
-        const guild = await client.guilds.cache.get(game_server.guild);
-        if (!guild) return;
+        let db_roles, db_links, guild;
 
-        const roleMap = new Map();
+        try {
+            db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks", params: [] });
+            if (!db_roles.length) throw "No discord ranks";
+            guild = await client.guilds.cache.get(game_server.guild);
+            if (!guild) throw "No guild";
+            db_links = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT discord_id, stable_rank FROM discord_links", params: [] });
+            if (!db_links.length) throw "No discord links";
+        } catch (cancel_reason) {
+            console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`${cancel_reason}`));
+            return;
+        }
+
+        const rolesMap = new Map();
         db_roles.forEach(row => {
-            roleMap.set(row.role_id, row.rank_id);
+            rolesMap.set(row.role_id, row.rank_id);
         });
-
-        const discordLinks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT discord_id, stable_rank FROM discord_links", params: [] });
         const discordLinksMap = new Map();
-        discordLinks.forEach(link => {
+        db_links.forEach(link => {
             discordLinksMap.set(link.discord_id, link.stable_rank);
         });
 
@@ -50,7 +56,7 @@ async function updateRoles(client, game_server) {
                     let rank_id = stable_rank;
 
                     member.roles.cache.forEach(role => {
-                        const roleRankId = roleMap.get(role.id);
+                        const roleRankId = rolesMap.get(role.id);
                         if (roleRankId && rank_id < roleRankId) {
                             rank_id = roleRankId;
                         }
@@ -88,6 +94,6 @@ async function updateRoles(client, game_server) {
 
         console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Processed total of ${totalMembers} members`));
     } catch (error) {
-        console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.blue(`[ERROR]`), chalk.white(`>>`), chalk.red(`Something went wrong, error: ${error}`));
+        console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Something went wrong, error: ${error}`));
     }
 };
