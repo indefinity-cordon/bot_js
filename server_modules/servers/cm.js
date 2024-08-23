@@ -399,10 +399,10 @@ module.exports = (client, game_server) => {
                                 const extraRankOptions = await getRankOptions(client, game_server.game_connection);
                                 const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', extraRankOptions, 'Select extra titles to assign:', true);
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
-                                    const currentPlayer = await client.databaseRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM players WHERE id = ?", [selectedPlayerId]);
+                                    const currentPlayer = await client.databaseRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedPlayerId]);
                                     let extraTitles = currentPlayer[0].extra_titles_encoded ? JSON.parse(currentPlayer[0].extra_titles_encoded) : [];
                                     extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks.map(id => parseInt(id))])];
-                                    await client.databaseRequest(game_server.game_connection, "UPDATE players SET extra_titles_encoded = ? WHERE id = ?", [JSON.stringify(extraTitles), selectedPlayerId]);
+                                    await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedPlayerId]);
                                 }
                             }
                             await client.ephemeralEmbed({
@@ -454,13 +454,13 @@ module.exports = (client, game_server) => {
                             const titlesOptions = [{ label: 'Set Up', value: 'set' }, { label: 'Skip', value: 'skip' }]
                             const seelectTitles = await client.sendInteractionSelectMenu(interaction, `select-titles`, 'Update Titles', titlesOptions, 'Would you like to update extra titles to this admin?');
                             if (seelectTitles === 'set') {
-                                const currentPlayer = await client.databaseRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM players WHERE id = ?", [selectedAdminId]);
+                                const currentPlayer = await client.databaseRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedAdminId]);
                                 let extraTitles = currentPlayer[0].extra_titles_encoded ? JSON.parse(currentPlayer[0].extra_titles_encoded) : [];
                                 const extraRankOptions = await getRankOptions(client, game_server.game_connection);
                                 const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', extraRankOptions, 'Select extra titles to assign:', true);
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
                                     extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks.map(id => parseInt(id))])];
-                                    await client.databaseRequest(game_server.game_connection, "UPDATE players SET extra_titles_encoded = ? WHERE id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
+                                    await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
                                 }
                             }
                             await client.ephemeralEmbed({
@@ -512,12 +512,12 @@ module.exports = (client, game_server) => {
                     const selectedRankId = await client.sendPaginatedSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
                     if (selectedRankId) {
                         await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
-                        const playersWithExtraTitles = await client.databaseRequest(game_server.game_connection, "SELECT id, extra_titles_encoded FROM players WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
-                        for (const player of playersWithExtraTitles) {
-                            let extraTitles = JSON.parse(player.extra_titles_encoded);
+                        const playersWithExtraTitles = await client.databaseRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
+                        for (const admin of playersWithExtraTitles) {
+                            let extraTitles = JSON.parse(admin.extra_titles_encoded);
                             extraTitles = extraTitles.filter(id => id !== parseInt(selectedRankId));
                             const updatedExtraTitles = extraTitles.length > 0 ? JSON.stringify(extraTitles) : null;
-                            await client.databaseRequest(game_server.game_connection, "UPDATE players SET extra_titles_encoded = ? WHERE id = ?", [updatedExtraTitles, player.id]);
+                            await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [updatedExtraTitles, admin.player_id]);
                         }
                         await client.ephemeralEmbed({
                             title: `Request`,
