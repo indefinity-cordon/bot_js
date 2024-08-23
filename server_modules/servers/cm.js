@@ -55,13 +55,13 @@ module.exports = (client, game_server) => {
                         extra_ranks += `(${roleMap.get(rank_id)}) `;
                     }
                 }
-                if (extra_ranks) info += `**Extra Ranks:** ${extra_ranks}`
+                if (extra_ranks) info += `**Extra Ranks:** ${extra_ranks}`;
                 info += `**Last login:** ${db_player_profile[0].last_login}\n`;
                 fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
                 if (fields.length === 25) {
                     embeds.push(
                         new Discord.EmbedBuilder()
-                            .setTitle('')
+                            .setTitle(` `)
                             .addFields(fields)
                             .setColor('#6d472b')
                     );
@@ -71,7 +71,7 @@ module.exports = (client, game_server) => {
             if (fields.length > 0) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle('')
+                        .setTitle(` `)
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -145,7 +145,7 @@ module.exports = (client, game_server) => {
                     if (fields.length === 25) {
                         embeds.push(
                             new Discord.EmbedBuilder()
-                                .setTitle('')
+                                .setTitle(` `)
                                 .addFields(fields)
                                 .setColor('#6d472b')
                         );
@@ -156,7 +156,7 @@ module.exports = (client, game_server) => {
             if (fields.length > 0) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle('')
+                        .setTitle(` `)
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -232,7 +232,22 @@ module.exports = (client, game_server) => {
         for (const playtime of db_player_playtime) {
             player_playtime += playtime.total_minutes;
         }
-        //TODO: Admins
+        const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", params: [db_player_profile[0].id] });
+        if (db_request_admin[0]) {
+            const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+            const roleMap = new Map();
+            db_request_ranks.forEach(row => {
+                roleMap.set(row.id, row.rank_name);
+            });
+            player_info += `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
+            let extra_ranks;
+            if (db_admin.extra_titles_encoded) {
+                for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
+                    extra_ranks += `(${roleMap.get(rank_id)}) `;
+                }
+            }
+            if (extra_ranks) player_info += `**Extra Ranks:** ${extra_ranks}`;
+        }
         client.ephemeralEmbed({
             title: `**${request[0].role_rank ? `HIDDEN` : db_player_profile[0].ckey}** player info`,
             desc: `\n${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`,
@@ -254,15 +269,19 @@ module.exports = (client, game_server) => {
         for (const db_admin of db_request_admin) {
             const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT ckey, last_login FROM players WHERE id = ?", params: [db_admin.player_id] });
             let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
-            if(db_admin.extra_titles_encoded) {
-                info += `**Extra Ranks:** ${db_admin.extra_titles_encoded}\n`;
+            let extra_ranks;
+            if (db_admin.extra_titles_encoded) {
+                for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
+                    extra_ranks += `(${roleMap.get(rank_id)}) `;
+                }
             }
+            if (extra_ranks) info += `**Extra Ranks:** ${extra_ranks}`;
             info += `**Last login:** ${db_player_profile[0].last_login}\n`;
             fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
             if (fields.length === 25) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle('')
+                        .setTitle(` `)
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -272,7 +291,7 @@ module.exports = (client, game_server) => {
         if (fields.length > 0) {
             embeds.push(
                 new Discord.EmbedBuilder()
-                    .setTitle('')
+                    .setTitle(` `)
                     .addFields(fields)
                     .setColor('#6d472b')
             );
@@ -289,7 +308,7 @@ module.exports = (client, game_server) => {
             if (fields.length === 25) {
                 embeds.push(
                     new Discord.EmbedBuilder()
-                        .setTitle('')
+                        .setTitle(` `)
                         .addFields(fields)
                         .setColor('#6d472b')
                 );
@@ -299,7 +318,7 @@ module.exports = (client, game_server) => {
         if (fields.length > 0) {
             embeds.push(
                 new Discord.EmbedBuilder()
-                    .setTitle('')
+                    .setTitle(` `)
                     .addFields(fields)
                     .setColor('#6d472b')
             );
