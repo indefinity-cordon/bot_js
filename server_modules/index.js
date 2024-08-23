@@ -40,7 +40,7 @@ module.exports = class Server {
     updater_messages;
 
     /**
-     * @type {NodeJS.Timer}
+     * @type {Array}
      */
     message_updater_intervals;
 

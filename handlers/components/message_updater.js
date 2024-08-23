@@ -1,13 +1,9 @@
 const Discord = require('discord.js');
 
 module.exports = async (client) => {
-    client.serverStatus = async function ({
+    client.serverMessageUpdator = async function ({
         game_server: game_server
     }) {
-        for(const type of game_server.updater_messages) {
-            clearInterval(game_server.message_updater_intervals[type]);
-        }
-        clearInterval(game_server.update_status_messages_interval);
         await game_server.game_connection
         await updateUpdatersMessages(client, game_server);
         game_server.update_status_messages_interval = setInterval(
@@ -16,7 +12,7 @@ module.exports = async (client) => {
             client,
             game_server
         );
-        for(const type of game_server.updater_messages) {
+        for(const type in game_server.updater_messages) {
             game_server.message_updater_intervals[type] = setInterval(
                 game_server.handling_updaters[type],
                 1 * 60 * 1000, // Каждые N минут (первое число)
@@ -28,8 +24,12 @@ module.exports = async (client) => {
 };
 
 async function updateUpdatersMessages(client, game_server) {
-    game_server.updater_messages.splice();
-    const updaters = await client.databaseRequest({ database: client.database, query: "SELECT channel_id, message_id, type FROM server_channels WHERE server_name = ?", params: [game_server.server_name] });
+    if (game_server.updater_messages.length) {
+        for(const type in game_server.updater_messages) {
+            delete remove_game_server.updater_messages[type];
+        }
+    }
+    const updaters = await client.databaseRequest({ database: client.database, query: "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id != \"1\"", params: [game_server.server_name] });
     if (!updaters.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
@@ -37,16 +37,16 @@ async function updateUpdatersMessages(client, game_server) {
     for (const updater of updaters) {
         const channel = await client.channels.fetch(updater.channel_id);
         var found_message = null;
-        if (updater.message_id && updater.message_id !== "1") {
+        if (updater.message_id) {
             await channel.messages.fetch().then((messages) => {
-                for (const message of updater) {
-                    if (message[1].id === status.message_id) {
+                for (const message of messages) {
+                    if (message[1].id === updater.message_id) {
                         found_message = message[1];
                     }
                 }
             });
         }
-        if (found_message === null && updater.message_id !== "1") {
+        if (found_message === null) {
             await client.embed({
                 title: `${game_server.server_name} ${updater.type}`,
                 desc: `prepairing...`
