@@ -401,7 +401,7 @@ module.exports = (client, game_server) => {
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
                                     const currentPlayer = await client.databaseRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedPlayerId]);
                                     let extraTitles = currentPlayer[0].extra_titles_encoded ? JSON.parse(currentPlayer[0].extra_titles_encoded) : [];
-                                    extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks.map(id => parseInt(id))])];
+                                    extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks])];
                                     await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedPlayerId]);
                                 }
                             }
@@ -459,7 +459,7 @@ module.exports = (client, game_server) => {
                                 const extraRankOptions = await getRankOptions(client, game_server.game_connection);
                                 const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', extraRankOptions, 'Select extra titles to assign:', true);
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
-                                    extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks.map(id => parseInt(id))])];
+                                    extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks])];
                                     await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
                                 }
                             }
@@ -515,7 +515,7 @@ module.exports = (client, game_server) => {
                         const playersWithExtraTitles = await client.databaseRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
                         for (const admin of playersWithExtraTitles) {
                             let extraTitles = JSON.parse(admin.extra_titles_encoded);
-                            extraTitles = extraTitles.filter(id => id !== parseInt(selectedRankId));
+                            extraTitles = extraTitles.filter(id => id !== selectedRankId);
                             const updatedExtraTitles = extraTitles.length > 0 ? JSON.stringify(extraTitles) : null;
                             await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [updatedExtraTitles, admin.player_id]);
                         }
