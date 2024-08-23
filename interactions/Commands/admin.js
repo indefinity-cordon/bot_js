@@ -39,9 +39,9 @@ module.exports = {
             return interaction.reply({ content: "You don't have permission to use any admin commands.", ephemeral: true });
         }
 
+        await interaction.deferReply({ ephemeral: true });
         const collected = await client.sendInteractionSelectMenu(interaction, `select-command`, 'Select command', availableCommands, 'Please select command:');
         if (collected) {
-            await interaction.deferUpdate();
             await client.handling_commands_actions[collected](interaction);
         }
     }

@@ -91,10 +91,8 @@ module.exports = async (client) => {
 
         const instanceId = await client.sendInteractionSelectMenu(interaction, `select-server-instance`, 'Select a server instance', options, 'Please select a server instance:');
         if (instanceId) {
-            await interaction.deferUpdate();
             const collected = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', client.handling_tgs, 'Please select action to perform:');
             if (collected) {
-                await interaction.deferUpdate();
                 await await client.handling_tgs_actions[collected](interaction, instanceId);
             }
         }

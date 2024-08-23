@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = async (client) => {
     //----------------------------------------------------------------//
@@ -9,7 +9,8 @@ module.exports = async (client) => {
     client.bitfieldToName = function (bitfield) {
         const permissions = new Discord.PermissionsBitField(bitfield);
         return permissions.toArray();
-    }
+    };
+
     client.checkPerms = async function ({
         flags: flags,
         perms: perms
@@ -33,6 +34,7 @@ module.exports = async (client) => {
             }
         }
     };
+
     client.checkBotPerms = async function ({
         flags: flags,
         perms: perms
@@ -48,6 +50,7 @@ module.exports = async (client) => {
             }
         }
     };
+
     client.checkUserPerms = async function ({
         flags: flags,
         perms: perms
@@ -75,13 +78,14 @@ module.exports = async (client) => {
         return embed;
     };
 
-
+    //----------------------------------------------------------------//
+    //                         Selection Menu                         //
+    //----------------------------------------------------------------//
     client.onSelectMenu = async function (interaction, menu) {
-        // Implementation that waits for the user's selection
         const filter = i => i.customId === menu.customId && i.user.id === interaction.user.id;
         const collected = await interaction.channel.awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 60000 });
         return collected.values[0];
-    }
+    };
 
     client.sendInteractionSelectMenu = async function (interaction, customId, customDesc, customOptions, customContent) {
         const menu = new StringSelectMenuBuilder()
@@ -94,26 +98,34 @@ module.exports = async (client) => {
         }
 
         const filter = collected => collected.customId === customId && collected.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 600 });
         client.activeCollectors = client.activeCollectors || {};
         client.activeCollectors[interaction.user.id] = collector;
 
-        await interaction.reply({
+        await interaction.editReply({
             content: customContent,
             components: [new ActionRowBuilder().addComponents(menu)],
             ephemeral: true
         });
 
-        collector.on('end', async collected => {
-            if (collected.size === 0) {
+        return new Promise((resolve) => {
+            collector.on('collect', async collected => {
                 await collected.deferUpdate();
-                await collected.editReply({ content: 'Time ran out! Please try again.', components: [] });
-            }
-            delete client.activeCollectors[interaction.user.id];
+                resolve(collected.values[0]);
+            });
+            collector.on('end', async collected => {
+                if (collected.size === 0) {
+                    const Embed = new EmbedBuilder()
+                    .setTitle('Request')
+                    .setDescription('Time ran out! Please try again.')
+                    .setColor('#6d472b');
+                    await interaction.editReply({ content: '', embeds: [Embed], components: [] });
+                }
+                delete client.activeCollectors[interaction.user.id];
+                resolve();
+            });
         });
-
-        return await onSelectMenu(interaction, menu);
-    }
+    };
 
     client.sendInteractionConfirm = async function (interaction, message) {
         const buttons = new ActionRowBuilder()

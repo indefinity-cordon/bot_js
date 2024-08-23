@@ -313,7 +313,7 @@ module.exports = (client, game_server) => {
             });
             player_info += `**Rank:** ${roleMap.get(db_request_admin[0].rank_id)}\n`;
             const extra_ranks = [];
-            if (db_admin.extra_titles_encoded) {
+            if (db_request_admin[0].extra_titles_encoded) {
                 for(const rank_id of JSON.parse(db_request_admin[0].extra_titles_encoded)) {
                     extra_ranks += `${roleMap.get(rank_id)}`;
                 }
@@ -368,7 +368,6 @@ module.exports = (client, game_server) => {
 
         const collected = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', actionOptions, 'Choose an action for admin management:');
         if (collected) {
-            await interaction.deferUpdate();
             switch (collected) {
                 case 'add': {
                     await client.sendInteractionInput({
@@ -532,16 +531,12 @@ module.exports = (client, game_server) => {
 
     game_server.handling_actions = {
         "manage_admins": game_server.manageAdmins,
-        "manage_ranks": game_server.manageRanks,
-        "view_admins": game_server.viewAdmins,
-        "view_ranks": game_server.viewRanks
+        "manage_ranks": game_server.manageRanks
     };
 
     game_server.handling_commands = [
         { label: "Manage Admins", value: "manage_admins" },
-        { label: "Manage Ranks", value: "manage_ranks" },
-        { label: "View Admins", value: "view_admins" },
-        { label: "View Ranks", value: "view_ranks" }
+        { label: "Manage Ranks", value: "manage_ranks" }
     ];
 }
 
