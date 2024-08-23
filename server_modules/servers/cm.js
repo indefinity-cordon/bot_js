@@ -557,76 +557,68 @@ module.exports = (client, game_server) => {
                     await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist:', ephemeral: true });
                     const ckey = await client.collectUserInput(interaction);
                     if (!ckey) return;
-    
                     const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                     if (!playerData.length) {
                         await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
                         return;
                     }
-    
                     const playerOptions = playerData.map(player => ({
                         label: player.ckey,
                         value: player.id.toString()
                     }));
-    
-                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to modify:');
-                    if (selectedPlayerId) {
-    
-                        const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to add:', { multiple: true });
-                        if (selectedRoles && selectedRoles.length > 0) {
-                            for (const role of selectedRoles) {
-                                await client.databaseRequest(game_server.game_connection, "INSERT INTO admin_roles (player_id, role) VALUES (?, ?)", [selectedPlayerId, role]);
-                            }
-                            await client.ephemeralEmbed({
-                                title: `Request`,
-                                desc: `Roles added successfully!`,
-                                color: `#669917`
-                            }, interaction);
-                        }
-                    }
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to add as admin:');
+                    if (!selectedPlayerId) return;
+                    const player = playerData.find(p => p.id.toString() === selectedPlayerId);
+                    let currentRoles = player.whitelist_status ? player.whitelist_status.split('|') : [];
+                    const roleOptions = Object.entries(acting_wls).map(([key, value]) => ({
+                        label: value,
+                        value: key
+                    }));
+                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to add:', { multiple: true });
+                    if (!selectedRoles) return;
+                    currentRoles = [...new Set([...currentRoles, ...selectedRoles])];
+                    await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Roles added successfully!`,
+                        color: `#669917`
+                    }, interaction);
                 } break;
-    
+
                 case 'remove': {
-                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist:', ephemeral: true });
+                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to remove whitelists from:', ephemeral: true });
                     const ckey = await client.collectUserInput(interaction);
                     if (!ckey) return;
-    
-                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                     if (!playerData.length) {
                         await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
                         return;
                     }
-    
                     const playerOptions = playerData.map(player => ({
                         label: player.ckey,
                         value: player.id.toString()
                     }));
-    
-                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to modify:');
-                    if (selectedPlayerId) {
-                        const existingRoles = await client.databaseRequest(game_server.game_connection, "SELECT role FROM admin_roles WHERE player_id = ?", [selectedPlayerId]);
-                        if (!existingRoles.length) {
-                            await interaction.followUp({ content: 'This player has no roles to remove.', ephemeral: true });
-                            return;
-                        }
-    
-                        const roleOptions = existingRoles.map(role => ({
-                            label: role.replacementName,  // Здесь используйте дружелюбные имена
-                            value: role.role
-                        }));
-    
-                        const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', { multiple: true });
-                        if (selectedRoles && selectedRoles.length > 0) {
-                            for (const role of selectedRoles) {
-                                await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_roles WHERE player_id = ? AND role = ?", [selectedPlayerId, role]);
-                            }
-                            await client.ephemeralEmbed({
-                                title: `Request`,
-                                desc: `Roles removed successfully!`,
-                                color: `#669917`
-                            }, interaction);
-                        }
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to remove whitelists from:');
+                    if (!selectedPlayerId) return;
+                    const player = playerData.find(p => p.id.toString() === selectedPlayerId);
+                    if (!player.whitelist_status) {
+                        await interaction.followUp({ content: 'This player has no roles to remove.', ephemeral: true });
+                        return;
                     }
+                    let currentRoles = player.whitelist_status.split('|');
+                    const roleOptions = currentRoles.map(role => ({
+                        label: acting_wls[role] || role,
+                        value: role
+                    }));
+                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', { multiple: true });
+                    if (!selectedRoles) return;
+                    currentRoles = currentRoles.filter(role => !selectedRoles.includes(role));
+                    await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Roles removed successfully!`,
+                        color: `#669917`
+                    }, interaction);
                 } break;
             }
         }
