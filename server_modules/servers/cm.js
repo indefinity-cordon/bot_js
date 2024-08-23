@@ -4,7 +4,7 @@ module.exports = (client, game_server) => {
     game_server.updateStatus = async function (type) {
         try {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
-            if (!server_response) return;
+            if (!server_response) throw 'server offline';
             const response = JSON.parse(server_response);
             const data = response.data
             const time = Math.floor(data.round_duration / 600)
@@ -372,16 +372,8 @@ module.exports = (client, game_server) => {
                 case 'add': {
                     await client.sendInteractionInput(interaction, 'rank-name-modal', 'Enter the ckey of the player to add as admin:', 'Ckey', '');
                     client.onInteractionInput(interaction, 'rank-name-modal', async (ckey) => {
-                        const playerData = await client.databaseRequest({ 
-                            database: game_server.game_connection, 
-                            query: "SELECT id, ckey FROM players WHERE ckey LIKE ?", 
-                            params: [`%${ckey}%`] 
-                        });
+                        const playerData = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey FROM players WHERE ckey LIKE ?", params: [`%${ckey}%`] });
                         if (!playerData.length) {
-                            await client.sendErrorEmbed({ 
-                                content: 'No players found with that ckey. Please try again.', 
-                                interaction: interaction 
-                            });
                             return;
                         }
                         const playerOptions = playerData.map(player => ({
@@ -469,16 +461,10 @@ module.exports = (client, game_server) => {
         if (selectedAction) {
             switch (selectedAction) {
                 case 'add': {
-                    await client.sendInteractionInput({
-                        content: 'Enter the name of the new rank:',
-                        interaction: interaction
-                    });
-                    client.onInteractionInput(interaction, async (rankName) => {
-                        await client.sendInteractionInput({
-                            content: 'Enter the text rights for this rank:',
-                            interaction: interaction
-                        });
-                        client.onInteractionInput(interaction, async (textRights) => {
+                    await client.sendInteractionInput(interaction, 'rank-name-modal', 'Enter the name of the new rank:', 'Rank Name', '');
+                    client.onInteractionInput(interaction, 'rank-name-modal', async (rankName) => {
+                        await client.sendInteractionInput(interaction, 'rank-rights-modal', 'Enter the text rights for this rank:', 'rank|rights', '');
+                        client.onInteractionInput(interaction, 'rank-rights-modal', async (textRights) => {
                             await client.databaseRequest({
                                 database: game_server.game_connection,
                                 query: "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)",
@@ -502,23 +488,15 @@ module.exports = (client, game_server) => {
                         return;
                     }
                     const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
-                    if (selectedRankId) {
-                        await client.sendInteractionConfirm({
-                            content: `Are you sure you want to remove this rank?`,
-                            interaction: interaction
+                    if (selectedRankId && await client.sendInteractionConfirm(interaction, `Are you sure you want to remove this rank?`)) {
+                        await client.databaseRequest({
+                            database: game_server.game_connection,
+                            query: "DELETE FROM admin_ranks WHERE id = ?",
+                            params: [selectedRankId]
                         });
-                        client.onInteractionConfirm(interaction, async (confirmed) => {
-                            if (confirmed) {
-                                await client.databaseRequest({
-                                    database: game_server.game_connection,
-                                    query: "DELETE FROM admin_ranks WHERE id = ?",
-                                    params: [selectedRankId]
-                                });
-                                await client.sendSuccessEmbed({
-                                    content: 'Rank removed successfully!',
-                                    interaction: interaction
-                                });
-                            }
+                        await client.sendSuccessEmbed({
+                            content: 'Rank removed successfully!',
+                            interaction: interaction
                         });
                     }
                     break;
@@ -534,16 +512,10 @@ module.exports = (client, game_server) => {
                     }
                     const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
                     if (selectedRankId) {
-                        await client.sendInteractionInput({
-                            content: 'Enter the new name for the rank:',
-                            interaction: interaction
-                        });
-                        client.onInteractionInput(interaction, async (newRankName) => {
-                            await client.sendInteractionInput({
-                                content: 'Enter the new text rights for this rank:',
-                                interaction: interaction
-                            });
-                            client.onInteractionInput(interaction, async (newTextRights) => {
+                        await client.sendInteractionInput(interaction, 'rank-name-modal', 'Enter the new name for the rank:', 'Rank Name', '');
+                        client.onInteractionInput(interaction, 'rank-name-modal', async (newRankName) => {
+                            await client.sendInteractionInput(interaction, 'rank-rights-modal', 'Enter the text rights for this rank:', 'rank|rights', '');
+                            client.onInteractionInput(interaction, 'rank-rights-modal', async (newTextRights) => {
                                 await client.databaseRequest({
                                     database: game_server.game_connection,
                                     query: "UPDATE admin_ranks SET rank_name = ?, text_rights = ? WHERE id = ?",
