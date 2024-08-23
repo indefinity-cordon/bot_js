@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-//const fetch = require("node-fetch");
+const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = async (client) => {
     //----------------------------------------------------------------//
@@ -9,7 +9,8 @@ module.exports = async (client) => {
     client.bitfieldToName = function (bitfield) {
         const permissions = new Discord.PermissionsBitField(bitfield);
         return permissions.toArray();
-    }
+    };
+
     client.checkPerms = async function ({
         flags: flags,
         perms: perms
@@ -32,7 +33,8 @@ module.exports = async (client) => {
                 return false
             }
         }
-    }
+    };
+
     client.checkBotPerms = async function ({
         flags: flags,
         perms: perms
@@ -47,7 +49,8 @@ module.exports = async (client) => {
                 return false
             }
         }
-    }
+    };
+
     client.checkUserPerms = async function ({
         flags: flags,
         perms: perms
@@ -62,20 +65,7 @@ module.exports = async (client) => {
                 return false
             }
         }
-    }
-
-    client.loadSubcommands = async function (client, interaction, args) {
-        try {
-            return require(`${process.cwd()}/commands/${interaction.commandName}/${interaction.options.getSubcommand()}`)(client, interaction, args).catch(err => {
-                client.emit("errorCreate", err, interaction.commandName, interaction);
-            });
-        }
-        catch {
-            return require(`${process.cwd()}/commands/${interaction.commandName}/${interaction.options.getSubcommand()}`)(client, interaction, args).catch(err => {
-                client.emit("errorCreate", err, interaction.commandName, interaction);
-            });
-        }
-    }
+    };
 
     client.generateEmbed = async function (start, end, lb, title, interaction) {
         const current = lb.slice(start, end + 10);
@@ -86,5 +76,63 @@ module.exports = async (client) => {
             .setDescription(`${result.toString()}`);
 
         return embed;
+    };
+
+    //----------------------------------------------------------------//
+    //                         Selection Menu                         //
+    //----------------------------------------------------------------//
+    client.sendInteractionSelectMenu = async function (interaction, customId, customDesc, customOptions, customContent, allowMultiple = false) {
+        const menu = new StringSelectMenuBuilder()
+            .setCustomId(customId)
+            .setPlaceholder(customDesc)
+            .addOptions(customOptions);
+        if (allowMultiple) {
+            menu.setMinValues(1);
+            menu.setMaxValues(customOptions.length);
+        }
+        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
+            client.activeCollectors[interaction.user.id].stop();
+        }
+        const filter = collected => collected.customId === customId && collected.user.id === interaction.user.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+        client.activeCollectors = client.activeCollectors || {};
+        client.activeCollectors[interaction.user.id] = collector;
+        await interaction.editReply({
+            content: customContent,
+            components: [new ActionRowBuilder().addComponents(menu)],
+            ephemeral: true
+        });
+        return new Promise((resolve) => {
+            collector.on('collect', async collected => {
+                await collected.deferUpdate();
+                if(allowMultiple) {
+                    resolve(collected.values);
+                } else {
+                    resolve(collected.values[0]);
+                }
+            });
+            collector.on('end', async collected => {
+                if (collected.size === 0) {
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Time ran out! Please try again.`,
+                        color: `#c70058`
+                    }, interaction);
+                }
+                resolve();
+            });
+        });
+    };
+
+    client.collectUserInput = async function (interaction) {
+        const filter = i => i.author.id === interaction.user.id;
+        const collected = await interaction.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
+    
+        if (collected.size === 0) {
+            await interaction.followUp({ content: 'Time ran out! Please try again.', ephemeral: true });
+            return null;
+        }
+    
+        return collected.first().content;
     }
 }

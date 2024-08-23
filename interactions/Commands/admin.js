@@ -3,7 +3,8 @@ const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('admin')
-        .setDescription('Use admin command'),
+        .setDescription('Use admin command')
+    ,
 
     /** 
      * @param {Client} client
@@ -39,41 +40,10 @@ module.exports = {
             return interaction.reply({ content: "You don't have permission to use any admin commands.", ephemeral: true });
         }
 
-        const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId('select-command')
-            .setPlaceholder('Select command')
-            .addOptions(availableCommands);
-
-        const row = new ActionRowBuilder()
-            .addComponents(selectMenu);
-
-        if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
-            client.activeCollectors[interaction.user.id].stop();
+        await interaction.deferReply({ ephemeral: true });
+        const collected = await client.sendInteractionSelectMenu(interaction, `select-command`, 'Select command', availableCommands, 'Please select command:');
+        if (collected) {
+            await client.handling_commands_actions[collected](interaction);
         }
-
-        const filter = collected => collected.customId === 'select-command' && collected.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
-        client.activeCollectors = client.activeCollectors || {};
-        client.activeCollectors[interaction.user.id] = collector;
-
-        await interaction.reply({
-            content: 'Please select a command:',
-            components: [row],
-            ephemeral: true
-        });
-
-        collector.on('collect', async collected => {
-            await collected.deferUpdate();
-            if (client.handling_commands_actions[collected.values[0]]) {
-                await client.handling_commands_actions[collected.values[0]](collected);
-            }
-        });
-
-        collector.on('end', collected => {
-            if (collected.size === 0) {
-                interaction.editReply({ content: 'Time ran out! Please try again.', components: [] });
-            }
-            delete client.activeCollectors[interaction.user.id];
-        });
     }
 }

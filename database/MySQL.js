@@ -19,9 +19,7 @@ module.exports = async (client) => {
         });
     });
 
-    client.createDBConnection = async function ({
-        game_server: game_server
-    }) {
+    client.createDBConnection = async function (game_server) {
         const game_connection = mysql.createConnection({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: game_server.database});
         game_connection.on('error', err => console.log(chalk.blue(chalk.bold(`Database`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.blue(`MySQL Game`), chalk.red(err)));
         return await new Promise((resolve, reject) => {
@@ -37,11 +35,7 @@ module.exports = async (client) => {
             });
         });
     }
-    client.databaseRequest = async function ({
-        database: database,
-        query: query,
-        params: params
-    }) {
+    client.databaseRequest = async function (database, query, params) {
         if (!database) {
             console.log(chalk.blue(chalk.bold(`Database`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.blue(`MySQL`), chalk.red(`Wrong DB at request`));
             return;

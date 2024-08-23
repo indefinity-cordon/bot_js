@@ -1,9 +1,7 @@
 const Discord = require('discord.js');
 
 module.exports = async (client) => {
-    client.serverMessageUpdator = async function ({
-        game_server: game_server
-    }) {
+    client.serverMessageUpdator = async function (game_server) {
         await game_server.game_connection
         await updateUpdatersMessages(client, game_server);
         game_server.update_status_messages_interval = setInterval(
@@ -29,7 +27,7 @@ async function updateUpdatersMessages(client, game_server) {
             delete remove_game_server.updater_messages[type];
         }
     }
-    const updaters = await client.databaseRequest({ database: client.database, query: "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id != \"1\"", params: [game_server.server_name] });
+    const updaters = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id != \"1\"", [game_server.server_name]);
     if (!updaters.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
@@ -52,7 +50,7 @@ async function updateUpdatersMessages(client, game_server) {
                 desc: `prepairing...`
             }, channel).then((message) => {
                 found_message = message;
-                client.databaseRequest({ database: client.database, query: "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", params: [message.id, game_server.server_name, updater.type, updater.channel_id] });
+                client.databaseRequest(client.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, game_server.server_name, updater.type, updater.channel_id]);
             });
         }
         if (!game_server.updater_messages[updater.type]) game_server.updater_messages[updater.type] = []

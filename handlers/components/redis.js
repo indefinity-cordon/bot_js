@@ -5,7 +5,7 @@ module.exports = (client) => {
         data: data
     }) {
         if (data) {
-            const status = await client.databaseRequest({ database: client.database, query: "SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", params: [data.source, data.type] });
+            const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", [data.source, data.type]);
             if (!status.length) {
                 console.log(chalk.blue(chalk.bold(`Database`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${[data]}.`));
             } else {
@@ -27,7 +27,7 @@ module.exports = (client) => {
                             desc: `<@&${role.id}>`,
                             color: role.hexColor
                         }, channel).then((message) => {
-                            client.databaseRequest({ database: client.database, query: "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", params: [message.id, data.source, data.type, status[0].channel_id] });
+                            client.databaseRequest(client.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, data.source, data.type, status[0].channel_id]);
                         });
                     } break;
 

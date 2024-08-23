@@ -52,7 +52,7 @@ initializeMess(client)
 
 async function initializeMess (client) {
     await client.database;
-    client.handling_game_servers = await client.databaseRequest({ database: client.database, query: "SELECT server_name, db_name FROM servers", params: [] });
+    client.handling_game_servers = await client.databaseRequest(client.database, "SELECT server_name, db_name FROM servers", []);
     client.servers_options = client.handling_game_servers.map(server => ({
         label: server.server_name,
         value: server.server_name
