@@ -557,7 +557,7 @@ module.exports = (client, game_server) => {
                     await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist:', ephemeral: true });
                     const ckey = await client.collectUserInput(interaction);
                     if (!ckey) return;
-                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                     if (!playerData.length) {
                         await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
                         return;
