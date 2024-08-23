@@ -91,7 +91,7 @@ async function updateRoles(client, game_server) {
         }
 
         await fetchAndProcessMembers();
-
+ 
         console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.green(`Processed total of ${totalMembers} members`));
     } catch (error) {
         console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Something went wrong, error: ${error}`));
