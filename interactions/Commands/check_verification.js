@@ -20,7 +20,7 @@ module.exports = {
             desc: `In progress...`
         }, interaction);
         const bot_settings = await client.databaseSettingsRequest("main_server");
-        const db_response = await client.databaseRequest({ database: client.servers_link[bot_settings[0].param].game_connection, query: "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", params: [interaction.user.id] });
+        const db_response = await client.databaseRequest(client.servers_link[bot_settings[0].param].game_connection, "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id]);
         if (db_response[0] && db_response[0].discord_id) {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id);
             let bot_settings = await client.databaseSettingsRequest("verified_role");

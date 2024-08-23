@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = async (client) => {
     //----------------------------------------------------------------//
@@ -125,25 +125,15 @@ module.exports = async (client) => {
         });
     };
 
-    client.sendInteractionConfirm = async function (interaction, message) {
-        const buttons = new ActionRowBuilder()
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('confirm')
-                    .setLabel('Confirm')
-                    .setStyle('SUCCESS'),
-                new MessageButton()
-                    .setCustomId('cancel')
-                    .setLabel('Cancel')
-                    .setStyle('DANGER')
-            );
-        await interaction.editReply({ content: message, components: [buttons], ephemeral: true });
-        const filter = i => i.user.id === interaction.user.id;
-        const collected = await interaction.channel.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 60000 });
-        if (collected.customId === 'confirm') {
-            return true;
-        } else {
-            return false;
+    client.collectUserInput = async function (interaction) {
+        const filter = i => i.author.id === interaction.user.id;
+        const collected = await interaction.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
+    
+        if (collected.size === 0) {
+            await interaction.followUp({ content: 'Time ran out! Please try again.', ephemeral: true });
+            return null;
         }
-    };
+    
+        return collected.first().content;
+    }
 }

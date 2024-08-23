@@ -48,8 +48,8 @@ module.exports = (client, game_server) => {
 
     game_server.updateAdmins = async function (type) {
         try {
-            const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT player_id, rank_id, extra_titles_encoded FROM admins", params: [] });
-            const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+            const db_request_admin = await client.databaseRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins", []);
+            const db_request_ranks = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
@@ -57,7 +57,7 @@ module.exports = (client, game_server) => {
             const embeds = [];
             let fields = [];
             for (const db_admin of db_request_admin) {
-                const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT ckey, last_login FROM players WHERE id = ?", params: [db_admin.player_id] });
+                const db_player_profile = await client.databaseRequest(game_server.game_connection, "SELECT ckey, last_login FROM players WHERE id = ?", [db_admin.player_id]);
                 let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
                 const extra_ranks = [];
                 if (db_admin.extra_titles_encoded) {
@@ -109,7 +109,7 @@ module.exports = (client, game_server) => {
 
     game_server.updateRanks = async function (type) {
         try {
-            const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+            const db_request_ranks = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const embeds = [];
             let fields = [];
             for (const db_rank of db_request_ranks) {
@@ -211,11 +211,7 @@ module.exports = (client, game_server) => {
             }
             const embeds = [];
             let fields = [];
-            const db_player_profiles = await client.databaseRequest({
-                database: game_server.game_connection,
-                query: "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"",
-                params: []
-            });
+            const db_player_profiles = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"", []);
             for (const player of db_player_profiles) {
                 const wl_fields = player.whitelist_status.split('|');
                 const actual_wl_fields = wl_fields
@@ -280,10 +276,10 @@ module.exports = (client, game_server) => {
     }, interaction) {
         let rank_info = ``;
         if (request[0].role_rank) {
-            const db_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].role_rank] });
+            const db_role = await client.databaseRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].role_rank]);
             let db_stable_role;
             if (request[0].stable_rank != request[0].role_rank) {
-                db_stable_role = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", params: [request[0].stable_rank] });
+                db_stable_role = await client.databaseRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].stable_rank]);
             }
             if(request[0].stable_rank && !db_stable_role) {
                 rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`;
@@ -294,7 +290,7 @@ module.exports = (client, game_server) => {
                 rank_info = `Supported Rank: ${db_role[0].rank_name}\n`;
             }
         }
-        const db_player_profile = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", params: [request[0].player_id] });
+        const db_player_profile = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", [request[0].player_id]);
         if (!db_player_profile[0]) {
             client.ephemeralEmbed({
                 title: `Request`,
@@ -309,14 +305,14 @@ module.exports = (client, game_server) => {
         } else if (db_player_profile[0].is_time_banned) {
             player_info += `## **Banned**\n**Reason:** ${db_player_profile[0].time_ban_reason}, **Exp:** ${db_player_profile[0].time_ban_expiration}, **Date:** ${db_player_profile[0].time_ban_date}\n`;
         }
-        const db_player_playtime = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", params: [db_player_profile[0].id] });
+        const db_player_playtime = await client.databaseRequest(game_server.game_connection, "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id]);
         let player_playtime = 0;
         for (const playtime of db_player_playtime) {
             player_playtime += playtime.total_minutes;
         }
-        const db_request_admin = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", params: [db_player_profile[0].id] });
+        const db_request_admin = await client.databaseRequest(game_server.game_connection, "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", [db_player_profile[0].id]);
         if (db_request_admin[0]) {
-            const db_request_ranks = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, rank_name, text_rights FROM admin_ranks", params: [] });
+            const db_request_ranks = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
@@ -375,68 +371,66 @@ module.exports = (client, game_server) => {
             { label: 'Remove Admin', value: 'remove' },
             { label: 'Update Admin', value: 'update' }
         ];
-
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', actionOptions, 'Choose an action for admin management:');
         if (selectedAction) {
             switch (selectedAction) {
                 case 'add': {
-                    await client.sendInteractionInput(interaction, 'rank-name-modal', 'Enter the ckey of the player to add as admin:', 'Ckey', '');
-                    client.onInteractionInput(interaction, 'rank-name-modal', async (ckey) => {
-                        const playerData = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT id, ckey FROM players WHERE ckey LIKE ?", params: [`%${ckey}%`] });
-                        if (!playerData.length) {
-                            return;
+                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to add as admin:', ephemeral: true });
+                    const ckey = await client.collectUserInput(interaction);
+                    if (!ckey) return;
+                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                    if (!playerData.length) {
+                        await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
+                        return;
+                    }
+                    const playerOptions = playerData.map(player => ({
+                        label: player.ckey,
+                        value: player.id.toString()
+                    }));
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to add as admin:');
+                    if (selectedPlayerId) {
+                        const rankOptions = await getRankOptions(client, game_server.game_connection);
+                        const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the rank to assign:');
+                        if (selectedRankId) {
+                            await client.databaseRequest(game_server.game_connection, "INSERT INTO admins (player_id, rank_id) VALUES (?, ?)", [selectedPlayerId, selectedRankId]);
+                            await client.ephemeralEmbed({
+                                title: `Request`,
+                                desc: `Admin added successfully!`,
+                                color: `#669917`
+                            }, interaction);
                         }
-                        const playerOptions = playerData.map(player => ({
-                            label: player.ckey,
-                            value: player.id.toString()
-                        }));
-                        const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to add as admin:');
-                        if (selectedPlayerId) {
-                            const rankOptions = await getRankOptions(client, game_server.game_connection);
-                            const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the rank to assign:');
-                            if (selectedRankId) {
-                                await client.databaseRequest({ 
-                                    database: game_server.game_connection, 
-                                    query: "INSERT INTO admins (player_id, rank_id) VALUES (?, ?, ?)", 
-                                    params: [selectedPlayerId, selectedRankId] 
-                                });
-                                await client.sendSuccessEmbed({
-                                    content: 'Admin added successfully!',
-                                    interaction: interaction
-                                });
-                            }
-                        }
-                    });
+                    }
                 } break;
+
                 case 'remove': {
                     const adminList = await getAdminOptions(client, game_server.game_connection);
                     if (adminList.length === 0) {
-                        await client.sendErrorEmbed({
-                            content: 'No admins found to remove.',
-                            interaction: interaction
-                        });
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `No admins found to remove.`,
+                            color: `#c70058`
+                        }, interaction);
                         return;
                     }
                     const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to remove:');
-                    if (selectedAdminId && await client.sendInteractionConfirm(interaction, `Are you sure you want to remove this admin?`)) {
-                        await client.databaseRequest({ 
-                            database: game_server.game_connection, 
-                            query: "DELETE FROM admins WHERE player_id = ?", 
-                            params: [selectedAdminId] 
-                        });
-                        await client.sendSuccessEmbed({
-                            content: 'Admin removed successfully!',
-                            interaction: interaction
-                        });
+                    if (selectedAdminId) {
+                        await client.databaseRequest(game_server.game_connection, "DELETE FROM admins WHERE player_id = ?", [selectedAdminId]);
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `Admin removed successfully!`,
+                            color: `#669917`
+                        }, interaction);
                     }
                 } break;
+
                 case 'update': {
                     const adminList = await getAdminOptions(client, game_server.game_connection);
                     if (adminList.length === 0) {
-                        await client.sendErrorEmbed({
-                            content: 'No admins found to update.',
-                            interaction: interaction
-                        });
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `No admins found to update.`,
+                            color: `#c70058`
+                        }, interaction);
                         return;
                     }
                     const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to update:');
@@ -444,20 +438,17 @@ module.exports = (client, game_server) => {
                         const rankOptions = await getRankOptions(client, game_server.game_connection);
                         const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the new rank to assign:');
                         if (selectedRankId) {
-                            await client.databaseRequest({ 
-                                database: game_server.game_connection, 
-                                query: "UPDATE admins SET rank_id = ? WHERE player_id = ?", 
-                                params: [selectedRankId, selectedAdminId] 
-                            });
-                            await client.sendSuccessEmbed({
-                                content: 'Admin updated successfully!',
-                                interaction: interaction
-                            });
+                            await client.databaseRequest(game_server.game_connection, "UPDATE admins SET rank_id = ? WHERE player_id = ?", [selectedRankId, selectedAdminId]);
+                            await client.ephemeralEmbed({
+                                title: `Request`,
+                                desc: `Admin updated successfully!`,
+                                color: `#669917`
+                            }, interaction);
                         }
                     }
                 } break;
             }
-        };
+        }
     };
 
     game_server.manageRanks = async function (interaction) {
@@ -466,80 +457,73 @@ module.exports = (client, game_server) => {
             { label: 'Remove Rank', value: 'remove' },
             { label: 'Update Rank', value: 'update' }
         ];
-    
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', actionOptions, 'Choose an action for rank management:');
         if (selectedAction) {
             switch (selectedAction) {
                 case 'add': {
-                    await client.sendInteractionInput(interaction, 'rank-name-modal', 'Enter the name of the new rank:', 'Rank Name', '');
-                    client.onInteractionInput(interaction, 'rank-name-modal', async (rankName) => {
-                        await client.sendInteractionInput(interaction, 'rank-rights-modal', 'Enter the text rights for this rank:', 'rank|rights', '');
-                        client.onInteractionInput(interaction, 'rank-rights-modal', async (textRights) => {
-                            await client.databaseRequest({
-                                database: game_server.game_connection,
-                                query: "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)",
-                                params: [rankName, textRights]
-                            });
-                            await client.sendSuccessEmbed({
-                                content: `Rank ${rankName} added successfully!`,
-                                interaction: interaction
-                            });
-                        });
-                    });
-                    break;
-                }
+                    await interaction.followUp({ content: 'Enter the name of the new rank:', ephemeral: true });
+                    const rankName = await client.collectUserInput(interaction);
+                    if (!rankName) return;
+                    await interaction.followUp({ content: 'Enter the text rights for this rank:', ephemeral: true });
+                    const textRights = await client.collectUserInput(interaction);
+                    if (!textRights) return;
+                    await client.databaseRequest(game_server.game_connection, "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)", [rankName, textRights]);
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Rank ${rankName} added successfully!`,
+                        color: `#669917`
+                    }, interaction);
+                } break;
+
                 case 'remove': {
                     const rankList = await getRankOptions(client, game_server.game_connection);
                     if (rankList.length === 0) {
-                        await client.sendErrorEmbed({
-                            content: 'No ranks found to remove.',
-                            interaction: interaction
-                        });
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `No ranks found to remove.`,
+                            color: `#c70058`
+                        }, interaction);
                         return;
                     }
                     const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
-                    if (selectedRankId && await client.sendInteractionConfirm(interaction, `Are you sure you want to remove this rank?`)) {
-                        await client.databaseRequest({
-                            database: game_server.game_connection,
-                            query: "DELETE FROM admin_ranks WHERE id = ?",
-                            params: [selectedRankId]
-                        });
-                        await client.sendSuccessEmbed({
-                            content: 'Rank removed successfully!',
-                            interaction: interaction
-                        });
+                    if (selectedRankId) {
+                        await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `Rank removed successfully!`,
+                            color: `#669917`
+                        }, interaction);
                     }
-                    break;
-                }
+                } break;
+
                 case 'update': {
                     const rankList = await getRankOptions(client, game_server.game_connection);
                     if (rankList.length === 0) {
-                        await client.sendErrorEmbed({
-                            content: 'No ranks found to update.',
-                            interaction: interaction
-                        });
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `No ranks found to update.`,
+                            color: `#c70058`
+                        }, interaction);
                         return;
                     }
                     const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
                     if (selectedRankId) {
-                        await client.sendInteractionInput(interaction, 'rank-name-modal', 'Enter the new name for the rank:', 'Rank Name', '');
-                        client.onInteractionInput(interaction, 'rank-name-modal', async (newRankName) => {
-                            await client.sendInteractionInput(interaction, 'rank-rights-modal', 'Enter the text rights for this rank:', 'rank|rights', '');
-                            client.onInteractionInput(interaction, 'rank-rights-modal', async (newTextRights) => {
-                                await client.databaseRequest({
-                                    database: game_server.game_connection,
-                                    query: "UPDATE admin_ranks SET rank_name = ?, text_rights = ? WHERE id = ?",
-                                    params: [newRankName, newTextRights, selectedRankId]
-                                });
-                                await client.sendSuccessEmbed({
-                                    content: 'Rank updated successfully!',
-                                    interaction: interaction
-                                });
-                            });
-                        });
+                        await interaction.followUp({ content: 'Enter the new name for the rank:', ephemeral: true });
+                        
+                        const newRankName = await client.collectUserInput(interaction);
+                        if (!newRankName) return;
+                        await interaction.followUp({ content: 'Enter the text rights for this rank:', ephemeral: true });
+                        
+                        const newTextRights = await client.collectUserInput(interaction);
+                        if (!newTextRights) return;
+                        await client.databaseRequest(game_server.game_connection, "UPDATE admin_ranks SET rank_name = ?, text_rights = ? WHERE id = ?", [newRankName, newTextRights, selectedRankId]);
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `Rank updated successfully!`,
+                            color: `#669917`
+                        }, interaction);
                     }
-                    break;
-                }
+                } break;
             }
         }
     };
@@ -556,11 +540,7 @@ module.exports = (client, game_server) => {
 }
 
 async function getAdminOptions(client, database_connection) {
-    const admins = await client.databaseRequest({
-        database: database_connection,
-        query: "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id",
-        params: []
-    });
+    const admins = await client.databaseRequest(database_connection, "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id", []);
 
     return admins.map(admin => ({
         label: admin.ckey,
@@ -569,11 +549,7 @@ async function getAdminOptions(client, database_connection) {
 };
 
 async function getRankOptions(client, database_connection) {
-    const ranks = await client.databaseRequest({
-        database: database_connection,
-        query: "SELECT id, rank_name FROM admin_ranks",
-        params: []
-    });
+    const ranks = await client.databaseRequest(database_connection, "SELECT id, rank_name FROM admin_ranks", []);
 
     return ranks.map(rank => ({
         label: rank.rank_name,

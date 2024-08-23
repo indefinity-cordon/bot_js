@@ -2,9 +2,7 @@ const Discord = require('discord.js');
 const chalk = require('chalk');
 
 module.exports = async (client) => {
-    client.serverRoles = async function ({
-        game_server: game_server
-    }) {
+    client.serverRoles = async function (game_server) {
         clearInterval(game_server.update_roles_interval);
         await updateRoles(client, game_server)
         game_server.update_roles_interval = setInterval(
@@ -23,11 +21,11 @@ async function updateRoles(client, game_server) {
         let db_roles, db_links, guild;
 
         try {
-            db_roles = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT role_id, rank_id FROM discord_ranks", params: [] });
+            db_roles = await client.databaseRequest(game_server.game_connection, "SELECT role_id, rank_id FROM discord_ranks", []);
             if (!db_roles.length) throw "No discord ranks";
             guild = await client.guilds.cache.get(game_server.guild);
             if (!guild) throw "No guild";
-            db_links = await client.databaseRequest({ database: game_server.game_connection, query: "SELECT discord_id, stable_rank FROM discord_links", params: [] });
+            db_links = await client.databaseRequest(game_server.game_connection, "SELECT discord_id, stable_rank FROM discord_links", []);
             if (!db_links.length) throw "No discord links";
         } catch (cancel_reason) {
             console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`${cancel_reason}`));
@@ -70,7 +68,7 @@ async function updateRoles(client, game_server) {
 
             if (updates.length) {
                 for (const [rank_id, discord_id] of updates) {
-                    await client.databaseRequest({ database: game_server.game_connection,  query: "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", params: [rank_id, discord_id] });
+                    await client.databaseRequest(game_server.game_connection, "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank_id, discord_id]);
                 }
             }
         }
