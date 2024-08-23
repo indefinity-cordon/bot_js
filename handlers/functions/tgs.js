@@ -109,7 +109,7 @@ module.exports = async (client) => {
         await client.ephemeralEmbed({
             title: `Action`,
             desc: `${response.data}`,
-            color: `#6d472b`
+            color: `#c70058`
         }, interaction);
     };
 
@@ -121,7 +121,7 @@ module.exports = async (client) => {
         await client.ephemeralEmbed({
             title: `Action`,
             desc: `${response.data}`,
-            color: `#6d472b`
+            color: `#c70058`
         }, interaction);
     };
 
@@ -133,7 +133,7 @@ module.exports = async (client) => {
         await client.ephemeralEmbed({
             title: `Action`,
             desc: `${response.data}`,
-            color: `#6d472b`
+            color: `#c70058`
         }, interaction);
     };
 

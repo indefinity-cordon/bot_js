@@ -98,7 +98,7 @@ module.exports = async (client) => {
         }
 
         const filter = collected => collected.customId === customId && collected.user.id === interaction.user.id;
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 600 });
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
         client.activeCollectors = client.activeCollectors || {};
         client.activeCollectors[interaction.user.id] = collector;
 
@@ -115,11 +115,11 @@ module.exports = async (client) => {
             });
             collector.on('end', async collected => {
                 if (collected.size === 0) {
-                    const Embed = new EmbedBuilder()
-                    .setTitle('Request')
-                    .setDescription('Time ran out! Please try again.')
-                    .setColor('#6d472b');
-                    await interaction.editReply({ content: '', embeds: [Embed], components: [] });
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Time ran out! Please try again.`,
+                        color: `#c70058`
+                    }, interaction);
                 }
                 delete client.activeCollectors[interaction.user.id];
                 resolve();
@@ -140,7 +140,7 @@ module.exports = async (client) => {
                     .setStyle('DANGER')
             );
     
-        await interaction.reply({ content: message, components: [buttons], ephemeral: true });
+        await interaction.editReply({ content: message, components: [buttons], ephemeral: true });
     
         const filter = i => i.user.id === interaction.user.id;
         const collected = await interaction.channel.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 60000 });
@@ -150,6 +150,38 @@ module.exports = async (client) => {
         } else {
             return false;
         }
-    }
+    };
+
+    client.sendInteractionInput = async function (interaction, modalId, modalTitle, inputLabel, inputPlaceholder) {
+        const modal = new ModalBuilder()
+            .setCustomId(modalId)
+            .setTitle(modalTitle);
+    
+        const textInput = new TextInputBuilder()
+            .setCustomId('textInput')
+            .setLabel(inputLabel)
+            .setStyle('SHORT')  // 'PARAGRAPH' for longer text
+            .setPlaceholder(inputPlaceholder)
+            .setRequired(true);
+    
+        const firstActionRow = new ActionRowBuilder().addComponents(textInput);
+        modal.addComponents(firstActionRow);
+    
+        await interaction.showModal(modal);
+    };
+
+    client.onInteractionInput = async function (interaction, modalId, callback) {
+        const filter = i => i.customId === modalId && i.user.id === interaction.user.id;
+    
+        interaction.channel.awaitModalSubmit({ filter, time: 60000 })
+            .then(async (modalInteraction) => {
+                const input = modalInteraction.fields.getTextInputValue('textInput').trim();
+                await modalInteraction.deferUpdate();
+                callback(input);
+            })
+            .catch(async () => {
+                await interaction.followUp({ content: 'No input received or time ran out. Please try again.', ephemeral: true });
+            });
+    };
 
 }
