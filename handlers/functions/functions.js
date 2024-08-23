@@ -159,12 +159,13 @@ module.exports = async (client) => {
         }
         let currentPage = 0;
         await sendPage(currentPage);
-        const filter = (i) => ['button_prev', 'button_next'].includes(i.customId) && i.user.id === interaction.user.id;
+        const filter = (collected) => ['button_prev', 'button_next', customId].includes(collected.customId) && collected.user.id === interaction.user.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
         client.activeCollectors = client.activeCollectors || {};
         client.activeCollectors[interaction.user.id] = collector;
         return new Promise((resolve) => {
             collector.on('collect', async collected => {
+                await collected.deferUpdate();
                 if (collected.customId === 'button_prev' && currentPage > 0) {
                     currentPage--;
                     await sendPage(currentPage);
@@ -172,7 +173,6 @@ module.exports = async (client) => {
                     currentPage++;
                     await sendPage(currentPage);
                 } else {
-                    await collected.deferUpdate();
                     resolve(collected.values[0]);
                 }
             });
