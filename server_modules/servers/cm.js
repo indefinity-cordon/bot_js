@@ -4,7 +4,17 @@ module.exports = (client, game_server) => {
     game_server.updateStatus = async function (type) {
         try {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
-            if (!server_response) throw 'server offline';
+            if (!server_response) {
+                for (const message of game_server.updater_messages[type]) {
+                    await client.embed({
+                        title: `${game_server.server_name} status`,
+                        desc: `# SERVER OFFLINE`,
+                        color: `#a00f0f`,
+                        type: 'edit'
+                    }, message);
+                }
+                return;
+            };
             const response = JSON.parse(server_response);
             const data = response.data
             const time = Math.floor(data.round_duration / 600)
@@ -382,7 +392,7 @@ module.exports = (client, game_server) => {
                         }));
                         const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to add as admin:');
                         if (selectedPlayerId) {
-                            const rankOptions = await getRankOptions(game_server.game_connection);
+                            const rankOptions = await getRankOptions(client, game_server.game_connection);
                             const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the rank to assign:');
                             if (selectedRankId) {
                                 await client.databaseRequest({ 
@@ -399,7 +409,7 @@ module.exports = (client, game_server) => {
                     });
                 } break;
                 case 'remove': {
-                    const adminList = await getAdminOptions(game_server.game_connection);
+                    const adminList = await getAdminOptions(client, game_server.game_connection);
                     if (adminList.length === 0) {
                         await client.sendErrorEmbed({
                             content: 'No admins found to remove.',
@@ -421,7 +431,7 @@ module.exports = (client, game_server) => {
                     }
                 } break;
                 case 'update': {
-                    const adminList = await getAdminOptions(game_server.game_connection);
+                    const adminList = await getAdminOptions(client, game_server.game_connection);
                     if (adminList.length === 0) {
                         await client.sendErrorEmbed({
                             content: 'No admins found to update.',
@@ -431,7 +441,7 @@ module.exports = (client, game_server) => {
                     }
                     const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to update:');
                     if (selectedAdminId) {
-                        const rankOptions = await getRankOptions(game_server.game_connection);
+                        const rankOptions = await getRankOptions(client, game_server.game_connection);
                         const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the new rank to assign:');
                         if (selectedRankId) {
                             await client.databaseRequest({ 
@@ -479,7 +489,7 @@ module.exports = (client, game_server) => {
                     break;
                 }
                 case 'remove': {
-                    const rankList = await getRankOptions(game_server.game_connection);
+                    const rankList = await getRankOptions(client, game_server.game_connection);
                     if (rankList.length === 0) {
                         await client.sendErrorEmbed({
                             content: 'No ranks found to remove.',
@@ -502,7 +512,7 @@ module.exports = (client, game_server) => {
                     break;
                 }
                 case 'update': {
-                    const rankList = await getRankOptions(game_server.game_connection);
+                    const rankList = await getRankOptions(client, game_server.game_connection);
                     if (rankList.length === 0) {
                         await client.sendErrorEmbed({
                             content: 'No ranks found to update.',
@@ -545,7 +555,7 @@ module.exports = (client, game_server) => {
     ];
 }
 
-async function getAdminOptions(database_connection) {
+async function getAdminOptions(client, database_connection) {
     const admins = await client.databaseRequest({
         database: database_connection,
         query: "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id",
@@ -558,7 +568,7 @@ async function getAdminOptions(database_connection) {
     }));
 };
 
-async function getRankOptions(database_connection) {
+async function getRankOptions(client, database_connection) {
     const ranks = await client.databaseRequest({
         database: database_connection,
         query: "SELECT id, rank_name FROM admin_ranks",

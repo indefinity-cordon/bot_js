@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder } = require('discord.js');
+const { ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = async (client) => {
     //----------------------------------------------------------------//
@@ -92,11 +92,9 @@ module.exports = async (client) => {
             .setCustomId(customId)
             .setPlaceholder(customDesc)
             .addOptions(customOptions);
-
         if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
             client.activeCollectors[interaction.user.id].stop();
         }
-
         const filter = collected => collected.customId === customId && collected.user.id === interaction.user.id;
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
         client.activeCollectors = client.activeCollectors || {};
@@ -139,49 +137,13 @@ module.exports = async (client) => {
                     .setLabel('Cancel')
                     .setStyle('DANGER')
             );
-    
         await interaction.editReply({ content: message, components: [buttons], ephemeral: true });
-    
         const filter = i => i.user.id === interaction.user.id;
         const collected = await interaction.channel.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 60000 });
-    
         if (collected.customId === 'confirm') {
             return true;
         } else {
             return false;
         }
     };
-
-    client.sendInteractionInput = async function (interaction, modalId, modalTitle, inputLabel, inputPlaceholder) {
-        const modal = new ModalBuilder()
-            .setCustomId(modalId)
-            .setTitle(modalTitle);
-    
-        const textInput = new TextInputBuilder()
-            .setCustomId('textInput')
-            .setLabel(inputLabel)
-            .setStyle('SHORT')  // 'PARAGRAPH' for longer text
-            .setPlaceholder(inputPlaceholder)
-            .setRequired(true);
-    
-        const firstActionRow = new ActionRowBuilder().addComponents(textInput);
-        modal.addComponents(firstActionRow);
-    
-        await interaction.showModal(modal);
-    };
-
-    client.onInteractionInput = async function (interaction, modalId, callback) {
-        const filter = i => i.customId === modalId && i.user.id === interaction.user.id;
-    
-        interaction.channel.awaitModalSubmit({ filter, time: 60000 })
-            .then(async (modalInteraction) => {
-                const input = modalInteraction.fields.getTextInputValue('textInput').trim();
-                await modalInteraction.deferUpdate();
-                callback(input);
-            })
-            .catch(async () => {
-                await interaction.followUp({ content: 'No input received or time ran out. Please try again.', ephemeral: true });
-            });
-    };
-
 }

@@ -3,7 +3,8 @@ const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('admin')
-        .setDescription('Use admin command'),
+        .setDescription('Use admin command')
+    ,
 
     /** 
      * @param {Client} client
