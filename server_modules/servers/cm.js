@@ -566,15 +566,19 @@ module.exports = (client, game_server) => {
                         label: player.ckey,
                         value: player.id.toString()
                     }));
-                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to add as admin:');
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for adding whitelists:');
                     if (!selectedPlayerId) return;
                     const player = playerData.find(p => p.id.toString() === selectedPlayerId);
                     let currentRoles = player.whitelist_status ? player.whitelist_status.split('|') : [];
-                    const roleOptions = Object.entries(acting_wls).map(([key, value]) => ({
+                    const availableRoles = Object.entries(acting_wls).filter(([key]) => !currentRoles.includes(key)).map(([key, value]) => ({
                         label: value,
                         value: key
                     }));
-                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to add:', { multiple: true });
+                    if (availableRoles.length === 0) {
+                        await interaction.followUp({ content: 'No roles available to add. The player already has all possible roles.', ephemeral: true });
+                        return;
+                    }
+                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', availableRoles, 'Select the roles to add:', true);
                     if (!selectedRoles) return;
                     currentRoles = [...new Set([...currentRoles, ...selectedRoles])];
                     await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
@@ -598,7 +602,7 @@ module.exports = (client, game_server) => {
                         label: player.ckey,
                         value: player.id.toString()
                     }));
-                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to remove whitelists from:');
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for removing whitelists:');
                     if (!selectedPlayerId) return;
                     const player = playerData.find(p => p.id.toString() === selectedPlayerId);
                     if (!player.whitelist_status) {
@@ -610,9 +614,14 @@ module.exports = (client, game_server) => {
                         label: acting_wls[role] || role,
                         value: role
                     }));
-                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', { multiple: true });
+                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', true);
                     if (!selectedRoles) return;
-                    currentRoles = currentRoles.filter(role => !selectedRoles.includes(role));
+                    selectedRoles.forEach(selectedRole => {
+                        const index = currentRoles.indexOf(selectedRole);
+                        if (index > -1) {
+                            currentRoles.splice(index, 1);
+                        }
+                    });
                     await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
                     await client.ephemeralEmbed({
                         title: `Request`,

@@ -81,17 +81,15 @@ module.exports = async (client) => {
     //----------------------------------------------------------------//
     //                         Selection Menu                         //
     //----------------------------------------------------------------//
-    client.onSelectMenu = async function (interaction, menu) {
-        const filter = i => i.customId === menu.customId && i.user.id === interaction.user.id;
-        const collected = await interaction.channel.awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 60000 });
-        return collected.values[0];
-    };
-
-    client.sendInteractionSelectMenu = async function (interaction, customId, customDesc, customOptions, customContent) {
+    client.sendInteractionSelectMenu = async function (interaction, customId, customDesc, customOptions, customContent, allowMultiple = false) {
         const menu = new StringSelectMenuBuilder()
             .setCustomId(customId)
             .setPlaceholder(customDesc)
             .addOptions(customOptions);
+        if (allowMultiple) {
+            menu.setMinValues(1);
+            menu.setMaxValues(customOptions.length);
+        }
         if (client.activeCollectors && client.activeCollectors[interaction.user.id]) {
             client.activeCollectors[interaction.user.id].stop();
         }
@@ -99,17 +97,19 @@ module.exports = async (client) => {
         const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
         client.activeCollectors = client.activeCollectors || {};
         client.activeCollectors[interaction.user.id] = collector;
-
         await interaction.editReply({
             content: customContent,
             components: [new ActionRowBuilder().addComponents(menu)],
             ephemeral: true
         });
-
         return new Promise((resolve) => {
             collector.on('collect', async collected => {
                 await collected.deferUpdate();
-                resolve(collected.values[0]);
+                if(allowMultiple) {
+                    resolve(collected.values);
+                } else {
+                    resolve(collected.values[0]);
+                }
             });
             collector.on('end', async collected => {
                 if (collected.size === 0) {
@@ -119,7 +119,6 @@ module.exports = async (client) => {
                         color: `#c70058`
                     }, interaction);
                 }
-                delete client.activeCollectors[interaction.user.id];
                 resolve();
             });
         });
