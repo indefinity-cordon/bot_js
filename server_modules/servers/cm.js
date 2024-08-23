@@ -424,7 +424,7 @@ module.exports = (client, game_server) => {
                         }, interaction);
                         return;
                     }
-                    const selectedAdminId = await client.sendPaginatedSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to remove:');
+                    const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to remove:');
                     if (selectedAdminId) {
                         await client.databaseRequest(game_server.game_connection, "DELETE FROM admins WHERE player_id = ?", [selectedAdminId]);
                         await client.ephemeralEmbed({
@@ -445,7 +445,7 @@ module.exports = (client, game_server) => {
                         }, interaction);
                         return;
                     }
-                    const selectedAdminId = await client.sendPaginatedSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to update:');
+                    const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to update:');
                     if (selectedAdminId) {
                         const rankOptions = await getRankOptions(client, game_server.game_connection);
                         const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the new rank to assign:');
@@ -509,7 +509,7 @@ module.exports = (client, game_server) => {
                         }, interaction);
                         return;
                     }
-                    const selectedRankId = await client.sendPaginatedSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
+                    const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
                     if (selectedRankId) {
                         await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
                         const playersWithExtraTitles = await client.databaseRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
@@ -537,7 +537,7 @@ module.exports = (client, game_server) => {
                         }, interaction);
                         return;
                     }
-                    const selectedRankId = await client.sendPaginatedSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
+                    const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
                     if (selectedRankId) {
                         await interaction.followUp({ content: 'Enter the new name for the rank:', ephemeral: true });
                         const newRankName = await client.collectUserInput(interaction);

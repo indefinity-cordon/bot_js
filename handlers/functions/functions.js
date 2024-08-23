@@ -82,6 +82,9 @@ module.exports = async (client) => {
     //                         Selection Menu                         //
     //----------------------------------------------------------------//
     client.sendInteractionSelectMenu = async function (interaction, customId, customDesc, customOptions, customContent, allowMultiple = false) {
+        if (customOptions.length > 25) {
+            return client.sendPaginatedSelectMenu(interaction, customId, customDesc, customOptions, customContent, allowMultiple);
+        }
         const menu = new StringSelectMenuBuilder()
             .setCustomId(customId)
             .setPlaceholder(customDesc)
@@ -125,7 +128,7 @@ module.exports = async (client) => {
         });
     };
 
-    client.sendPaginatedSelectMenu = async function (interaction, customId, customDesc, customOptions, customContent, perPage = 25) {
+    client.sendPaginatedSelectMenu = async function (interaction, customId, customDesc, customOptions, customContent, allowMultiple = false, perPage = 25) {
         const totalPages = Math.ceil(customOptions.length / perPage);
         const sendPage = async (page) => {
             const start = page * perPage;
@@ -135,6 +138,10 @@ module.exports = async (client) => {
                 .setCustomId(customId)
                 .setPlaceholder(customDesc)
                 .addOptions(currentOptions);
+            if (allowMultiple) {
+                menu.setMinValues(1);
+                menu.setMaxValues(currentOptions.length);
+            }
             const buttons = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -173,7 +180,11 @@ module.exports = async (client) => {
                     currentPage++;
                     await sendPage(currentPage);
                 } else {
-                    resolve(collected.values[0]);
+                    if(allowMultiple) {
+                        resolve(collected.values);
+                    } else {
+                        resolve(collected.values[0]);
+                    }
                 }
             });
             collector.on('end', async collected => {
@@ -191,7 +202,7 @@ module.exports = async (client) => {
     };
 
     client.collectUserInput = async function (interaction) {
-        const filter = i => i.author.id === interaction.user.id;
+        const filter = collected => collected.author.id === interaction.user.id;
         const collected = await interaction.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
     
         if (collected.size === 0) {
