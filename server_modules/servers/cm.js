@@ -528,14 +528,120 @@ module.exports = (client, game_server) => {
         }
     };
 
+    game_server.manageWhitelists = async function (interaction) {
+        const actionOptions = [
+            { label: 'Add Whitelists', value: 'add' },
+            { label: 'Remove Whitelists', value: 'remove' }
+        ];
+        const acting_wls = {
+            "WHITELIST_COMMANDER": "CO",
+            "WHITELIST_COMMANDER_COUNCIL": "CO Council",
+            "WHITELIST_COMMANDER_COUNCIL_LEGACY": "CO Council Legacy",
+            "WHITELIST_COMMANDER_COLONEL": "Colonel",
+            "WHITELIST_COMMANDER_LEADER": "CO Leader",
+            "WHITELIST_SYNTHETIC": "Synthetic",
+            "WHITELIST_SYNTHETIC_COUNCIL": "Synthetic Council",
+            "WHITELIST_SYNTHETIC_COUNCIL_LEGACY": "Synthetic Council Legacy",
+            "WHITELIST_SYNTHETIC_LEADER": "Synthetic Leader",
+            "WHITELIST_JOE": "Joe",
+            "WHITELIST_YAUTJA": "Yautja",
+            "WHITELIST_YAUTJA_LEGACY": "Yautja Legacy",
+            "WHITELIST_YAUTJA_COUNCIL": "Yautja Council",
+            "WHITELIST_YAUTJA_COUNCIL_LEGACY": "Yautja Council Legacy",
+            "WHITELIST_YAUTJA_LEADER": "Yautja Leader"
+        };
+        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select Action', actionOptions, 'Choose an action for admin role management:');
+        if (selectedAction) {
+            switch (selectedAction) {
+                case 'add': {
+                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist:', ephemeral: true });
+                    const ckey = await client.collectUserInput(interaction);
+                    if (!ckey) return;
+    
+                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                    if (!playerData.length) {
+                        await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
+                        return;
+                    }
+    
+                    const playerOptions = playerData.map(player => ({
+                        label: player.ckey,
+                        value: player.id.toString()
+                    }));
+    
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to modify:');
+                    if (selectedPlayerId) {
+    
+                        const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to add:', { multiple: true });
+                        if (selectedRoles && selectedRoles.length > 0) {
+                            for (const role of selectedRoles) {
+                                await client.databaseRequest(game_server.game_connection, "INSERT INTO admin_roles (player_id, role) VALUES (?, ?)", [selectedPlayerId, role]);
+                            }
+                            await client.ephemeralEmbed({
+                                title: `Request`,
+                                desc: `Roles added successfully!`,
+                                color: `#669917`
+                            }, interaction);
+                        }
+                    }
+                } break;
+    
+                case 'remove': {
+                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist:', ephemeral: true });
+                    const ckey = await client.collectUserInput(interaction);
+                    if (!ckey) return;
+    
+                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                    if (!playerData.length) {
+                        await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
+                        return;
+                    }
+    
+                    const playerOptions = playerData.map(player => ({
+                        label: player.ckey,
+                        value: player.id.toString()
+                    }));
+    
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to modify:');
+                    if (selectedPlayerId) {
+                        const existingRoles = await client.databaseRequest(game_server.game_connection, "SELECT role FROM admin_roles WHERE player_id = ?", [selectedPlayerId]);
+                        if (!existingRoles.length) {
+                            await interaction.followUp({ content: 'This player has no roles to remove.', ephemeral: true });
+                            return;
+                        }
+    
+                        const roleOptions = existingRoles.map(role => ({
+                            label: role.replacementName,  // Здесь используйте дружелюбные имена
+                            value: role.role
+                        }));
+    
+                        const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', { multiple: true });
+                        if (selectedRoles && selectedRoles.length > 0) {
+                            for (const role of selectedRoles) {
+                                await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_roles WHERE player_id = ? AND role = ?", [selectedPlayerId, role]);
+                            }
+                            await client.ephemeralEmbed({
+                                title: `Request`,
+                                desc: `Roles removed successfully!`,
+                                color: `#669917`
+                            }, interaction);
+                        }
+                    }
+                } break;
+            }
+        }
+    };
+
     game_server.handling_actions = {
         "manage_admins": game_server.manageAdmins,
-        "manage_ranks": game_server.manageRanks
+        "manage_ranks": game_server.manageRanks,
+        "manage_whitelists": game_server.manageWhitelists
     };
 
     game_server.handling_commands = [
         { label: "Manage Admins", value: "manage_admins" },
-        { label: "Manage Ranks", value: "manage_ranks" }
+        { label: "Manage Ranks", value: "manage_ranks" },
+        { label: "Manage Whitelists", value: "manage_whitelists" }
     ];
 }
 
