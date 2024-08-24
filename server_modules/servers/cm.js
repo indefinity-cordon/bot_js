@@ -7,8 +7,9 @@ module.exports = (client, game_server) => {
             if (!server_response) {
                 for (const message of game_server.updater_messages[type]) {
                     await client.embed({
-                        title: `${game_server.server_name} status`,
+                        title: ` `,
                         desc: `# SERVER OFFLINE`,
+                        content: `${game_server.server_name} Status`,
                         color: `#a00f0f`,
                         type: 'edit'
                     }, message);
@@ -18,27 +19,31 @@ module.exports = (client, game_server) => {
             const response = JSON.parse(server_response);
             const data = response.data;
             const time = Math.floor(data.round_duration / 600);
-            const desc = `**Round Name:** ${data.round_name}\n
-                **Round ID:** ${data.round_id}\n
-                **Map:** ${data.map_name}${data.next_map_name ? ` | **Next Map:** ${data.next_map_name}` : ``}\n
-                **Ship Map:**  ${data.ship_map_name}${data.next_ship_map_name ? ` | **Next Map:** ${data.next_ship_map_name}` : ``}\n
-                **Total Players:** ${data.players}\n
-                **Gamemode:** ${data.mode}\n
-                **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')}\n
-                ${data.round_end_state ? `\n**Rouned End State:** ${data.round_end_state}` : ``}`;
+            let fields = [];
+            fields.push({ name: `**Round Name**`, value: data.round_name});
+            fields.push({ name: `**Round ID**`, value: data.round_id});
+            fields.push({ name: `**Map**`, value: data.map_name});
+            if (data.next_map_name) fields.push({ name: `**Next Map**`, value: data.next_map_name});
+            fields.push({ name: `**Ship Map**`, value: data.ship_map_name});
+            if (data.next_map_name) fields.push({ name: `***Next Ship Map**`, value: data.next_ship_map_name});
+            fields.push({ name: `**Total Players**`, value: data.players});
+            fields.push({ name: `**Gamemode**`, value: data.mode});
+            fields.push({ name: `**Round Time**`, value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')});
+            if (data.round_end_state) fields.push({ name: `**ouned End State**`, value: data.round_end_state});
             for (const message of game_server.updater_messages[type]) {
-                await client.embed({
-                    title: `${game_server.server_name} status`,
-                    desc: desc,
-                    color: `#669917`,
-                    type: 'edit'
+                await client.sendEmbed({
+                    embeds: [new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917')],
+                    content: `${game_server.server_name} Status`,
+                    components: [],
+                    type: `edit`
                 }, message);
             }
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
-                    title: `${game_server.server_name} status`,
+                    title: ` `,
                     desc: `# SERVER OFFLINE`,
+                    content: `${game_server.server_name} Status`,
                     color: `#a00f0f`,
                     type: 'edit'
                 }, message);
@@ -49,26 +54,36 @@ module.exports = (client, game_server) => {
     game_server.updateAdminsMessage = async function (type) {
         try {
             const db_request_admin = await client.databaseRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins", []);
+            const player_ids = db_request_admin.map(admin => admin.player_id);
+            const db_request_profiles = await client.databaseRequest(game_server.game_connection, `SELECT id, ckey, last_login FROM players WHERE id IN (${player_ids.join(',')})`, []);
+            const profileMap = new Map();
+            db_request_profiles.forEach(profile => {
+                profileMap.set(profile.id, profile);
+            });
             const db_request_ranks = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
             });
             const embeds = [];
-            let description = ``;
             for (const db_admin of db_request_admin) {
-                const db_request_profile = await client.databaseRequest(game_server.game_connection, "SELECT ckey, last_login FROM players WHERE id = ?", [db_admin.player_id]);
+                const profile = profileMap.get(db_admin.player_id);
                 let extra_ranks = [];
                 if (db_admin.extra_titles_encoded) {
-                    for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
-                        extra_ranks.push(`${roleMap.get(parseInt(rank_id))}`);
-                    }
+                    extra_ranks = JSON.parse(db_admin.extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
                 }
-                description += `**Ckey:** ${db_request_profile[0].ckey} [**Last Login** ${db_request_profile[0].last_login}]\n **Rank:** ${roleMap.get(db_admin.rank_id)}`;
-                if (extra_ranks.length > 0) description += `[**Extra Ranks** ${extra_ranks.join(' & ')}]`;
-                description += `\n\n`
+                const extra_ranks_display = extra_ranks.length > 0 ? extra_ranks.join(' & ') : "None";
+                embeds.push(
+                    new Discord.EmbedBuilder()
+                        .addFields(
+                            { name: "**Ckey**", value: profile.ckey, inline: true },
+                            { name: "**Last Login**", value: profile.last_login ? profile.last_login : "No data", inline: true },
+                            { name: "**Rank**", value: roleMap.get(db_admin.rank_id), inline: true },
+                            { name: "**Extra Ranks**", value: extra_ranks_display, inline: true }
+                        )
+                        .setColor('#669917')
+                );
             }
-            embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
@@ -97,7 +112,8 @@ module.exports = (client, game_server) => {
             let description = ``;
             for (const db_rank of db_request) {
                 const rank_fields = db_rank.text_rights.split('|');
-                description += `**${db_rank.rank_name}** [${rank_fields.join(' & ')}]\n`;
+                description += `**${db_rank.rank_name}**\n`;
+                description += `${rank_fields.join(' & ')}\n\n`;
             }
             embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
@@ -150,9 +166,9 @@ module.exports = (client, game_server) => {
                 }
                 for (const [status, players] of Object.entries(grouped_players)) {
                     if (!players.length) continue;
-                    fields.push({ name: `**${replacements[type][status]}**`, value: players.join(', ')});
+                    fields.push({ name: `**${replacements[type][status]}**`, value: players.join(', '), inline: true});
                 }
-                embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
+                if (fields.length) embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
