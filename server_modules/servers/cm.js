@@ -470,13 +470,15 @@ module.exports = (client, game_server) => {
                         
                             case 'remove': {
                                 const currentPlayer = await client.databaseRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedAdminId]);
-                                let extraTitles = currentPlayer[0].extra_titles_encoded ? JSON.parse(currentPlayer[0].extra_titles_encoded) : [];
-                                const extraRankOptions = await getRankOptions(client, game_server.game_connection);
-                                const assignedOptions = extraRankOptions.filter(option => extraTitles.includes(option.value));
-                                const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', assignedOptions, 'Select extra titles to remove:', true);
-                                if (selectedExtraRanks && selectedExtraRanks.length > 0) {
-                                    extraTitles = extraTitles.filter(title => !selectedExtraRanks.includes(title));
-                                    await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
+                                if (currentPlayer[0].extra_titles_encoded) {
+                                    let extraTitles = JSON.parse(currentPlayer[0].extra_titles_encoded);
+                                    const extraRankOptions = await getRankOptions(client, game_server.game_connection);
+                                    const assignedOptions = extraRankOptions.filter(option => extraTitles.includes(option.value));
+                                    const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', assignedOptions, 'Select extra titles to remove:', true);
+                                    if (selectedExtraRanks && selectedExtraRanks.length > 0) {
+                                        extraTitles = extraTitles.filter(title => !selectedExtraRanks.includes(title));
+                                        await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
+                                    }
                                 }
                             } break;
                         }
