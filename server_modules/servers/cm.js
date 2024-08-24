@@ -58,16 +58,15 @@ module.exports = (client, game_server) => {
             let description = ``;
             for (const db_admin of db_request_admin) {
                 const db_request_profile = await client.databaseRequest(game_server.game_connection, "SELECT ckey, last_login FROM players WHERE id = ?", [db_admin.player_id]);
-                let admin_info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
                 let extra_ranks = [];
                 if (db_admin.extra_titles_encoded) {
                     for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
                         extra_ranks.push(`${roleMap.get(parseInt(rank_id))}`);
                     }
                 }
-                if (extra_ranks.length > 0) admin_info += `**Extra Ranks:** ${extra_ranks.join(' & ')}\n`;
-                admin_info += `**Last login:** ${db_request_profile[0].last_login}\n`;
-                description += `**${db_request_profile[0].ckey}:** ${admin_info}\n\n`;
+                description += `**Ckey:** ${db_request_profile[0].ckey} [**Last Login** ${db_request_profile[0].last_login}]\n **Rank:** ${roleMap.get(db_admin.rank_id)}`;
+                if (extra_ranks.length > 0) description += `[**Extra Ranks** ${extra_ranks.join(' & ')}]`;
+                description += `\n\n`
             }
             embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
@@ -98,7 +97,7 @@ module.exports = (client, game_server) => {
             let description = ``;
             for (const db_rank of db_request) {
                 const rank_fields = db_rank.text_rights.split('|');
-                description += `**${db_rank.rank_name}:** ${rank_fields.join(' & ')}\n\n`;
+                description += `**${db_rank.rank_name}** [${rank_fields.join(' & ')}]\n`;
             }
             embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
@@ -137,8 +136,11 @@ module.exports = (client, game_server) => {
             };
             const embeds = [];
             for(const type in acting_wls) {
-                const fields = [];
+                let fields = [];
                 const grouped_players = {};
+                for(const wl_name of acting_wls[type]) {
+                    grouped_players[wl_name] = [];
+                }
                 for (const player of db_request) {
                     const wl_fields = player.whitelist_status.split('|');
                     const actual_wl_fields = wl_fields.filter(field => acting_wls[type].includes(field));
@@ -147,7 +149,8 @@ module.exports = (client, game_server) => {
                     }
                 }
                 for (const [status, players] of Object.entries(grouped_players)) {
-                    fields.push({ name: `**${replacements[type][status]}**`, value: players.join(', '), inline: true });
+                    if (!players.length) continue;
+                    fields.push({ name: `**${replacements[type][status]}**`, value: players.join(', ')});
                 }
                 embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
             }
