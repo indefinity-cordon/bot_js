@@ -55,37 +55,21 @@ module.exports = (client, game_server) => {
                 roleMap.set(row.id, row.rank_name);
             });
             const embeds = [];
-            let fields = [];
+            let description = ``;
             for (const db_admin of db_request_admin) {
-                const db_player_profile = await client.databaseRequest(game_server.game_connection, "SELECT ckey, last_login FROM players WHERE id = ?", [db_admin.player_id]);
-                let info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
+                const db_request_profile = await client.databaseRequest(game_server.game_connection, "SELECT ckey, last_login FROM players WHERE id = ?", [db_admin.player_id]);
+                let admin_info = `**Rank:** ${roleMap.get(db_admin.rank_id)}\n`;
                 let extra_ranks = [];
                 if (db_admin.extra_titles_encoded) {
                     for(const rank_id of JSON.parse(db_admin.extra_titles_encoded)) {
                         extra_ranks.push(`${roleMap.get(parseInt(rank_id))}`);
                     }
                 }
-                if (extra_ranks.length > 0) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}\n`;
-                info += `**Last login:** ${db_player_profile[0].last_login}\n`;
-                fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
-                if (fields.length === 25) {
-                    embeds.push(
-                        new Discord.EmbedBuilder()
-                            .setTitle(` `)
-                            .addFields(fields)
-                            .setColor('#669917')
-                    );
-                    fields = [];
-                }
+                if (extra_ranks.length > 0) admin_info += `**Extra Ranks:** ${extra_ranks.join(' & ')}\n`;
+                admin_info += `**Last login:** ${db_request_profile[0].last_login}\n`;
+                description += `**${db_request_profile[0].ckey}:** ${admin_info}\n\n`;
             }
-            if (fields.length > 0) {
-                embeds.push(
-                    new Discord.EmbedBuilder()
-                        .setTitle(` `)
-                        .addFields(fields)
-                        .setColor('#669917')
-                );
-            }
+            embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
@@ -109,30 +93,14 @@ module.exports = (client, game_server) => {
 
     game_server.updateRanksMessage = async function (type) {
         try {
-            const db_request_ranks = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
+            const db_request = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const embeds = [];
-            let fields = [];
-            for (const db_rank of db_request_ranks) {
+            let description = ``;
+            for (const db_rank of db_request) {
                 const rank_fields = db_rank.text_rights.split('|');
-                fields.push({ name: `${db_rank.rank_name}`, value: `**Rights:** ${rank_fields.join(' & ')}` });
-                if (fields.length === 25) {
-                    embeds.push(
-                        new Discord.EmbedBuilder()
-                            .setTitle(` `)
-                            .addFields(fields)
-                            .setColor('#669917')
-                    );
-                    fields = [];
-                }
+                description += `**${db_rank.rank_name}:** ${rank_fields.join(' & ')}\n\n`;
             }
-            if (fields.length > 0) {
-                embeds.push(
-                    new Discord.EmbedBuilder()
-                        .setTitle(` `)
-                        .addFields(fields)
-                        .setColor('#669917')
-                );
-            }
+            embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
@@ -154,89 +122,34 @@ module.exports = (client, game_server) => {
         }
     };
 
-    game_server.updateWhitelists = async function (type) {
+    game_server.updateWhitelistsMessage = async function (type) {
         try {
-            let acting_wls, replacements;
-            switch (type) {
-                case "whitelist_c": {
-                    acting_wls = [
-                        "WHITELIST_COMMANDER",
-                        "WHITELIST_COMMANDER_COUNCIL",
-                        "WHITELIST_COMMANDER_COUNCIL_LEGACY",
-                        "WHITELIST_COMMANDER_COLONEL",
-                        "WHITELIST_COMMANDER_LEADER"
-                    ];
-                    replacements = {
-                        "WHITELIST_COMMANDER": "CO",
-                        "WHITELIST_COMMANDER_COUNCIL": "CO Council",
-                        "WHITELIST_COMMANDER_COUNCIL_LEGACY": "CO Council Legacy",
-                        "WHITELIST_COMMANDER_COLONEL": "Colonel",
-                        "WHITELIST_COMMANDER_LEADER": "CO Leader"
-                    };
-                } break;
-                case "whitelist_s": {
-                    acting_wls = [
-                        "WHITELIST_SYNTHETIC",
-                        "WHITELIST_SYNTHETIC_COUNCIL",
-                        "WHITELIST_SYNTHETIC_COUNCIL_LEGACY",
-                        "WHITELIST_SYNTHETIC_LEADER"
-                    ];
-                    replacements = {
-                        "WHITELIST_SYNTHETIC": "Synthetic",
-                        "WHITELIST_SYNTHETIC_COUNCIL": "Synthetic Council",
-                        "WHITELIST_SYNTHETIC_COUNCIL_LEGACY": "Synthetic Council Legacy",
-                        "WHITELIST_SYNTHETIC_LEADER": "Synthetic Leader"
-                    };
-                } break;
-                case "whitelist_j": {
-                    acting_wls = ["WHITELIST_JOE"];
-                    replacements = { "WHITELIST_JOE": "Joe" };
-                } break;
-                case "whitelist_p": {
-                    acting_wls = [
-                        "WHITELIST_YAUTJA",
-                        "WHITELIST_YAUTJA_LEGACY",
-                        "WHITELIST_YAUTJA_COUNCIL",
-                        "WHITELIST_YAUTJA_COUNCIL_LEGACY",
-                        "WHITELIST_YAUTJA_LEADER"
-                    ];
-                    replacements = {
-                        "WHITELIST_YAUTJA": "Yautja",
-                        "WHITELIST_YAUTJA_LEGACY": "Yautja Legacy",
-                        "WHITELIST_YAUTJA_COUNCIL": "Yautja Council",
-                        "WHITELIST_YAUTJA_COUNCIL_LEGACY": "Yautja Council Legacy",
-                        "WHITELIST_YAUTJA_LEADER": "Yautja Leader"
-                    };
-                } break;
-            }
+            const db_request = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"", []);
+            const acting_wls = {
+                "Commander": ["WHITELIST_COMMANDER", "WHITELIST_COMMANDER_COUNCIL", "WHITELIST_COMMANDER_COUNCIL_LEGACY", "WHITELIST_COMMANDER_COLONEL", "WHITELIST_COMMANDER_LEADER"],
+                "Synthetic": ["WHITELIST_SYNTHETIC", "WHITELIST_SYNTHETIC_COUNCIL", "WHITELIST_SYNTHETIC_COUNCIL_LEGACY", "WHITELIST_SYNTHETIC_LEADER", "WHITELIST_JOE"],
+                "Yautja": ["WHITELIST_YAUTJA", "WHITELIST_YAUTJA_LEGACY", "WHITELIST_YAUTJA_COUNCIL", "WHITELIST_YAUTJA_COUNCIL_LEGACY", "WHITELIST_YAUTJA_LEADER"]
+            };
+            const replacements = {
+                "Commander": { "WHITELIST_COMMANDER": "CO", "WHITELIST_COMMANDER_COUNCIL": "CO Council", "WHITELIST_COMMANDER_COUNCIL_LEGACY": "CO Council Legacy", "WHITELIST_COMMANDER_COLONEL": "Colonel", "WHITELIST_COMMANDER_LEADER": "CO Leader" },
+                "Synthetic": { "WHITELIST_SYNTHETIC": "Synthetic", "WHITELIST_SYNTHETIC_COUNCIL": "Synthetic Council", "WHITELIST_SYNTHETIC_COUNCIL_LEGACY": "Synthetic Council Legacy", "WHITELIST_SYNTHETIC_LEADER": "Synthetic Leader", "WHITELIST_JOE": "Joe" },
+                "Yautja": { "WHITELIST_YAUTJA": "Yautja", "WHITELIST_YAUTJA_LEGACY": "Yautja Legacy", "WHITELIST_YAUTJA_COUNCIL": "Yautja Council", "WHITELIST_YAUTJA_COUNCIL_LEGACY": "Yautja Council Legacy", "WHITELIST_YAUTJA_LEADER": "Yautja Leader" }
+            };
             const embeds = [];
-            let fields = [];
-            const db_player_profiles = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"", []);
-            for (const player of db_player_profiles) {
-                const wl_fields = player.whitelist_status.split('|');
-                const actual_wl_fields = wl_fields
-                    .filter(field => acting_wls.includes(field))
-                    .map(field => replacements[field] || field);
-                if (actual_wl_fields.length > 0) {
-                    fields.push({ name: `**${player.ckey}**`, value: `**Status:** ${actual_wl_fields.join(' & ')}` });
-                    if (fields.length === 25) {
-                        embeds.push(
-                            new Discord.EmbedBuilder()
-                                .setTitle(` `)
-                                .addFields(fields)
-                                .setColor('#669917')
-                        );
-                        fields = [];
+            for(const type in acting_wls) {
+                const fields = [];
+                const grouped_players = {};
+                for (const player of db_request) {
+                    const wl_fields = player.whitelist_status.split('|');
+                    const actual_wl_fields = wl_fields.filter(field => acting_wls[type].includes(field));
+                    for (const wl_fields of actual_wl_fields) {
+                        grouped_players[wl_fields].push(player.ckey);
                     }
                 }
-            }
-            if (fields.length > 0) {
-                embeds.push(
-                    new Discord.EmbedBuilder()
-                        .setTitle(` `)
-                        .addFields(fields)
-                        .setColor('#669917')
-                );
+                for (const [status, players] of Object.entries(grouped_players)) {
+                    fields.push({ name: `**${replacements[type][status]}**`, value: players.join(', '), inline: true });
+                }
+                embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
@@ -264,10 +177,7 @@ module.exports = (client, game_server) => {
         "status": game_server.updateStatusMessage,
         "admin": game_server.updateAdminsMessage,
         "rank": game_server.updateRanksMessage,
-        "whitelist_c": game_server.updateWhitelists,
-        "whitelist_s": game_server.updateWhitelists,
-        "whitelist_j": game_server.updateWhitelists,
-        "whitelist_p": game_server.updateWhitelists
+        "whitelist": game_server.updateWhitelistsMessage
     };
 
 
