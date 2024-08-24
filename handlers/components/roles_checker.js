@@ -4,7 +4,6 @@ const chalk = require('chalk');
 module.exports = async (client) => {
     client.serverRoles = async function (game_server) {
         clearInterval(game_server.update_roles_interval);
-        await updateRoles(client, game_server)
         game_server.update_roles_interval = setInterval(
             updateRoles,
             60 * 60 * 1000, // Каждые N минут (первое число)

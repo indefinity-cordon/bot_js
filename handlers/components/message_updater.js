@@ -6,17 +6,10 @@ module.exports = async (client) => {
         await updateUpdatersMessages(client, game_server);
         game_server.update_status_messages_interval = setInterval(
             updateUpdatersMessages,
-            10 * 60 * 1000, // Каждые N минут (первое число)
+            60 * 60 * 1000, // Каждые N минут (первое число)
             client,
             game_server
         );
-        for(const type in game_server.updater_messages) {
-            game_server.message_updater_intervals[type] = setInterval(
-                game_server.handling_updaters[type],
-                1 * 60 * 1000, // Каждые N минут (первое число)
-                type
-            );
-        }
     };
     client.ServerActions(client);
 };
@@ -24,7 +17,9 @@ module.exports = async (client) => {
 async function updateUpdatersMessages(client, game_server) {
     if (game_server.updater_messages.length) {
         for(const type in game_server.updater_messages) {
-            delete remove_game_server.updater_messages[type];
+            clearInterval(game_server.message_updater_intervals[type]);
+            delete game_server.message_updater_intervals[type];
+            delete game_server.updater_messages[type];
         }
     }
     const updaters = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id != \"1\"", [game_server.server_name]);
@@ -55,5 +50,12 @@ async function updateUpdatersMessages(client, game_server) {
         }
         if (!game_server.updater_messages[updater.type]) game_server.updater_messages[updater.type] = []
         game_server.updater_messages[updater.type].push(found_message);
+    }
+    for(const type in game_server.updater_messages) {
+        game_server.message_updater_intervals[type] = setInterval(
+            game_server.handling_updaters[type],
+            1 * 60 * 1000, // Каждые N минут (первое число)
+            type
+        );
     }
 }

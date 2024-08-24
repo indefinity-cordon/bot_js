@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 
 module.exports = (client, game_server) => {
-    game_server.updateStatus = async function (type) {
+    game_server.updateStatusMessage = async function (type) {
         try {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
             if (!server_response) {
@@ -16,8 +16,8 @@ module.exports = (client, game_server) => {
                 return;
             };
             const response = JSON.parse(server_response);
-            const data = response.data
-            const time = Math.floor(data.round_duration / 600)
+            const data = response.data;
+            const time = Math.floor(data.round_duration / 600);
             const desc = `**Round Name:** ${data.round_name}\n
                 **Round ID:** ${data.round_id}\n
                 **Map:** ${data.map_name}${data.next_map_name ? ` | **Next Map:** ${data.next_map_name}` : ``}\n
@@ -25,14 +25,14 @@ module.exports = (client, game_server) => {
                 **Total Players:** ${data.players}\n
                 **Gamemode:** ${data.mode}\n
                 **Round Time:** ${`${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')}\n
-                ${data.round_end_state ? `\n**Rouned End State:** ${data.round_end_state}` : ``}`
+                ${data.round_end_state ? `\n**Rouned End State:** ${data.round_end_state}` : ``}`;
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
                     title: `${game_server.server_name} status`,
                     desc: desc,
                     color: `#669917`,
                     type: 'edit'
-                }, message)
+                }, message);
             }
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
@@ -46,7 +46,7 @@ module.exports = (client, game_server) => {
         }
     };
 
-    game_server.updateAdmins = async function (type) {
+    game_server.updateAdminsMessage = async function (type) {
         try {
             const db_request_admin = await client.databaseRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins", []);
             const db_request_ranks = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
@@ -107,7 +107,7 @@ module.exports = (client, game_server) => {
         }
     };
 
-    game_server.updateRanks = async function (type) {
+    game_server.updateRanksMessage = async function (type) {
         try {
             const db_request_ranks = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const embeds = [];
@@ -261,9 +261,9 @@ module.exports = (client, game_server) => {
 
 
     game_server.handling_updaters = {
-        "status": game_server.updateStatus,
-        "admin": game_server.updateAdmins,
-        "rank": game_server.updateRanks,
+        "status": game_server.updateStatusMessage,
+        "admin": game_server.updateAdminsMessage,
+        "rank": game_server.updateRanksMessage,
         "whitelist_c": game_server.updateWhitelists,
         "whitelist_s": game_server.updateWhitelists,
         "whitelist_j": game_server.updateWhitelists,
