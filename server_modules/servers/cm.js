@@ -444,7 +444,7 @@ module.exports = (client, game_server) => {
                     }
                     const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to update:');
                     if (selectedAdminId) {
-                        const askRankOptions = [{ label: 'Update', value: 'update' },, { label: 'Skip', value: 'skip' }]
+                        const askRankOptions = [{ label: 'Update', value: 'update' }, { label: 'Skip', value: 'skip' }]
                         const seelectRank = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Update Rank', askRankOptions, 'Would you like to update rank to this admin?');
                         if (seelectRank === 'update') {
                             const rankOptions = await getRankOptions(client, game_server.game_connection);
@@ -555,7 +555,7 @@ module.exports = (client, game_server) => {
                     }
                     const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
                     if (selectedRankId) {
-                        const askRankOptions = [{ label: 'Update', value: 'update' },, { label: 'Skip', value: 'skip' }]
+                        const askRankOptions = [{ label: 'Update', value: 'update' }, { label: 'Skip', value: 'skip' }]
                         const seelectRank = await client.sendInteractionSelectMenu(interaction, `select-name`, 'Update Rank', askRankOptions, 'Would you like to update rank name?');
                         if (seelectRank === 'update') {
                             await interaction.followUp({ content: 'Enter the new name for the rank:', ephemeral: true });
