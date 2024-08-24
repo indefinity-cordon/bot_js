@@ -65,7 +65,7 @@ module.exports = (client, game_server) => {
                         extra_ranks.push(`${roleMap.get(parseInt(rank_id))}`);
                     }
                 }
-                if (extra_ranks.length > 0) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
+                if (extra_ranks.length > 0) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}\n`;
                 info += `**Last login:** ${db_player_profile[0].last_login}\n`;
                 fields.push({ name: `**${db_player_profile[0].ckey}**`, value: info });
                 if (fields.length === 25) {
