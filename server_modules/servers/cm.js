@@ -83,7 +83,7 @@ module.exports = (client, game_server) => {
                     description += `**Rank:** ${roleMap.get(db_admin.rank_id)}`;
                 }
                 description += `\n\n`;
-                if (description.length > 8024) {
+                if (description.length > 824) {
                     fields.push({ name: ` `, value: description});
                     description = ``;
                 }
