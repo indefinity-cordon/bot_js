@@ -65,28 +65,33 @@ module.exports = (client, game_server) => {
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
             });
-            const embeds = [];
+            let description = ``;
             for (const db_admin of db_request_admin) {
                 const profile = profileMap.get(db_admin.player_id);
                 let extra_ranks = [];
                 if (db_admin.extra_titles_encoded) {
                     extra_ranks = JSON.parse(db_admin.extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
                 }
-                const extra_ranks_display = extra_ranks.length > 0 ? extra_ranks.join(' & ') : "None";
-                embeds.push(
-                    new Discord.EmbedBuilder()
-                        .addFields(
-                            { name: "**Ckey**", value: profile.ckey, inline: true },
-                            { name: "**Last Login**", value: profile.last_login ? profile.last_login : "No data", inline: true },
-                            { name: "**Rank**", value: roleMap.get(db_admin.rank_id), inline: true },
-                            { name: "**Extra Ranks**", value: extra_ranks_display, inline: true }
-                        )
-                        .setColor('#669917')
-                );
+                for (const db_admin of db_request_admin) {
+                    const profile = profileMap.get(db_admin.player_id);
+                    if (!profile) continue;
+                    let extra_ranks = [];
+                    if (db_admin.extra_titles_encoded) {
+                        extra_ranks = JSON.parse(db_admin.extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
+                    }
+                    description += `**Ckey:** ${`${profile.ckey}`.padEnd(30, '\u00A0')}`;
+                    description += `[Last Login ${profile.last_login}]\n`;
+                    if (extra_ranks.length) {
+                        description += `**Rank:** ${`${roleMap.get(db_admin.rank_id)}`.padEnd(30, '\u00A0')}[Extra Ranks ${extra_ranks.join(' & ')}]`;
+                    } else {
+                        description += `**Rank:** ${roleMap.get(db_admin.rank_id)}`;
+                    }
+                    description += `\n\n`;
+                }
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: embeds,
+                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917')],
                     content: `${game_server.server_name} Actual Admins`,
                     components: [],
                     type: `edit`
