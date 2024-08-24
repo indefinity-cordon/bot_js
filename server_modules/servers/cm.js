@@ -65,7 +65,9 @@ module.exports = (client, game_server) => {
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
             });
+            const embeds = [];
             let description = ``;
+            let fields = [];
             for (const db_admin of db_request_admin) {
                 const profile = profileMap.get(db_admin.player_id);
                 if (!profile) continue;
@@ -73,18 +75,32 @@ module.exports = (client, game_server) => {
                 if (db_admin.extra_titles_encoded) {
                     extra_ranks = JSON.parse(db_admin.extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
                 }
-                description += `**Ckey:** ${`${profile.ckey}`.padEnd(30, "\u00A0")}`;
+                description += `**Ckey:** ${`${profile.ckey}`.padEnd(50, "\u00A0")}`;
                 description += `[Last Login ${profile.last_login}]\n`;
                 if (extra_ranks.length) {
-                    description += `**Rank:** ${`${roleMap.get(db_admin.rank_id)}`.padEnd(30, "\u00A0")}[Extra Ranks ${extra_ranks.join(' & ')}]`;
+                    description += `**Rank:** ${`${roleMap.get(db_admin.rank_id)}`.padEnd(50, "\u00A0")}[Extra Ranks ${extra_ranks.join(' & ')}]`;
                 } else {
                     description += `**Rank:** ${roleMap.get(db_admin.rank_id)}`;
                 }
                 description += `\n\n`;
+                if (description.length > 8024) {
+                    fields.push({ name: ` `, value: description});
+                    description = ``;
+                }
+                if (fields.length == 25) {
+                    embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
+                    fields = [];
+                }
+            }
+            if (description.length) {
+                fields.push({ name: ` `, value: description});
+            }
+            if (fields.length) {
+                embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917')],
+                    embeds: embeds,
                     content: `${game_server.server_name} Actual Admins`,
                     components: [],
                     type: `edit`
