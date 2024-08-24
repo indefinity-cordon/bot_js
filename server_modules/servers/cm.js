@@ -67,6 +67,7 @@ module.exports = (client, game_server) => {
             });
             const embeds = [];
             let description = ``;
+            let embed_description = null;
             let fields = [];
             for (const db_admin of db_request_admin) {
                 const profile = profileMap.get(db_admin.player_id);
@@ -83,12 +84,15 @@ module.exports = (client, game_server) => {
                     description += `**Rank:** ${roleMap.get(db_admin.rank_id)}`;
                 }
                 description += `\n\n`;
-                if (description.length > 824) {
+                if (embed_description && description.length > 824) {
                     fields.push({ name: ` `, value: description});
                     description = ``;
-                }
+                } else if (description.length > 3896)
+                    embed_description = description
+                    description = ``
                 if (fields.length == 25) {
-                    embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
+                    embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(embed_description).addFields(fields).setColor('#669917'));
+                    embed_description = null;
                     fields = [];
                 }
             }
