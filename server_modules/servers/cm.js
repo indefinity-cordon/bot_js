@@ -87,20 +87,23 @@ module.exports = (client, game_server) => {
                 if (embed_description && description.length > 824) {
                     fields.push({ name: ` `, value: description});
                     description = ``;
-                } else if (description.length > 3896)
-                    embed_description = description
-                    description = ``
+                } else if (description.length > 3896) {
+                    embed_description = description;
+                    description = ``;
+                }
                 if (fields.length == 25) {
                     embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(embed_description).addFields(fields).setColor('#669917'));
                     embed_description = null;
                     fields = [];
                 }
             }
-            if (description.length) {
+            if (embed_description && description.length) {
                 fields.push({ name: ` `, value: description});
+            } else if (description.length) {
+                embed_description = description;
             }
-            if (fields.length) {
-                embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
+            if (fields.length || embed_description) {
+                embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(embed_description ? embed_description : ` `).addFields(fields.length ? fields : { name: ` `, value: ` `}).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
