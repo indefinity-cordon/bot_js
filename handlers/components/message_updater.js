@@ -6,7 +6,7 @@ module.exports = async (client) => {
         await updateUpdatersMessages(client, game_server);
         game_server.update_status_messages_interval = setInterval(
             updateUpdatersMessages,
-            1 * 60 * 1000, // Каждые N минут (первое число)
+            60 * 60 * 1000, // Каждые N минут (первое число)
             client,
             game_server
         );
