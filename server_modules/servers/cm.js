@@ -26,7 +26,7 @@ module.exports = (client, game_server) => {
             if (data.next_map_name) fields.push({ name: `**Next Map**`, value: data.next_map_name});
             fields.push({ name: `**Ship Map**`, value: data.ship_map_name});
             if (data.next_map_name) fields.push({ name: `***Next Ship Map**`, value: data.next_ship_map_name});
-            fields.push({ name: `**Total Players**`, value: data.players});
+            fields.push({ name: `**Total Players**`, value: `${data.players}`});
             fields.push({ name: `**Gamemode**`, value: data.mode});
             fields.push({ name: `**Round Time**`, value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0')});
             if (data.round_end_state) fields.push({ name: `**ouned End State**`, value: data.round_end_state});
