@@ -15,15 +15,15 @@ module.exports = async (client) => {
 };
 
 async function updateUpdatersMessages(client, game_server) {
-    for(const type in game_server.updater_messages) {
-        clearInterval(game_server.message_updater_intervals[type]);
-        delete game_server.message_updater_intervals[type];
-        delete game_server.updater_messages[type];
-    }
     const db_request = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id != \"1\"", [game_server.server_name]);
     if (!db_request.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
+    }
+    for(const type in game_server.updater_messages) {
+        clearInterval(game_server.message_updater_intervals[type]);
+        delete game_server.message_updater_intervals[type];
+        delete game_server.updater_messages[type];
     }
     for (const updater of db_request) {
         const channel = await client.channels.fetch(updater.channel_id);

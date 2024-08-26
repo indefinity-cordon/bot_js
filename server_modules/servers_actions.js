@@ -44,12 +44,11 @@ module.exports = async (client) => {
         for (const server_name in client.servers_link) {
             if (!updated_servers[server_name]) {
                 let remove_game_server = client.servers_link[server_name];
-                for(const type in remove_game_server.message_updater_intervals) {
-                    clearInterval(remove_game_server.message_updater_intervals[type]);
-                }
                 clearInterval(remove_game_server.update_status_messages_interval);
                 clearInterval(remove_game_server.update_roles_interval);
                 for(const type in remove_game_server.updater_messages) {
+                    clearInterval(remove_game_server.message_updater_intervals[type]);
+                    delete remove_game_server.message_updater_intervals[type];
                     delete remove_game_server.updater_messages[type];
                 }
                 remove_game_server.updater_messages = null;
