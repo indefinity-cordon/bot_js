@@ -4,20 +4,10 @@ module.exports = (client, game_server) => {
     game_server.updateStatusMessage = async function (type) {
         try {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
-            if (!server_response) {
-                for (const message of game_server.updater_messages[type]) {
-                    await client.sendEmbed({
-                        embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`# SERVER OFFLINE`).setColor('#a00f0f').setTimestamp()],
-                        content: `${game_server.server_name} Status`,
-                        components: [],
-                        type: `edit`
-                    }, message);
-                }
-                return;
-            };
+            if (!server_response) throw "Returned no response";
             const response = JSON.parse(server_response);
             const data = response.data;
-            if (!data) return;
+            if (!data) throw "Returned no data";
             const time = Math.floor(data.round_duration / 600);
             let fields = [];
             fields.push({ name: `**Round Name**`, value: `${data.round_name} `, inline: true});

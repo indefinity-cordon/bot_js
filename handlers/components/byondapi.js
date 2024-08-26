@@ -42,13 +42,13 @@ module.exports = (client) => {
                             resolve(response.slice(1, -1).toString('ascii'));
                         } else {
                             console.log(chalk.blue(chalk.bold(`ByondAPI`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown BYOND data code: 0x${packetType.toString(16)}`));
-                            resolve();
+                            reject();
                         }
                     } else {
                         client.connections_in_proggress[`${port}:${address}`] = null;
                         client_api.end();
                         console.log(chalk.blue(chalk.bold(`ByondAPI`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`BYOND server returned invalid data.`));
-                        resolve();
+                        reject();
                     }
                 });
                 client_api.on('error', (err) => {

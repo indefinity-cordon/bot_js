@@ -6,7 +6,7 @@ module.exports = async (client) => {
         await updateUpdatersMessages(client, game_server);
         game_server.update_status_messages_interval = setInterval(
             updateUpdatersMessages,
-            60 * 60 * 1000, // Каждые N минут (первое число)
+            1 * 60 * 1000, // Каждые N минут (первое число)
             client,
             game_server
         );
@@ -15,12 +15,10 @@ module.exports = async (client) => {
 };
 
 async function updateUpdatersMessages(client, game_server) {
-    if (game_server.updater_messages.length) {
-        for(const type in game_server.updater_messages) {
-            clearInterval(game_server.message_updater_intervals[type]);
-            delete game_server.message_updater_intervals[type];
-            delete game_server.updater_messages[type];
-        }
+    for(const type in game_server.updater_messages) {
+        clearInterval(game_server.message_updater_intervals[type]);
+        delete game_server.message_updater_intervals[type];
+        delete game_server.updater_messages[type];
     }
     const db_request = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id != \"1\"", [game_server.server_name]);
     if (!db_request.length) {
