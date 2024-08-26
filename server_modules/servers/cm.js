@@ -7,7 +7,7 @@ module.exports = (client, game_server) => {
             if (!server_response) {
                 for (const message of game_server.updater_messages[type]) {
                     await client.sendEmbed({
-                        embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`# SERVER OFFLINE`).addFields(fields).setColor('#a00f0f').setTimestamp()],
+                        embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`# SERVER OFFLINE`).setColor('#a00f0f').setTimestamp()],
                         content: `${game_server.server_name} Status`,
                         components: [],
                         type: `edit`
@@ -19,16 +19,16 @@ module.exports = (client, game_server) => {
             const data = response.data;
             const time = Math.floor(data.round_duration / 600);
             let fields = [];
-            fields.push({ name: `**Round Name**`, value: `${data.round_name}`, inline: true});
-            fields.push({ name: `**Round ID**`, value: `${data.round_id}`, inline: true});
-            fields.push({ name: `**Map**`, value: `${data.map_name}`, inline: true});
-            if (data.next_map_name) fields.push({ name: `**Next Map**`, value: `${data.next_map_name}`, inline: true});
-            fields.push({ name: `**Ship Map**`, value: `${data.ship_map_name}`, inline: true});
-            if (data.next_map_name) fields.push({ name: `***Next Ship Map**`, value: `${data.next_ship_map_name}`, inline: true});
-            fields.push({ name: `**Total Players**`, value: `${data.players}`, inline: true});
+            fields.push({ name: `**Round Name**`, value: `${data.round_name} `, inline: true});
+            fields.push({ name: `**Round ID**`, value: `${data.round_id} `, inline: true});
+            fields.push({ name: `**Map**`, value: `${data.map_name} `, inline: true});
+            if (data.next_map_name) fields.push({ name: `**Next Map**`, value: `${data.next_map_name} `, inline: true});
+            fields.push({ name: `**Ship Map**`, value: `${data.ship_map_name} `, inline: true});
+            if (data.next_map_name) fields.push({ name: `***Next Ship Map**`, value: `${data.next_ship_map_name} `, inline: true});
+            fields.push({ name: `**Total Players**`, value: `${data.players} `, inline: true});
             fields.push({ name: `**Gamemode**`, value: `${data.mode}`, inline: true});
             fields.push({ name: `**Round Time**`, value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0'), inline: true});
-            if (data.round_end_state) fields.push({ name: `**ouned End State**`, value: `${data.round_end_state}`, inline: true});
+            if (data.round_end_state) fields.push({ name: `**ouned End State**`, value: `${data.round_end_state} `, inline: true});
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917').setTimestamp()],
@@ -40,7 +40,7 @@ module.exports = (client, game_server) => {
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`# SERVER OFFLINE`).addFields(fields).setColor('#a00f0f').setTimestamp()],
+                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`# SERVER OFFLINE`).setColor('#a00f0f').setTimestamp()],
                     content: `${game_server.server_name} Status`,
                     components: [],
                     type: `edit`
