@@ -45,7 +45,7 @@ client.handling_commands_actions = [];
 client.handling_commands = [];
 
 require("./database/MySQL")(client);
-if (process.env.REDIS_USER && process.env.REDIS_PASSWORD && process.env.REDIS_SERVER && process.env.REDIS_PORT) require("./socket/Redis")(client);
+if (process.env.REDIS_SERVER && process.env.REDIS_PORT) require("./socket/Redis")(client);
 if (process.env.GITHUB_PAT) require("./github/GitHub")(client);
 
 initializeMess(client)
