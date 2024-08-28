@@ -25,7 +25,7 @@ async function startListining(client) {
         subscribers.push(subscriber);
         await subscriber.connect();
         subscriber.subscribe(channel, async (data) => {
-            client.redisCallback({ data: JSON.parse(data) });
+            client.redisCallback(JSON.parse(data));
         });
     }
 
