@@ -35,6 +35,11 @@ module.exports = class Server {
     port;
 
     /**
+     * @type {number}
+     */
+    tgs_id;
+
+    /**
      * @type {Array}
      */
     updater_messages;

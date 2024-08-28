@@ -53,12 +53,10 @@ INSERT INTO `settings` (`id`, `name`, `param`) VALUES
 	(3, 'verified_role', '1252317492609810595');
 	(4, 'anti_verified_role', '746716442946306088');
   (5, 'new_round_message', '<@&1171983021340102746>\nНовый раунд');
-  (6, 'tgs_bot_id', '0');
-  (7, 'tgs_bot_message', '');
-  (8, 'tgs_role_id', '1237738433427013756');
-  (9, 'admin_role_id', '');
-  (10, 'github_branch', 'master');
-  (11, 'github_link', 'indefinity-cordon/bot_js');
+  (6, 'tgs_role_id', '1237738433427013756');
+  (7, 'admin_role_id', '');
+  (8, 'github_branch', 'master');
+  (9, 'github_link', 'indefinity-cordon/bot_js');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
