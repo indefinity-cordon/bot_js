@@ -28,7 +28,7 @@ module.exports = (client) => {
                 await handleOOC(channel, data);
                 break;
             case "start":
-                await handleRoundStart(channel, data, status[0]);
+                await handleRoundStart(channel);
                 break;
             case "ahelp":
                 await handleAhelp(channel, data);
@@ -86,15 +86,7 @@ module.exports = (client) => {
         }, channel);
     }
 
-    async function handleRoundStart(channel, data, status) {
-        if (status.message_id) {
-            const messages = await channel.messages.fetch();
-            const message = messages.find(msg => msg.id === status.message_id);
-            if (message) {
-                await message.delete();
-            }
-        }
-
+    async function handleRoundStart(channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
         const embed = {
             title: `NEW ROUND!`,
@@ -102,8 +94,7 @@ module.exports = (client) => {
             color: role.hexColor
         };
 
-        const message = await client.embed(embed, channel);
-        await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, responded_game_server.server_name, data.type, status.channel_id]);
+        await client.embed(embed, channel);
     }
 
     async function handleAhelp(channel, data) {
