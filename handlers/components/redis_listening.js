@@ -14,15 +14,12 @@ module.exports = async (client) => {
 };
 
 async function startListining(client) {
-    console.log(`f1`)
     if (!client.redis_connection) return;
-    console.log(`f2`)
 
     if (subscriber) subscriber.disconnect();
     subscriber = client.redis_connection.duplicate();
     await subscriber.connect();
-    subscriber.pSubscribe(`*`, async (data) => {
-        console.log(data)
+    subscriber.pSubscribe(`byond.*`, async (data) => {
         client.redisCallback(JSON.parse(data));
     });
 }
