@@ -90,7 +90,7 @@ module.exports = (client) => {
                 console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Unknown state received: ${data.state}`));
                 break;
         }
-    }
+    };
 
     async function handleOOC(channel, data) {
         const messageContent = data.message
@@ -101,7 +101,7 @@ module.exports = (client) => {
             desc: messageContent,
             color: `#7289da`
         }, channel);
-    }
+    };
 
     async function handleRoundStart(channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
@@ -112,7 +112,7 @@ module.exports = (client) => {
         };
 
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleAhelp(channel, data) {
         const embed = {
@@ -126,7 +126,7 @@ module.exports = (client) => {
             color: `#5a2944`
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleTimeBan(channel, data, action) {
         const player = await fetchPlayerById(data.ref_player_id);
@@ -136,7 +136,7 @@ module.exports = (client) => {
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleJobBan(channel, data, action) {
         const player = await fetchPlayerById(data.ref_player_id);
@@ -147,7 +147,7 @@ module.exports = (client) => {
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handlePermaBan(channel, data, action) {
         const player = await fetchPlayerById(data.ref_player_id);
@@ -157,7 +157,7 @@ module.exports = (client) => {
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleAutoUnban(channel, data) {
         const player = await fetchPlayerById(data.ref_player_id);
@@ -167,7 +167,7 @@ module.exports = (client) => {
             color: '#00ff00'
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleAutoUnjobban(channel, data) {
         const player = await fetchPlayerById(data.ref_player_id);
@@ -177,7 +177,7 @@ module.exports = (client) => {
             color: '#00ff00'
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleAsay(channel, data) {
         const embed = {
@@ -186,7 +186,7 @@ module.exports = (client) => {
             color: `#261395`
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleFax(channel, data) {
         const embed = {
@@ -195,7 +195,7 @@ module.exports = (client) => {
             color: `#3498db`
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleLogin(channel, data) {
         const embed = {
@@ -204,7 +204,7 @@ module.exports = (client) => {
             color: '#2ecc71'
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function handleLogout(channel, data) {
         const embed = {
@@ -213,20 +213,23 @@ module.exports = (client) => {
             color: '#e74c3c'
         };
         await client.embed(embed, channel);
-    }
+    };
 
     async function fetchPlayerById(playerId) {
         const players = await client.databaseRequest(client.database, "SELECT * FROM players WHERE id = ?", [playerId]);
         return players.length ? players[0] : null;
-    }
+    };
 
     async function fetchJobBanByPlayerId(playerId) {
         const jobBans = await client.databaseRequest(client.database, "SELECT * FROM player_job_bans WHERE player_id = ?", [playerId]);
         return jobBans.length ? jobBans[0] : null;
-    }
+    };
 
     function formatTimestamp(timestamp) {
         const date = new Date(timestamp * 1000);
         return date.toLocaleString();
-    }
+    };
+
+    client.redisLogCallback = async function (data) {
+    };
 }
