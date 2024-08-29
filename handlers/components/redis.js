@@ -24,7 +24,7 @@ module.exports = (client) => {
         }
 
         if (!responded_game_server) {
-            console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Failed to find server object. Aborting. data: ${data.source}, found objects: ${JSON.stringify(client.servers_link)}`));
+            console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Failed to find server object. Aborting. data: ${data.source}, instance id: ${responded_instance.id}`));
             return;
         }
 
