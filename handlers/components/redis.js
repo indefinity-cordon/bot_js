@@ -18,6 +18,7 @@ module.exports = (client) => {
                 responded_game_server = game_server
                 break
             }
+        }
 
         if (!responded_game_server) return;
 
