@@ -52,18 +52,6 @@ initializeMess(client)
 
 async function initializeMess (client) {
     await client.database;
-
-
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"round\"", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"ooc\"", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"predator\"", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"admin\"", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-2\" WHERE type = \"byond.round\"", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-2\" WHERE type = \"byond.admin\"", []);
-
-
-
-
     client.handling_game_servers = await client.databaseRequest(client.database, "SELECT server_name, db_name FROM servers", []);
     client.servers_options = client.handling_game_servers.map(server => ({
         label: server.server_name,
