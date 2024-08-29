@@ -21,7 +21,7 @@ async function startListining(client) {
     await subscriber.connect();
     subscriber.pSubscribe(`byond.*`, async (data) => {
         if (typeof data === 'string' || data instanceof String) {
-            client.redisLogCallback(JSON.parse(data));
+            client.redisLogCallback(data);
         } else {
             client.redisCallback(JSON.parse(data));
         }
