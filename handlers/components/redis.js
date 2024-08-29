@@ -10,7 +10,7 @@ module.exports = (client) => {
         const instances = await client.tgs_getInstances();
         const responded_instance = instances.find(instance => instance.name === data.source);
         if (!responded_instance) {
-            console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Failed to find server instance. Aborting. data: ${data.source}, instances found: ${JSON.parse(instances)}`));
+            console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Failed to find server instance. Aborting. data: ${data.source}, instances found: ${JSON.parse([instances])}`));
             return;
         }
 
@@ -24,7 +24,7 @@ module.exports = (client) => {
         }
 
         if (!responded_game_server) {
-            console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Failed to find server object. Aborting. data: ${JSON.parse(data)}, found objects: ${JSON.parse(responded_instance)}`));
+            console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Failed to find server object. Aborting. data: ${JSON.parse(data)}, found objects: ${JSON.parse([responded_instance])}`));
             return;
         }
 
