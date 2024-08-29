@@ -17,7 +17,7 @@ module.exports = (client) => {
         let responded_game_server;
         for (const server_name in client.servers_link) {
             let game_server = client.servers_link[server_name];
-            if (game_server.tgs_id == responded_instance.id) {
+            if (`${game_server.tgs_id}` == `${responded_instance.id}`) {
                 responded_game_server = game_server;
                 break;
             }
