@@ -54,12 +54,12 @@ async function initializeMess (client) {
     await client.database;
 
 
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = round", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = ooc", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = predator", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = admin", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-2\" WHERE type = byond.round", []);
-    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-2\" WHERE type = byond.admin", []);
+    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"round\"", []);
+    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"ooc\"", []);
+    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"predator\"", []);
+    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-1\" WHERE type = \"admin\"", []);
+    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-2\" WHERE type = \"byond.round\"", []);
+    await client.databaseRequest(client.database, "UPDATE server_channels SET message_id = \"-2\" WHERE type = \"byond.admin\"", []);
 
 
 
