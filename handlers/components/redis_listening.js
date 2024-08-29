@@ -20,6 +20,7 @@ async function startListining(client) {
     subscriber = client.redis_connection.duplicate();
     await subscriber.connect();
     subscriber.pSubscribe(`*`, async (data) => {
+        console.log(data)
         client.redisCallback(JSON.parse(data));
     });
 }
