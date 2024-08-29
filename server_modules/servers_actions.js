@@ -1,6 +1,6 @@
 module.exports = async (client) => {
     const GameServerClass = require('./index.js');
-    const servers = await client.databaseRequest(client.database, "SELECT server_name, db_name, file_name, guild, ip, port FROM servers", []);
+    const servers = await client.databaseRequest(client.database, "SELECT * FROM servers", []);
     if (!servers.length) {
         console.log(`Failed to find servers. Aborting.`);
     } else {
