@@ -47,6 +47,9 @@ module.exports = (client) => {
             case "start":
                 await handleRoundStart(channel);
                 break;
+            case "predator":
+                await handlePredator(channel);
+                break;
             case "ahelp":
                 await handleAhelp(channel, data);
                 break;
@@ -107,6 +110,17 @@ module.exports = (client) => {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
         const embed = {
             title: `NEW ROUND!`,
+            desc: `<@&${role.id}>`,
+            color: role.hexColor
+        };
+
+        await client.embed(embed, channel);
+    };
+
+    async function handlePredator(channel) {
+        const role = channel.guild.roles.cache.find(role => role.name === `Predator gamer`);
+        const embed = {
+            title: `PREDATOR ROUND!`,
             desc: `<@&${role.id}>`,
             color: role.hexColor
         };
