@@ -627,7 +627,11 @@ module.exports = (client, game_server) => {
     game_server.handling_actions = {
         "manage_admins": game_server.manageAdmins,
         "manage_ranks": game_server.manageRanks,
-        "manage_whitelists": game_server.manageWhitelists
+        "manage_whitelists": game_server.manageWhitelists,
+//        "manage_battlepass_player": game_server.manageBattlepassPlayers,
+//        "manage_battlepass_reward": game_server.manageBattlepassReward,
+//        "manage_battlepass_server": game_server.manageBattlepassServer,
+//        "player_by_ckey": game_server.managePlayer
     };
 
     game_server.handling_commands = [
