@@ -203,10 +203,10 @@ module.exports = (client, game_server) => {
 
 
     game_server.handling_updaters = {
-        "status": game_server.updateStatusMessage,
-        "admin": game_server.updateAdminsMessage,
-        "rank": game_server.updateRanksMessage,
-        "whitelist": game_server.updateWhitelistsMessage
+        "message_status": game_server.updateStatusMessage,
+        "message_admin": game_server.updateAdminsMessage,
+        "message_rank": game_server.updateRanksMessage,
+        "message_whitelist": game_server.updateWhitelistsMessage
     };
 
 

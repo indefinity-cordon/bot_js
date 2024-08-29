@@ -11,7 +11,14 @@ module.exports = (client) => {
         const responded_instance = instances.find(instance => instance.name === data.source);
         if (!responded_instance) return;
 
-        const responded_game_server = client.servers_link.find(game_server => game_server.tgs_id === responded_instance.id);
+        let responded_game_server;
+        for (const server_name in client.servers_link) {
+            let game_server = client.servers_link[server_name];
+            if (game_server.tgs_id === responded_instance.id) {
+                responded_game_server = game_server
+                break
+            }
+
         if (!responded_game_server) return;
 
         const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id, role_id FROM server_channels WHERE server_name = ? AND type = ?", [responded_game_server.server_name, data.type]);
