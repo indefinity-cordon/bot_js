@@ -21,6 +21,7 @@ async function startListining(client) {
     subscriber = client.redis_connection.duplicate();
     await subscriber.connect();
     subscriber.pSubscribe(`byond.*`, async (data) => {
+        console.log(data)
         if (typeof data === 'string' || data instanceof String) {
             client.redisLogCallback(data);
         } else {
