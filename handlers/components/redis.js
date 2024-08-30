@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const chalk = require('chalk');
 
 module.exports = (client) => {
+    const messageQueue = {};
     client.redisCallback = async function (data) {
         if (!data) {
             console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Malformed Redis message, without data.`));
@@ -43,7 +44,10 @@ module.exports = (client) => {
 //TODO Relocate it to server side
         switch (data.state) {
             case "ooc":
-                await handleOOC(channel, data);
+                addToQueue(handleOOC, channel, data);
+                break;
+            case "asay":
+                addToQueue(handleAsay, channel, data);
                 break;
             case "start":
                 await handleRoundStart(channel);
@@ -78,9 +82,6 @@ module.exports = (client) => {
             case "auto_unjobban":
                 await handleAutoUnjobban(channel, data, responded_game_server);
                 break;
-            case "asay":
-                await handleAsay(channel, data);
-                break;
             case "fax":
                 await handleFax(channel, data);
                 break;
@@ -97,14 +98,8 @@ module.exports = (client) => {
     };
 
 //TODO: Replace this garbage with normal embed: new Discord.EmbedBuilder() and then params
-    async function handleOOC(channel, data) {
-        const messageContent = data.message
-            .replace(/<@&(\d+)>/g, ' ')
-            .replace(/<@!?(\d+)>/g, ' ')
-            .replace(/https?:\/\/\S+/g, ' ')
-            .replace(/@everyone/g, ' ')
-            .replace(/@here/g, ' ');
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`OOC: ${data.author}: ${messageContent}`).setColor('#7289da')]}, channel)
+    function addToQueue(handler, channel, data) {
+        messageQueue.push({ handler, channel, data });
     };
 
     async function handleRoundStart(channel) {
@@ -182,16 +177,6 @@ module.exports = (client) => {
         await client.embed(embed, channel)
     };
 
-    async function handleAsay(channel, data) {
-        const messageContent = data.message
-            .replace(/<@&(\d+)>/g, ' ')
-            .replace(/<@!?(\d+)>/g, ' ')
-            .replace(/https?:\/\/\S+/g, ' ')
-            .replace(/@everyone/g, ' ')
-            .replace(/@here/g, ' ');
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Asay: ${data.author}: ${messageContent} (${data.rank})`).setColor(`#7289da`)]}, channel)
-    };
-
     async function handleFax(channel, data) {
         const embed = {
             title: `Fax from ${data.sender_name}`,
@@ -226,4 +211,71 @@ module.exports = (client) => {
 
     client.redisLogCallback = async function (data) {
     };
+
+
+    function addToQueue(handler, channel, data) {
+        if (!messageQueue[channel]) {
+            messageQueue[channel] = [];
+        }
+        messageQueue[channel].push({ handler, data });
+    }
+
+    async function handleOOC(channel, data, combine = false) {
+        const messageContent = data.message
+            .replace(/<@&(\d+)>/g, ' ')
+            .replace(/<@!?(\d+)>/g, ' ')
+            .replace(/https?:\/\/\S+/g, ' ')
+            .replace(/@everyone/g, ' ')
+            .replace(/@here/g, ' ');
+        const embed = new Discord.EmbedBuilder()
+            .setTitle(' ')
+            .setDescription(`OOC: ${data.author}: ${messageContent}`)
+            .setColor('#7289da');
+        if (combine) {
+            return embed;
+        } else {
+            await client.sendEmbed({ embeds: [embed] }, channel);
+        }
+    }
+
+    async function handleAsay(channel, data, combine = false) {
+        const messageContent = data.message
+            .replace(/<@&(\d+)>/g, ' ')
+            .replace(/<@!?(\d+)>/g, ' ')
+            .replace(/https?:\/\/\S+/g, ' ')
+            .replace(/@everyone/g, ' ')
+            .replace(/@here/g, ' ');
+        const embed = new Discord.EmbedBuilder()
+            .setTitle(' ')
+            .setDescription(`Asay: ${data.author}: ${messageContent} (${data.rank})`)
+            .setColor('#7289da');
+        if (combine) {
+            return embed;
+        } else {
+            await client.sendEmbed({ embeds: [embed] }, channel);
+        }
+    }
+    
+    setInterval(async () => {
+        for (const channel in messageQueue) {
+            const messages = messageQueue[channel];
+            const messagesToSend = [];
+            while (messages.length > 0) {
+                const { handler, data } = messages.shift();
+                const embed = await handler(channel, data, true);
+                if (messagesToSend.length < 5) {
+                    messagesToSend.push(embed);
+                } else {
+                    messages.unshift({ handler, data });
+                    break;
+                }
+            }
+            if (messagesToSend.length > 0) {
+                await client.sendEmbed({ embeds: messagesToSend }, channel);
+            }
+            if (messages.length === 0) {
+                delete messageQueue[channel];
+            }
+        }
+    }, 2000);
 }
