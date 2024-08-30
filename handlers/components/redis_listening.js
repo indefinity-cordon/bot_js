@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+require('dotenv').config('.env');
 
 let subscriber;
 let collectors = [];
@@ -38,7 +39,7 @@ async function startListining(client) {
             if (!channel) return;
             const collector = channel.createMessageCollector()
             collector.on('collect', message => {
-                sendToRedis(message, client, message_collector.type);
+                if (message.author.id !== process.env.DISCORD_ID) sendToRedis(message, client, message_collector.type);
             });
             collectors.push(collector)
         }
