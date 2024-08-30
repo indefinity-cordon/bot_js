@@ -57,10 +57,19 @@ function isJsonString(str) {
 
 function sendToRedis(message, client, redis_channel) {
     const redisMessage = {
-        color: message.member.roles.highest.hexColor,
+        color: getUserColor(message.member),
         source: "DISCORD",
         author: message.member.displayName,
         message: message.content
     };
     client.redis_connection.publish(redis_channel, JSON.stringify(redisMessage));
+}
+
+function getUserColor(member) {
+    for (const role of member.roles.cache.values()) {
+        if (role.hexColor !== '#000000') {
+            return role.hexColor;
+        }
+    }
+    return '#000000';
 }
