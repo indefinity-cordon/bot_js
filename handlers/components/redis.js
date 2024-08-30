@@ -40,6 +40,8 @@ module.exports = (client) => {
             return;
         }
 
+        console.log(`WE GAOTED IT ${JSON.stringify(data)}`)
+
         switch (data.state) {
             case "ooc":
                 await handleOOC(channel, data);

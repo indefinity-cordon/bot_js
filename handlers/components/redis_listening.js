@@ -21,8 +21,6 @@ async function startListining(client) {
     subscriber = client.redis_connection.duplicate();
     await subscriber.connect();
     subscriber.pSubscribe(`byond.*`, async (data) => {
-        console.log(data)
-        console.log(data)
         if (typeof data === 'string' || data instanceof String) {
             client.redisLogCallback(data);
         } else {
@@ -35,7 +33,6 @@ async function startListining(client) {
     }
     for (const server_name in client.servers_link) {
         const db_request = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id = \"-2\"", [client.servers_link[server_name].server_name]);
-        console.log(JSON.stringify(db_request))
         for (const message_collector of db_request) {
             const channel = await client.channels.fetch(message_collector.channel_id);
             if (!channel) return;
