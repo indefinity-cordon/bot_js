@@ -102,14 +102,12 @@ module.exports = (client) => {
             .replace(/https?:\/\/\S+/g, ' ')
             .replace(/@everyone/g, ' ')
             .replace(/@here/g, ' ');
-
         const embed = {
             title: ` `,
             desc: `OOC: ${data.author}: ${messageContent}`,
             color: `#7289da`
         };
-
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleRoundStart(channel) {
@@ -119,7 +117,7 @@ module.exports = (client) => {
             desc: ` `,
             color: role.hexColor
         };
-        await client.embed({embed: embed, content: `<@&${role.id}>`}, channel);
+        await client.sendEmbed({embeds: [embed], content: `<@&${role.id}>`}, channel)
     };
 
     async function handlePredator(channel) {
@@ -129,8 +127,7 @@ module.exports = (client) => {
             desc: ` `,
             color: role.hexColor
         };
-
-        await client.embed({embed: embed, content: `<@&${role.id}>`}, channel);
+        await client.sendEmbed({embeds: [embed], content: `<@&${role.id}>`}, channel)
     };
 
     async function handleAhelp(channel, data) {
@@ -144,7 +141,7 @@ module.exports = (client) => {
             author: data.embed.author,
             color: `#5a2944`
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleTimeBan(channel, data, action, responded_game_server) {
@@ -154,7 +151,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey}\nReason: ${player.time_ban_reason}\nExpiration: ${formatTimestamp(player.time_ban_expiration)}`,
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleJobBan(channel, data, action, responded_game_server) {
@@ -165,7 +162,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey}\nRole: ${jobBan.role}\nReason: ${jobBan.text}\nExpiration: ${formatTimestamp(jobBan.expiration)}`,
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handlePermaBan(channel, data, action, responded_game_server) {
@@ -175,7 +172,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey}\nReason: ${player.permaban_reason}`,
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleAutoUnban(channel, data, responded_game_server) {
@@ -185,7 +182,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey} has been automatically unbanned.`,
             color: '#00ff00'
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleAutoUnjobban(channel, data, responded_game_server) {
@@ -195,7 +192,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey} has been automatically unjobbanned.`,
             color: '#00ff00'
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleAsay(channel, data) {
@@ -205,14 +202,12 @@ module.exports = (client) => {
             .replace(/https?:\/\/\S+/g, ' ')
             .replace(/@everyone/g, ' ')
             .replace(/@here/g, ' ');
-
         const embed = {
             title: ` `,
             desc: `Asay: ${data.author}: ${messageContent} (${data.rank})`,
             color: `#7289da`
         };
-
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleFax(channel, data) {
@@ -221,7 +216,7 @@ module.exports = (client) => {
             desc: `Department: ${data.departament}\nMessage: ${data.message}\nAdmins: ${data.admins}`,
             color: `#3498db`
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleLogin(channel, data) {
@@ -230,7 +225,7 @@ module.exports = (client) => {
             desc: data.key,
             color: '#2ecc71'
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function handleLogout(channel, data) {
@@ -239,7 +234,7 @@ module.exports = (client) => {
             desc: data.key,
             color: '#e74c3c'
         };
-        await client.embed(embed, channel);
+        await client.sendEmbed({embeds: [embed]}, channel)
     };
 
     async function fetchPlayerById(playerId, database) {
