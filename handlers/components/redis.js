@@ -97,35 +97,40 @@ module.exports = (client) => {
 
     async function handleOOC(channel, data) {
         const messageContent = data.message
-            .replace(/<@!?(\d+)>/g, '@\u200b$1')
-            .replace(/https?:\/\/\S+/g, '[link broken]');
-        await client.embed({
-            title: `OOC ${data.author}`,
-            desc: messageContent,
+            .replace(/<@&(\d+)>/g, ' ')
+            .replace(/<@!?(\d+)>/g, ' ')
+            .replace(/https?:\/\/\S+/g, ' ')
+            .replace(/@everyone/g, ' ')
+            .replace(/@here/g, ' ');
+
+        const embed = {
+            title: ` `,
+            desc: `OOC: ${data.author}: ${messageContent}`,
             color: `#7289da`
-        }, channel);
+        };
+
+        await client.embed(embed, channel);
     };
 
     async function handleRoundStart(channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
         const embed = {
             title: `NEW ROUND!`,
-            desc: `<@&${role.id}>`,
+            desc: ` `,
             color: role.hexColor
         };
-
-        await client.embed(embed, channel);
+        await client.embed({embed: embed, content: `<@&${role.id}>`}, channel);
     };
 
     async function handlePredator(channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Predator gamer`);
         const embed = {
             title: `PREDATOR ROUND!`,
-            desc: `<@&${role.id}>`,
+            desc: ` `,
             color: role.hexColor
         };
 
-        await client.embed(embed, channel);
+        await client.embed({embed: embed, content: `<@&${role.id}>`}, channel);
     };
 
     async function handleAhelp(channel, data) {
@@ -194,11 +199,19 @@ module.exports = (client) => {
     };
 
     async function handleAsay(channel, data) {
+        const messageContent = data.message
+            .replace(/<@&(\d+)>/g, ' ')
+            .replace(/<@!?(\d+)>/g, ' ')
+            .replace(/https?:\/\/\S+/g, ' ')
+            .replace(/@everyone/g, ' ')
+            .replace(/@here/g, ' ');
+
         const embed = {
-            title: `Asay of ${data.author}`,
-            desc: `Message: ${data.message}\nRank: ${data.rank}`,
-            color: `#261395`
+            title: ` `,
+            desc: `Asay: ${data.author}: ${messageContent} (${data.rank})`,
+            color: `#7289da`
         };
+
         await client.embed(embed, channel);
     };
 
