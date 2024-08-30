@@ -148,18 +148,4 @@ module.exports = async (client) => {
         { label: "Start", value: "start" },
         { label: "Deploy", value: "deploy" }
     ];
-
-    client.on('messageCreate', async (message) => {
-        const tgs_bot_id = await client.databaseSettingsRequest("tgs_bot_id");
-        const tgs_bot_message = await client.databaseSettingsRequest("tgs_bot_message");
-        if (message.author.id === tgs_bot_id[0].param && message.content === tgs_bot_message[0].param) {
-            const related_feed_channel = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE name = 'round'", []);
-            if (!related_feed_channel[0] || !related_feed_channel[0].message_id) return;
-            const channel = client.channels.cache.get(related_feed_channel[0].channel_id);
-            if (channel) {
-                const new_round_message = await client.databaseSettingsRequest("new_round_message");
-                await channel.send(new_round_message[0].param);
-            }
-        }
-    });
 };

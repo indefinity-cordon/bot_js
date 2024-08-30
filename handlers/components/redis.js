@@ -95,6 +95,7 @@ module.exports = (client) => {
         }
     };
 
+//TODO: Replace this garbage with normal embed: new Discord.EmbedBuilder() and then params
     async function handleOOC(channel, data) {
         const messageContent = data.message
             .replace(/<@&(\d+)>/g, ' ')
@@ -102,32 +103,17 @@ module.exports = (client) => {
             .replace(/https?:\/\/\S+/g, ' ')
             .replace(/@everyone/g, ' ')
             .replace(/@here/g, ' ');
-        const embed = {
-            title: ` `,
-            desc: `OOC: ${data.author}: ${messageContent}`,
-            color: `#7289da`
-        };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`OOC: ${data.author}: ${messageContent}`).setColor('#7289da')]}, channel)
     };
 
     async function handleRoundStart(channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
-        const embed = {
-            title: `NEW ROUND!`,
-            desc: ` `,
-            color: role.hexColor
-        };
-        await client.sendEmbed({embeds: [embed], content: `<@&${role.id}>`}, channel)
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(`NEW ROUND!`).setDescription(` `).setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
     };
 
     async function handlePredator(channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Predator gamer`);
-        const embed = {
-            title: `PREDATOR ROUND!`,
-            desc: ` `,
-            color: role.hexColor
-        };
-        await client.sendEmbed({embeds: [embed], content: `<@&${role.id}>`}, channel)
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(`PREDATOR ROUND!`).setDescription(` `).setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
     };
 
     async function handleAhelp(channel, data) {
@@ -141,7 +127,7 @@ module.exports = (client) => {
             author: data.embed.author,
             color: `#5a2944`
         };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.embed(embed, channel)
     };
 
     async function handleTimeBan(channel, data, action, responded_game_server) {
@@ -151,7 +137,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey}\nReason: ${player.time_ban_reason}\nExpiration: ${formatTimestamp(player.time_ban_expiration)}`,
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.embed(embed, channel)
     };
 
     async function handleJobBan(channel, data, action, responded_game_server) {
@@ -162,7 +148,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey}\nRole: ${jobBan.role}\nReason: ${jobBan.text}\nExpiration: ${formatTimestamp(jobBan.expiration)}`,
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.embed(embed, channel)
     };
 
     async function handlePermaBan(channel, data, action, responded_game_server) {
@@ -172,7 +158,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey}\nReason: ${player.permaban_reason}`,
             color: action === "add" ? '#ff0000' : '#00ff00'
         };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.embed(embed, channel)
     };
 
     async function handleAutoUnban(channel, data, responded_game_server) {
@@ -182,7 +168,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey} has been automatically unbanned.`,
             color: '#00ff00'
         };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.embed(embed, channel)
     };
 
     async function handleAutoUnjobban(channel, data, responded_game_server) {
@@ -192,7 +178,7 @@ module.exports = (client) => {
             desc: `Player: ${player.ckey} has been automatically unjobbanned.`,
             color: '#00ff00'
         };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.embed(embed, channel)
     };
 
     async function handleAsay(channel, data) {
@@ -202,12 +188,7 @@ module.exports = (client) => {
             .replace(/https?:\/\/\S+/g, ' ')
             .replace(/@everyone/g, ' ')
             .replace(/@here/g, ' ');
-        const embed = {
-            title: ` `,
-            desc: `Asay: ${data.author}: ${messageContent} (${data.rank})`,
-            color: `#7289da`
-        };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Asay: ${data.author}: ${messageContent} (${data.rank})`).setColor(`#7289da`)]}, channel)
     };
 
     async function handleFax(channel, data) {
@@ -216,25 +197,15 @@ module.exports = (client) => {
             desc: `Department: ${data.departament}\nMessage: ${data.message}\nAdmins: ${data.admins}`,
             color: `#3498db`
         };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.embed(embed, channel)
     };
 
     async function handleLogin(channel, data) {
-        const embed = {
-            title: `Admin Login`,
-            desc: data.key,
-            color: '#2ecc71'
-        };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Admin Login: ${data.key}`).setColor(`#2ecc71`)]}, channel)
     };
 
     async function handleLogout(channel, data) {
-        const embed = {
-            title: `Admin Logout`,
-            desc: data.key,
-            color: '#e74c3c'
-        };
-        await client.sendEmbed({embeds: [embed]}, channel)
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Admin Logout: ${data.key}`).setColor(`#e74c3c`)]}, channel)
     };
 
     async function fetchPlayerById(playerId, database) {
