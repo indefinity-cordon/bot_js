@@ -56,28 +56,28 @@ module.exports = (client) => {
                 await handleAhelp(channel, data);
                 break;
             case "add_time_ban":
-                await handleTimeBan(channel, data, "add");
+                await handleTimeBan(channel, data, "add", responded_game_server);
                 break;
             case "remove_time_ban":
-                await handleTimeBan(channel, data, "remove");
+                await handleTimeBan(channel, data, "remove", responded_game_server);
                 break;
             case "add_job_ban":
-                await handleJobBan(channel, data, "add");
+                await handleJobBan(channel, data, "add", responded_game_server);
                 break;
             case "remove_job_ban":
-                await handleJobBan(channel, data, "remove");
+                await handleJobBan(channel, data, "remove", responded_game_server);
                 break;
             case "add_perma_ban":
-                await handlePermaBan(channel, data, "add");
+                await handlePermaBan(channel, data, "add", responded_game_server);
                 break;
             case "remove_perma_ban":
-                await handlePermaBan(channel, data, "remove");
+                await handlePermaBan(channel, data, "remove", responded_game_server);
                 break;
             case "auto_unban":
-                await handleAutoUnban(channel, data);
+                await handleAutoUnban(channel, data, responded_game_server);
                 break;
             case "auto_unjobban":
-                await handleAutoUnjobban(channel, data);
+                await handleAutoUnjobban(channel, data, responded_game_server);
                 break;
             case "asay":
                 await handleAsay(channel, data);
@@ -144,8 +144,8 @@ module.exports = (client) => {
         await client.embed(embed, channel);
     };
 
-    async function handleTimeBan(channel, data, action) {
-        const player = await fetchPlayerById(data.ref_player_id);
+    async function handleTimeBan(channel, data, action, responded_game_server) {
+        const player = await fetchPlayerById(data.ref_player_id, responded_game_server.game_connection);
         const embed = {
             title: `Time Ban ${action === "add" ? "Added" : "Removed"}`,
             desc: `Player: ${player.ckey}\nReason: ${player.time_ban_reason}\nExpiration: ${formatTimestamp(player.time_ban_expiration)}`,
@@ -154,9 +154,9 @@ module.exports = (client) => {
         await client.embed(embed, channel);
     };
 
-    async function handleJobBan(channel, data, action) {
-        const player = await fetchPlayerById(data.ref_player_id);
-        const jobBan = await fetchJobBanByPlayerId(data.ref_player_id);
+    async function handleJobBan(channel, data, action, responded_game_server) {
+        const player = await fetchPlayerById(data.ref_player_id, responded_game_server.game_connection);
+        const jobBan = await fetchJobBanByPlayerId(data.ref_player_id, responded_game_server.game_connection);
         const embed = {
             title: `Job Ban ${action === "add" ? "Added" : "Removed"}`,
             desc: `Player: ${player.ckey}\nRole: ${jobBan.role}\nReason: ${jobBan.text}\nExpiration: ${formatTimestamp(jobBan.expiration)}`,
@@ -165,8 +165,8 @@ module.exports = (client) => {
         await client.embed(embed, channel);
     };
 
-    async function handlePermaBan(channel, data, action) {
-        const player = await fetchPlayerById(data.ref_player_id);
+    async function handlePermaBan(channel, data, action, responded_game_server) {
+        const player = await fetchPlayerById(data.ref_player_id, responded_game_server.game_connection);
         const embed = {
             title: `Perma Ban ${action === "add" ? "Added" : "Removed"}`,
             desc: `Player: ${player.ckey}\nReason: ${player.permaban_reason}`,
@@ -175,8 +175,8 @@ module.exports = (client) => {
         await client.embed(embed, channel);
     };
 
-    async function handleAutoUnban(channel, data) {
-        const player = await fetchPlayerById(data.ref_player_id);
+    async function handleAutoUnban(channel, data, responded_game_server) {
+        const player = await fetchPlayerById(data.ref_player_id, responded_game_server.game_connection);
         const embed = {
             title: `Auto Unban`,
             desc: `Player: ${player.ckey} has been automatically unbanned.`,
@@ -185,8 +185,8 @@ module.exports = (client) => {
         await client.embed(embed, channel);
     };
 
-    async function handleAutoUnjobban(channel, data) {
-        const player = await fetchPlayerById(data.ref_player_id);
+    async function handleAutoUnjobban(channel, data, responded_game_server) {
+        const player = await fetchPlayerById(data.ref_player_id, responded_game_server.game_connection);
         const embed = {
             title: `Auto Unjobban`,
             desc: `Player: ${player.ckey} has been automatically unjobbanned.`,
@@ -231,13 +231,13 @@ module.exports = (client) => {
         await client.embed(embed, channel);
     };
 
-    async function fetchPlayerById(playerId) {
-        const players = await client.databaseRequest(client.database, "SELECT * FROM players WHERE id = ?", [playerId]);
+    async function fetchPlayerById(playerId, database) {
+        const players = await client.databaseRequest(database, "SELECT * FROM players WHERE id = ?", [playerId]);
         return players.length ? players[0] : null;
     };
 
-    async function fetchJobBanByPlayerId(playerId) {
-        const jobBans = await client.databaseRequest(client.database, "SELECT * FROM player_job_bans WHERE player_id = ?", [playerId]);
+    async function fetchJobBanByPlayerId(playerId, database) {
+        const jobBans = await client.databaseRequest(database, "SELECT * FROM player_job_bans WHERE player_id = ?", [playerId]);
         return jobBans.length ? jobBans[0] : null;
     };
 
