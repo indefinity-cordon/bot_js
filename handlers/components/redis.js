@@ -39,7 +39,7 @@ module.exports = (client) => {
             console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${JSON.stringify(data)}`));
             return;
         }
-
+//TODO Relocate it to server side
         switch (data.state) {
             case "ooc":
                 await handleOOC(channel, data);
