@@ -16,6 +16,7 @@ module.exports = async (client) => {
 
 async function updateUpdatersMessages(client, game_server) {
     const db_request = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id NOT LIKE '-%'", [game_server.server_name]);
+    console.log(JSON.stringify(db_request))
     if (!db_request.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
