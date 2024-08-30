@@ -214,10 +214,10 @@ module.exports = (client) => {
 
 
     function addToQueue(handler, channel, data) {
-        if (!messageQueue[channel]) {
-            messageQueue[channel] = [];
+        if (!messageQueue[channel.id]) {
+            messageQueue[channel.id] = [];
         }
-        messageQueue[channel].push({ handler, data });
+        messageQueue[channel.id].push({ handler, data });
     }
 
     async function handleOOC(channel, data, combine = false) {
@@ -257,12 +257,12 @@ module.exports = (client) => {
     }
     
     setInterval(async () => {
-        for (const channel in messageQueue) {
-            const messages = messageQueue[channel];
+        for (const channelId in messageQueue) {
+            const messages = messageQueue[channelId];
             const messagesToSend = [];
             while (messages.length > 0) {
                 const { handler, data } = messages.shift();
-                const embed = await handler(channel, data, true);
+                const embed = await handler(null, data, true);
                 if (messagesToSend.length < 5) {
                     messagesToSend.push(embed);
                 } else {
@@ -271,10 +271,10 @@ module.exports = (client) => {
                 }
             }
             if (messagesToSend.length > 0) {
-                await client.sendEmbed({ embeds: messagesToSend }, channel);
+                await client.sendEmbed({ embeds: messagesToSend }, await client.channels.fetch(channelId));
             }
             if (messages.length === 0) {
-                delete messageQueue[channel];
+                delete messageQueue[channelId];
             }
         }
     }, 2000);
