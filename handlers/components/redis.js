@@ -8,7 +8,8 @@ module.exports = (client) => {
             console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Redis`), chalk.red(`Malformed Redis message, without data.`));
             return;
         }
-
+        if (data.source == "DISCORD")
+            return;
         const instances = await client.tgs_getInstances();
         const responded_instance = instances.find(instance => instance.name === data.source);
         if (!responded_instance) {
@@ -32,7 +33,7 @@ module.exports = (client) => {
 
         const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = ?", [responded_game_server.server_name, data.type]);
         if (!status.length) {
-            console.log(chalk.blue(chalk.bold(`Database`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. data: ${JSON.stringify(data)}`));
+            console.log(chalk.blue(chalk.bold(`Database`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`MySQL`), chalk.red(`Failed to find server related feed channels. Aborting. server: ${responded_game_server.server_name}, channel: ${data.type}`));
             return;
         }
 
