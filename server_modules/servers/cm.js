@@ -65,12 +65,9 @@ module.exports = (client, game_server) => {
                 if (db_admin.extra_titles_encoded) {
                     extra_ranks = JSON.parse(db_admin.extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
                 }
-                description += `**Ckey:** ${`${profile.ckey}`.padEnd(50, "\u00A0")}`;
-                description += `[Last Login ${profile.last_login}]\n`;
+                description += `**Ckey:** ${profile.ckey} [Last Login ${profile.last_login}]\n**Rank:** ${roleMap.get(db_admin.rank_id)}`;
                 if (extra_ranks.length) {
-                    description += `**Rank:** ${`${roleMap.get(db_admin.rank_id)}`.padEnd(50, "\u00A0")}[Extra Ranks ${extra_ranks.join(' & ')}]`;
-                } else {
-                    description += `**Rank:** ${roleMap.get(db_admin.rank_id)}`;
+                    description += ` [Extra Ranks ${extra_ranks.join(' & ')}]`;
                 }
                 description += `\n\n`;
                 if (embed_description && description.length > 824) {
