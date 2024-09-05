@@ -649,6 +649,12 @@ module.exports = (client, game_server) => {
     };
 
     game_server.configureAutoStartMenu = async function (interaction) {
+        let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
+        if(!server_schedule_data.length) {
+            await client.databaseRequest(client.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [server_name, 'auto_start_config', ""]);
+            server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
+        }
+        server_schedule_data = JSON.parse(server_schedule_data[0].param);
         const actionOptions = [
             { label: "View Schedule", value: "view" },
             { label: "Set Mode", value: "set_mode" },
@@ -658,16 +664,16 @@ module.exports = (client, game_server) => {
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
         switch (selectedAction) {
             case 'view': {
-                await viewSchedule(interaction, client, game_server);
+                await viewSchedule(interaction, client, game_server, server_schedule_data);
             } break;
             case 'set_mode': {
-                await setMode(interaction, client, game_server);
+                await setMode(interaction, client, game_server, server_schedule_data);
             } break;
             case 'set_daily_time': {
-                await setDailyTimes(interaction, client, game_server);
+                await setDailyTimes(interaction, client, game_server, server_schedule_data);
             } break;
             case 'set_specific_days': {
-                await setSpecificDays(interaction, client, game_server);
+                await setSpecificDays(interaction, client, game_server, server_schedule_data);
             } break;
         }
     };
@@ -778,31 +784,29 @@ async function autoStartServer(client, game_server) {
 };
 
 
-async function viewSchedule(interaction, client, game_server) {
+async function viewSchedule(interaction, client, game_server, server_schedule_data) {
     try {
-        const config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
-        if (!config.length) {
+        if (!server_schedule_data.length) {
             return client.ephemeralEmbed({
                 title: `Request`,
                 desc: `No schedule found for server ${game_server.server_name}`,
                 color: `#c70058`
             }, interaction);
         }
-        const scheduleData = JSON.parse(config[0].param);
         let scheduleOutput = 'Server start schedule (UTC+0):\n\n';
-        if (scheduleData.daily) {
+        if (server_schedule_data.daily) {
             scheduleOutput += '**Daily Schedule:**\n';
-            for (const [day, time] of Object.entries(scheduleData.daily)) {
+            for (const [day, time] of Object.entries(server_schedule_data.daily)) {
                 scheduleOutput += `- ${capitalizeFirstLetter(day)}: ${time} UTC\n`;
             }
         }
-        if (scheduleData.spec) {
+        if (server_schedule_data.spec) {
             scheduleOutput += '\n**Specific Dates:**\n';
-            for (const [date, time] of Object.entries(scheduleData.spec)) {
+            for (const [date, time] of Object.entries(server_schedule_data.spec)) {
                 scheduleOutput += `- ${date}: ${time} UTC\n`;
             }
         }
-        if (!scheduleData.daily && !scheduleData.spec) {
+        if (!server_schedule_data.daily && !server_schedule_data.spec) {
             scheduleOutput += 'No scheduled times available.';
         }
         await client.ephemeralEmbed({
@@ -819,16 +823,14 @@ async function viewSchedule(interaction, client, game_server) {
     }
 };
 
-async function setMode(interaction, client, game_server) {
+async function setMode(interaction, client, game_server, server_schedule_data) {
     const modeOptions = [
         { label: "Daily", value: "daily" },
         { label: "Specific Days", value: "weekly" }
     ];
     const selectedMode = await client.sendInteractionSelectMenu(interaction, `select-mode`, 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
-    const config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
-    const autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-    autoStartConfig.mode = selectedMode;
-    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(autoStartConfig), game_server.server_name]);
+    server_schedule_data.mode = selectedMode;
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
         title: `Request`,
         desc: `Mode set to ${selectedMode} for server ${game_server.server_name}`,
@@ -836,7 +838,7 @@ async function setMode(interaction, client, game_server) {
     }, interaction);
 };
 
-async function setDailyTimes(interaction, client, game_server) {
+async function setDailyTimes(interaction, client, game_server, server_schedule_data) {
     const dayOptions = [
         { label: "Monday", value: "monday" },
         { label: "Tuesday", value: "tuesday" },
@@ -858,11 +860,9 @@ async function setDailyTimes(interaction, client, game_server) {
         }, interaction);
         return;
     }
-    const config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
-    const autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-    autoStartConfig.daily = autoStartConfig.daily || {};
-    autoStartConfig.daily[selectedDay] = timeInput;
-    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(autoStartConfig), game_server.server_name]);
+    server_schedule_data.daily = server_schedule_data.daily || {};
+    server_schedule_data.daily[selectedDay] = timeInput;
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
         title: `Request`,
         desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
@@ -870,7 +870,7 @@ async function setDailyTimes(interaction, client, game_server) {
     }, interaction);
 };
 
-async function setSpecificDays(interaction, client, game_server) {
+async function setSpecificDays(interaction, client, game_server, server_schedule_data) {
     let moreDays = true;
     const specificTimes = {};
     while (moreDays) {
@@ -902,10 +902,8 @@ async function setSpecificDays(interaction, client, game_server) {
             specificTimes[dateInput] = timeInput;c
         }
     }
-    const config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
-    const autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-    autoStartConfig.spec = { ...autoStartConfig.spec, ...specificTimes };
-    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(autoStartConfig), game_server.server_name]);
+    server_schedule_data.spec = { ...server_schedule_data.spec, ...specificTimes };
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
         title: `Request`,
         desc: `Specific start days set for server ${game_server.server_name}`,
