@@ -802,13 +802,6 @@ async function autoStartServer(client, game_server) {
 
 async function viewSchedule(interaction, client, game_server, server_schedule_data) {
     try {
-        if (!server_schedule_data.length) {
-            return client.ephemeralEmbed({
-                title: `Request`,
-                desc: `No schedule found for server ${game_server.server_name}`,
-                color: `#c70058`
-            }, interaction);
-        }
         let scheduleOutput = 'Server start schedule (UTC+0):\n\n';
         if (server_schedule_data.daily) {
             scheduleOutput += '**Daily Schedule:**\n';
