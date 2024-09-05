@@ -662,7 +662,9 @@ module.exports = (client, game_server) => {
             { label: "View Schedule", value: "view" },
             { label: "Set Mode", value: "set_mode" },
             { label: "Set Daily Times", value: "set_daily_time" },
+            { label: "Remove Daily Times", value: "remove_daily_time" },
             { label: "Set Specific Days", value: "set_specific_days" },
+            { label: "Remove Specific Days", value: "remove_specific_days" }
         ];
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
         switch (selectedAction) {
@@ -675,8 +677,14 @@ module.exports = (client, game_server) => {
             case 'set_daily_time': {
                 await setDailyTimes(interaction, client, game_server, server_schedule_data);
             } break;
+            case 'remove_daily_time': {
+                await removeDailyTimes(interaction, client, game_server, server_schedule_data);
+            } break;
             case 'set_specific_days': {
                 await setSpecificDays(interaction, client, game_server, server_schedule_data);
+            } break;
+            case 'remove_specific_days': {
+                await removeSpecificDays(interaction, client, game_server, server_schedule_data);
             } break;
         }
     };
@@ -756,6 +764,11 @@ async function updateServerCustomOperators(client, game_server) {
         }
     }
     if (autoStartConfig.mode === 'specific_days') {
+        if (autoStartConfig.specific_days) {
+            const nowString = now.toISOString().split('T')[0];
+            autoStartConfig.specific_days = autoStartConfig.specific_days.filter(date => date >= nowString);
+            await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(autoStartConfig), game_server.server_name]);
+        }
         const specificDays = autoStartConfig.specific_days || [];
         const todayString = now.toISOString().split('T')[0];
         if (specificDays.includes(todayString)) {
@@ -902,10 +915,13 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
                 }, interaction);
                 return;
             }
-            specificTimes[dateInput] = timeInput;c
+            specificTimes[dateInput] = timeInput;
         }
     }
-    server_schedule_data.spec = { ...server_schedule_data.spec, ...specificTimes };
+    server_schedule_data.spec = server_schedule_data.spec || {};
+    Object.keys(specificTimes).forEach(date => {
+        server_schedule_data.spec[date] = specificTimes[date];
+    });
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
         title: `Request`,
@@ -913,6 +929,40 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
         color: `#669917`
     }, interaction);
 };
+
+async function removeSpecificDays(interaction, client, game_server, server_schedule_data) {
+    const now = new Date().toISOString().split('T')[0];
+    if (!server_schedule_data.spec || Object.keys(server_schedule_data.spec).length === 0) {
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `No specific dates are set for server ${game_server.server_name}`,
+            color: `#c70058`
+        }, interaction);
+        return;
+    }
+    const specificDayOptions = Object.keys(server_schedule_data.spec)
+        .filter(date => date >= now)
+        .map(date => ({ label: date, value: date }));
+    if (!specificDayOptions.length) {
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `All specific dates have passed for server ${game_server.server_name}`,
+            color: `#c70058`
+        }, interaction);
+        return;
+    }
+    const selectedDates = await client.sendInteractionSelectMenu(interaction, `select-date`, 'Select a date to remove', specificDayOptions, 'Choose a specific date to remove:', true);
+    selectedDates.forEach(selectedDate => {
+        delete server_schedule_data.spec[selectedDate];
+    });
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await client.ephemeralEmbed({
+        title: `Request`,
+        desc: `Removed specific start dates for server ${game_server.server_name}`,
+        color: `#669917`
+    }, interaction);
+};
+
 
 function isJsonString(str) {
     try {
