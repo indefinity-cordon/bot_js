@@ -835,7 +835,8 @@ async function viewSchedule(interaction, client, game_server, server_schedule_da
 async function setMode(interaction, client, game_server, server_schedule_data) {
     const modeOptions = [
         { label: "Daily", value: "daily" },
-        { label: "Specific Days", value: "weekly" }
+        { label: "Specific Days", value: "weekly" },
+        { label: "OFF", value: "off" }
     ];
     const selectedMode = await client.sendInteractionSelectMenu(interaction, `select-mode`, 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
     server_schedule_data.mode = selectedMode;
