@@ -52,6 +52,16 @@ initializeMess(client)
 
 async function initializeMess (client) {
     await client.database;
+
+    await client.databaseRequest(client.database, `CREATE TABLE IF NOT EXISTS server_settings (
+            server_name VARCHAR(20) DEFAULT NULL,
+            name VARCHAR(64) DEFAULT NULL,
+            param VARCHAR(4000) DEFAULT NULL,
+            KEY FK_server_settings_servers (server_name),
+            CONSTRAINT FK_server_settings_servers FOREIGN KEY (server_name) REFERENCES servers (server_name)
+        );
+    `, []);
+
     client.handling_game_servers = await client.databaseRequest(client.database, "SELECT server_name, db_name FROM servers", []);
     client.servers_options = client.handling_game_servers.map(server => ({
         label: server.server_name,
