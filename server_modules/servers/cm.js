@@ -793,16 +793,21 @@ async function autoStartServer(client, game_server) {
 async function viewSchedule(interaction, client, game_server, server_schedule_data) {
     try {
         let scheduleOutput = 'Server start schedule (UTC+0):\n\n';
+        const now = new Date();
         if (server_schedule_data.daily) {
             scheduleOutput += '**Daily Schedule:**\n';
             for (const [day, time] of Object.entries(server_schedule_data.daily)) {
-                scheduleOutput += `- ${day}: ${time} UTC\n`;
+                const start_time = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0));
+                scheduleOutput += `- ${day}: <t:${Math.floor(start_time.getTime() / 1000)}:t> UTC\n`;
             }
         }
         if (server_schedule_data.spec) {
             scheduleOutput += '\n**Specific Dates:**\n';
             for (const [date, time] of Object.entries(server_schedule_data.spec)) {
-                scheduleOutput += `- ${date}: ${time} UTC\n`;
+                const [hours, minutes] = time.split(':').map(Number);
+                const [year, month, day] = date.split('-').map(Number);
+                const start_time = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+                scheduleOutput += `- ${date}: <t:${Math.floor(start_time.getTime() / 1000)}:t> UTC\n`;
             }
         }
         if (!server_schedule_data.daily && !server_schedule_data.spec) {
