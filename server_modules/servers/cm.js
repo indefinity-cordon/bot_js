@@ -658,126 +658,18 @@ module.exports = (client, game_server) => {
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
         switch (selectedAction) {
             case 'set_mode': {
-                await game_server.setMode(interaction);
+                await setMode(interaction, client, game_server);
             } break;
             case 'set_daily_time': {
-                await game_server.setDailyTimes(interaction);
+                await setDailyTimes(interaction, client, game_server);
             } break;
             case 'set_specific_days': {
-                await game_server.setSpecificDays(interaction);
+                await setSpecificDays(interaction, client, game_server);
             } break;
             case 'add_exception': {
-                await game_server.addException(interaction);
+                await addException(interaction, client, game_server);
             } break;
         }
-    };
-
-    game_server.setMode = async function (interaction) {
-        const modeOptions = [
-            { label: "Daily", value: "daily" },
-            { label: "Specific Days", value: "weekly" }
-        ];
-        const selectedMode = await client.sendInteractionSelectMenu(interaction, `select-mode`, 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
-        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
-        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-        autoStartConfig.mode = selectedMode;
-        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
-        await client.ephemeralEmbed({
-            title: `Request`,
-            desc: `Mode set to ${selectedMode} for server ${game_server.server_name}`,
-            color: `#669917`
-        }, interaction);
-    };
-
-    game_server.setDailyTimes = async function (interaction) {
-        const dayOptions = [
-            { label: "Monday", value: "monday" },
-            { label: "Tuesday", value: "tuesday" },
-            { label: "Wednesday", value: "wednesday" },
-            { label: "Thursday", value: "thursday" },
-            { label: "Friday", value: "friday" },
-            { label: "Saturday", value: "saturday" },
-            { label: "Sunday", value: "sunday" }
-        ];
-        const selectedDay = await client.sendInteractionSelectMenu(interaction, `select-day`, 'Select day', dayOptions, 'Choose a day for setting up auto-start time:');
-        await interaction.followUp({ content: 'Please enter the time for auto-start in hh:mm format', ephemeral: true });
-        const timeInput = await client.collectUserInput(interaction);
-        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-        if (!timeRegex.test(timeInput)) {
-            await client.ephemeralEmbed({
-                title: `Request`,
-                desc: `Invalid time format. Please use hh:mm format`,
-                color: `#c70058`
-            }, interaction);
-            return;
-        }
-        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
-        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-        autoStartConfig.daily_times = autoStartConfig.daily_times || {};
-        autoStartConfig.daily_times[selectedDay] = timeInput;
-        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
-        await client.ephemeralEmbed({
-            title: `Request`,
-            desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
-            color: `#669917`
-        }, interaction);
-    };
-
-    async function setSpecificDays(interaction) {
-        const specificDays = [];
-        let moreDays = true;
-        while (moreDays) {
-            await interaction.followUp({ content: 'Please enter a date for specific start in YYYY-MM-DD format (1984-01-01) or type "done" to finish', ephemeral: true });
-            const dateInput = await client.collectUserInput(interaction);
-            if (dateInput.toLowerCase() === 'done') {
-                moreDays = false;
-            } else {
-                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-                if (!dateRegex.test(dateInput)) {
-                    await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `Invalid date format. Please use YYYY-MM-DD format`,
-                        color: `#c70058`
-                    }, interaction);
-                    return;
-                } else {
-                    specificDays.push(dateInput);
-                }
-            }
-        }
-        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
-        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-        autoStartConfig.specific_days = specificDays;
-        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
-        await client.ephemeralEmbed({
-            title: `Request`,
-            desc: `Specific start days set for server ${game_serverserver_name}`,
-            color: `#669917`
-        }, interaction);
-    };
-
-    game_server.addException = async function(interaction) {
-        await interaction.followUp({ content: 'Please enter the exception date in YYYY-MM-DD format (1984-01-01)', ephemeral: true });
-        const dateInput = await client.collectUserInput(interaction);
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(dateInput)) {
-            await client.ephemeralEmbed({
-                title: `Request`,
-                desc: `Invalid date format. Please use YYYY-MM-DD format`,
-                color: `#c70058`
-            }, interaction);
-            return;
-        }
-        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
-        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-        autoStartConfig.exceptions = autoStartConfig.exceptions || [];
-        autoStartConfig.exceptions.push(dateInput);
-        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
-        await client.ephemeralEmbed({
-            title: `Request`,
-            desc: `Exempt for ${date} added on server ${game_server.server_name}`,
-            color: `#669917`
-        }, interaction);
     };
 
     game_server.handling_actions = {
@@ -799,6 +691,7 @@ module.exports = (client, game_server) => {
     ];
 }
 
+
 async function getAdminOptions(client, database_connection) {
     const admins = await client.databaseRequest(database_connection, "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id", []);
 
@@ -816,6 +709,7 @@ async function getRankOptions(client, database_connection) {
         value: rank.id.toString()
     }));
 };
+
 
 async function updateServerCustomOperators(client, game_server) {
     const serverConfig = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
@@ -870,6 +764,7 @@ async function updateServerCustomOperators(client, game_server) {
     }
 };
 
+
 async function autoStartServer(client, game_server) {
     const instanceId = await client.tgs_getInstance(game_server.tgs_id);
     if(!instanceId) return;
@@ -880,4 +775,113 @@ async function autoStartServer(client, game_server) {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
         await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000)}:t>`).setColor(`#669917`)], content: `<@&${role.id}>`}, channel);
     }
+};
+
+
+async function setMode(interaction, client, game_server) {
+    const modeOptions = [
+        { label: "Daily", value: "daily" },
+        { label: "Specific Days", value: "weekly" }
+    ];
+    const selectedMode = await client.sendInteractionSelectMenu(interaction, `select-mode`, 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
+    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+    let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+    autoStartConfig.mode = selectedMode;
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+    await client.ephemeralEmbed({
+        title: `Request`,
+        desc: `Mode set to ${selectedMode} for server ${game_server.server_name}`,
+        color: `#669917`
+    }, interaction);
+};
+
+async function setDailyTimes(interaction, client, game_server) {
+    const dayOptions = [
+        { label: "Monday", value: "monday" },
+        { label: "Tuesday", value: "tuesday" },
+        { label: "Wednesday", value: "wednesday" },
+        { label: "Thursday", value: "thursday" },
+        { label: "Friday", value: "friday" },
+        { label: "Saturday", value: "saturday" },
+        { label: "Sunday", value: "sunday" }
+    ];
+    const selectedDay = await client.sendInteractionSelectMenu(interaction, `select-day`, 'Select day', dayOptions, 'Choose a day for setting up auto-start time:');
+    await interaction.followUp({ content: 'Please enter the time for auto-start in hh:mm format', ephemeral: true });
+    const timeInput = await client.collectUserInput(interaction);
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(timeInput)) {
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `Invalid time format. Please use hh:mm format`,
+            color: `#c70058`
+        }, interaction);
+        return;
+    }
+    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+    let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+    autoStartConfig.daily_times = autoStartConfig.daily_times || {};
+    autoStartConfig.daily_times[selectedDay] = timeInput;
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+    await client.ephemeralEmbed({
+        title: `Request`,
+        desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
+        color: `#669917`
+    }, interaction);
+};
+
+async function setSpecificDays(interaction, client, game_server) {
+    const specificDays = [];
+    let moreDays = true;
+    while (moreDays) {
+        await interaction.followUp({ content: 'Please enter a date for specific start in YYYY-MM-DD format (1984-01-01) or type "done" to finish', ephemeral: true });
+        const dateInput = await client.collectUserInput(interaction);
+        if (dateInput.toLowerCase() === 'done') {
+            moreDays = false;
+        } else {
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(dateInput)) {
+                await client.ephemeralEmbed({
+                    title: `Request`,
+                    desc: `Invalid date format. Please use YYYY-MM-DD format`,
+                    color: `#c70058`
+                }, interaction);
+                return;
+            } else {
+                specificDays.push(dateInput);
+            }
+        }
+    }
+    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+    let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+    autoStartConfig.specific_days = specificDays;
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+    await client.ephemeralEmbed({
+        title: `Request`,
+        desc: `Specific start days set for server ${game_serverserver_name}`,
+        color: `#669917`
+    }, interaction);
+};
+
+async function addException(interaction, client, game_server) {
+    await interaction.followUp({ content: 'Please enter the exception date in YYYY-MM-DD format (1984-01-01)', ephemeral: true });
+    const dateInput = await client.collectUserInput(interaction);
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dateInput)) {
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `Invalid date format. Please use YYYY-MM-DD format`,
+            color: `#c70058`
+        }, interaction);
+        return;
+    }
+    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+    let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+    autoStartConfig.exceptions = autoStartConfig.exceptions || [];
+    autoStartConfig.exceptions.push(dateInput);
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+    await client.ephemeralEmbed({
+        title: `Request`,
+        desc: `Exempt for ${date} added on server ${game_server.server_name}`,
+        color: `#669917`
+    }, interaction);
 };
