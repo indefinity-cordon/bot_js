@@ -44,7 +44,6 @@ module.exports = (client, game_server) => {
         try {
             let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
             if (!server_schedule_data.length || !isJsonString(server_schedule_data[0].param)) throw "Setup schedule";
-            server_schedule_data = JSON.parse(server_schedule_data[0].param);
             const schedule = await getSchedule(JSON.parse(server_schedule_data[0].param));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
