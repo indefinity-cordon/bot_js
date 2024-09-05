@@ -652,9 +652,9 @@ module.exports = (client, game_server) => {
         let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
         if (!server_schedule_data.length || !isJsonString(server_schedule_data[0].param)) {
             if (server_schedule_data[0]) {
-                await client.databaseRequest(client.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [server_name, 'auto_start_config']);
+                await client.databaseRequest(client.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name, 'auto_start_config']);
             }
-            await client.databaseRequest(client.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [server_name, 'auto_start_config', "{}"]);
+            await client.databaseRequest(client.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [game_server.server_name, 'auto_start_config', "{}"]);
             server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
         }
         server_schedule_data = JSON.parse(server_schedule_data[0].param);
