@@ -650,13 +650,16 @@ module.exports = (client, game_server) => {
 
     game_server.configureAutoStartMenu = async function (interaction) {
         const actionOptions = [
+            { label: "View Schedule", value: "view" },
             { label: "Set Mode", value: "set_mode" },
             { label: "Set Daily Times", value: "set_daily_time" },
             { label: "Set Specific Days", value: "set_specific_days" },
-            { label: "Add Exceptions", value: "add_exception" }
         ];
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
         switch (selectedAction) {
+            case 'view': {
+                await viewSchedule(interaction, client, game_server);
+            } break;
             case 'set_mode': {
                 await setMode(interaction, client, game_server);
             } break;
@@ -665,9 +668,6 @@ module.exports = (client, game_server) => {
             } break;
             case 'set_specific_days': {
                 await setSpecificDays(interaction, client, game_server);
-            } break;
-            case 'add_exception': {
-                await addException(interaction, client, game_server);
             } break;
         }
     };
@@ -725,8 +725,8 @@ async function updateServerCustomOperators(client, game_server) {
         return;
     }
 
-    if (game_server.update_custom_operatos_data['additional']['autostart']) {
-        clearTimeout(game_server.update_custom_operatos_data['additional']['autostart'])
+    if (game_server.update_custom_operators_data['additional']['autostart']) {
+        clearTimeout(game_server.update_custom_operators_data['additional']['autostart'])
     }
 
     const now = new Date();
@@ -740,7 +740,7 @@ async function updateServerCustomOperators(client, game_server) {
 
             if (startDateTime > now) {
                 const timeUntilStart = startDateTime - now;
-                game_server.update_custom_operatos_data['additional']['autostart'] = setTimeout(async () => {
+                game_server.update_custom_operators_data['additional']['autostart'] = setTimeout(async () => {
                     await autoStartServer(client, game_server);
                 }, timeUntilStart);
             }
@@ -754,8 +754,8 @@ async function updateServerCustomOperators(client, game_server) {
             const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
             if (startDateTime > now) {
                 const timeUntilStart = startDateTime - now;
-                if (!game_server.update_custom_operatos_data) {
-                    game_server.update_custom_operatos_data = setTimeout(async () => {
+                if (!game_server.update_custom_operators_data) {
+                    game_server.update_custom_operators_data = setTimeout(async () => {
                         await autoStartServer(client, game_server);
                     }, timeUntilStart);
                 }
@@ -777,6 +777,47 @@ async function autoStartServer(client, game_server) {
     }
 };
 
+
+async function viewSchedule(interaction, client, game_server) {
+    try {
+        const schedule = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
+        if (!schedule.length) {
+            return client.ephemeralEmbed({
+                title: `Request`,
+                desc: `No schedule found for server ${game_server.server_name}.`,
+                color: `#c70058`
+            }, interaction);
+        }
+        const scheduleData = JSON.parse(schedule[0].param);
+        let scheduleOutput = 'Server start schedule (UTC+0):\n\n';
+        if (scheduleData.daily) {
+            scheduleOutput += '**Daily Schedule:**\n';
+            for (const [day, time] of Object.entries(scheduleData.daily)) {
+                scheduleOutput += `- ${capitalizeFirstLetter(day)}: ${time} UTC\n`;
+            }
+        }
+        if (scheduleData.spec) {
+            scheduleOutput += '\n**Specific Dates:**\n';
+            for (const [date, time] of Object.entries(scheduleData.spec)) {
+                scheduleOutput += `- ${date}: ${time} UTC\n`;
+            }
+        }
+        if (!scheduleData.daily && !scheduleData.spec) {
+            scheduleOutput += 'No scheduled times available.';
+        }
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: scheduleOutput,
+            color: `#669917`
+        }, interaction);
+    } catch (error) {
+        return client.ephemeralEmbed({
+            title: `Request`,
+            desc: `An error occurred while retrieving the schedule.`,
+            color: `#c70058`
+        }, interaction);
+    }
+};
 
 async function setMode(interaction, client, game_server) {
     const modeOptions = [
@@ -806,7 +847,7 @@ async function setDailyTimes(interaction, client, game_server) {
         { label: "Sunday", value: "sunday" }
     ];
     const selectedDay = await client.sendInteractionSelectMenu(interaction, `select-day`, 'Select day', dayOptions, 'Choose a day for setting up auto-start time:');
-    await interaction.followUp({ content: 'Please enter the time for auto-start in hh:mm format', ephemeral: true });
+    await interaction.followUp({ content: 'Please enter the time for auto-start in hh:mm (UTC+0) format', ephemeral: true });
     const timeInput = await client.collectUserInput(interaction);
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!timeRegex.test(timeInput)) {
@@ -819,8 +860,8 @@ async function setDailyTimes(interaction, client, game_server) {
     }
     let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
     let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-    autoStartConfig.daily_times = autoStartConfig.daily_times || {};
-    autoStartConfig.daily_times[selectedDay] = timeInput;
+    autoStartConfig.daily = autoStartConfig.daily || {};
+    autoStartConfig.daily[selectedDay] = timeInput;
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
     await client.ephemeralEmbed({
         title: `Request`,
@@ -830,8 +871,8 @@ async function setDailyTimes(interaction, client, game_server) {
 };
 
 async function setSpecificDays(interaction, client, game_server) {
-    const specificDays = [];
     let moreDays = true;
+    let specificTimes = {};
     while (moreDays) {
         await interaction.followUp({ content: 'Please enter a date for specific start in YYYY-MM-DD format (1984-01-01) or type "done" to finish', ephemeral: true });
         const dateInput = await client.collectUserInput(interaction);
@@ -846,42 +887,29 @@ async function setSpecificDays(interaction, client, game_server) {
                     color: `#c70058`
                 }, interaction);
                 return;
-            } else {
-                specificDays.push(dateInput);
             }
+            await interaction.followUp({ content: 'Please enter the time for auto-start in hh:mm (UTC+0) format', ephemeral: true });
+            const timeInput = await client.collectUserInput(interaction);
+            const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+            if (!timeRegex.test(timeInput)) {
+                await client.ephemeralEmbed({
+                    title: `Request`,
+                    desc: `Invalid time format. Please use hh:mm format`,
+                    color: `#c70058`
+                }, interaction);
+                return;
+            }
+
+            specificTimes[dateInput] = timeInput;
         }
     }
     let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
     let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-    autoStartConfig.specific_days = specificDays;
+    autoStartConfig.spec = { ...autoStartConfig.spec, ...specificTimes };
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
     await client.ephemeralEmbed({
         title: `Request`,
-        desc: `Specific start days set for server ${game_serverserver_name}`,
-        color: `#669917`
-    }, interaction);
-};
-
-async function addException(interaction, client, game_server) {
-    await interaction.followUp({ content: 'Please enter the exception date in YYYY-MM-DD format (1984-01-01)', ephemeral: true });
-    const dateInput = await client.collectUserInput(interaction);
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(dateInput)) {
-        await client.ephemeralEmbed({
-            title: `Request`,
-            desc: `Invalid date format. Please use YYYY-MM-DD format`,
-            color: `#c70058`
-        }, interaction);
-        return;
-    }
-    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
-    let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
-    autoStartConfig.exceptions = autoStartConfig.exceptions || [];
-    autoStartConfig.exceptions.push(dateInput);
-    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
-    await client.ephemeralEmbed({
-        title: `Request`,
-        desc: `Exempt for ${date} added on server ${game_server.server_name}`,
+        desc: `Specific start days set for server ${game_server.server_name}`,
         color: `#669917`
     }, interaction);
 };

@@ -67,7 +67,7 @@ module.exports = class Server {
     /**
      * @type {Array}
      */
-    update_custom_operatos_data;
+    update_custom_operators_data;
 
     constructor() {
         this.server_name = '';
@@ -82,6 +82,6 @@ module.exports = class Server {
         this.update_status_messages_interval = null;
         this.update_roles_interval = null;
         this.update_custom_operatos_interval = null;
-        this.update_custom_operatos_data = {'intervals': {}, 'additional': {}};
+        this.update_custom_operators_data = {'intervals': {}, 'additional': {}};
     }
 }

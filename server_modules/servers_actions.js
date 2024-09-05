@@ -55,8 +55,8 @@ module.exports = async (client) => {
                     delete remove_game_server.message_updater_intervals[type];
                     delete remove_game_server.updater_messages[type];
                 }
-                for(const type in remove_game_server.update_custom_operatos_data['intervals']) {
-                    clearInterval(remove_game_server.update_custom_operatos_data[type]);
+                for(const type in remove_game_server.update_custom_operators_data['intervals']) {
+                    clearInterval(remove_game_server.update_custom_operators_data[type]);
                 }
                 remove_game_server.updater_messages = null;
                 delete client.servers_link[server_name];
