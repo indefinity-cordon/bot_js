@@ -797,6 +797,7 @@ async function viewSchedule(interaction, client, game_server, server_schedule_da
         if (server_schedule_data.daily) {
             scheduleOutput += '**Daily Schedule:**\n';
             for (const [day, time] of Object.entries(server_schedule_data.daily)) {
+                const [hours, minutes] = time.split(':').map(Number);
                 const start_time = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0));
                 scheduleOutput += `- ${day}: <t:${Math.floor(start_time.getTime() / 1000)}:t> UTC\n`;
             }
