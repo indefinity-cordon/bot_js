@@ -22,7 +22,7 @@ async function startListining(client) {
     subscriber = client.redis_connection.duplicate();
     await subscriber.connect();
     subscriber.pSubscribe(`byond.*`, async (data) => {
-        if (!client.isJsonString(data)) {
+        if (!isJsonString(data)) {
             client.redisLogCallback(data);
         } else {
             client.redisCallback(JSON.parse(data));
@@ -43,6 +43,15 @@ async function startListining(client) {
             });
             collectors.push(collector)
         }
+    }
+}
+
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        return false;
     }
 }
 

@@ -650,7 +650,7 @@ module.exports = (client, game_server) => {
 
     game_server.configureAutoStartMenu = async function (interaction) {
         let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
-        if (!server_schedule_data.length || !client.isJsonString(server_schedule_data[0].param)) {
+        if (!server_schedule_data.length || !isJsonString(server_schedule_data[0].param)) {
             if (server_schedule_data[0]) {
                 await client.databaseRequest(client.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [server_name, 'auto_start_config']);
             }
@@ -913,3 +913,12 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
         color: `#669917`
     }, interaction);
 };
+
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}

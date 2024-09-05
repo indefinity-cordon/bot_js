@@ -78,17 +78,6 @@ module.exports = async (client) => {
         return embed;
     };
 
-
-    client.isJsonString = async function (str) {
-        try {
-            JSON.parse(str);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    };
-
-
     //----------------------------------------------------------------//
     //                         Selection Menu                         //
     //----------------------------------------------------------------//
