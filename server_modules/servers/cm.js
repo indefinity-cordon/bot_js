@@ -826,6 +826,7 @@ async function viewSchedule(interaction, client, game_server, server_schedule_da
 async function getSchedule(server_schedule_data) {
     try {
         const now = new Date();
+        let schedule = ' ';
         if (server_schedule_data.daily) {
             schedule += '**Daily Schedule:**\n';
             for (const [day, time] of Object.entries(server_schedule_data.daily)) {
