@@ -658,16 +658,16 @@ module.exports = (client, game_server) => {
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
         switch (selectedAction) {
             case 'set_mode': {
-                await setMode(interaction);
+                await game_server.setMode(interaction);
             } break;
             case 'set_daily_time': {
-                await setDailyTimes(interaction);
+                await game_server.setDailyTimes(interaction);
             } break;
             case 'set_specific_days': {
-                await setSpecificDays(interaction);
+                await game_server.setSpecificDays(interaction);
             } break;
             case 'add_exception': {
-                await addException(interaction);
+                await game_server.addException(interaction);
             } break;
         }
     };

@@ -39,7 +39,7 @@ client.restartApp = function (reason) {
     ])
     global.LogsHandler.send_log(embed);
     process.exit(1);
-}
+};
 
 client.handling_commands_actions = [];
 client.handling_commands = [];
@@ -48,7 +48,7 @@ require("./database/MySQL")(client);
 if (process.env.REDIS_STRING) require("./socket/Redis")(client);
 if (process.env.GITHUB_PAT) require("./github/GitHub")(client);
 
-initializeMess(client)
+initializeMess(client);
 
 async function initializeMess (client) {
     await client.database;
@@ -66,7 +66,7 @@ async function initializeMess (client) {
         });
     });
     client.ServerActions(client);
-}
+};
 
 client.commands = new Discord.Collection();
 
