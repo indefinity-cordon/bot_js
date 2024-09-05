@@ -42,7 +42,7 @@ module.exports = (client) => {
         thumbnail: thumbnail,
         fields: fields,
         content: content,
-        components: components,
+        components: components = [],
         type: type
     }, interaction) {
         if (interaction.guild == undefined) interaction.guild = { id: "0" };
@@ -74,7 +74,7 @@ module.exports = (client) => {
         fields: fields,
         url: url,
         content: content,
-        components: components,
+        components: components = [],
         type: type
     }, interaction) {
         let embed = new Discord.EmbedBuilder()
