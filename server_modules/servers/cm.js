@@ -729,57 +729,47 @@ async function getRankOptions(client, database_connection) {
 
 
 async function updateServerCustomOperators(client, game_server) {
-    const serverConfig = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
-
-    if (!serverConfig.length) {
+    let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
+    if (!server_schedule_data.length || !server_schedule_data[0].param) {
         return;
     }
 
-    let autoStartConfig;
-    try {
-        autoStartConfig = JSON.parse(serverConfig[0].param);
-    } catch (error) {
-        return;
-    }
-
+    server_schedule_data = JSON.parse(server_schedule_data[0].param);
     if (game_server.update_custom_operators_data['additional']['autostart']) {
-        clearTimeout(game_server.update_custom_operators_data['additional']['autostart'])
+        clearTimeout(game_server.update_custom_operators_data['additional']['autostart']);
     }
 
-    const now = new Date();
-    if (autoStartConfig.specific_days) {
-        const nowString = now.toISOString().split('T')[0];
-        autoStartConfig.specific_days = autoStartConfig.specific_days.filter(date => date >= nowString);
-        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(autoStartConfig), game_server.server_name]);
+    const now_date = new Date();
+    const now_utc = new Date(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), now_date.getUTCSeconds());
+    const now_utc_string = now_utc.toISOString().split('T')[0];
+    if (server_schedule_data.specific_days) {
+        server_schedule_data.specific_days = server_schedule_data.specific_days.filter(date => date >= now_utc_string);
+        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     }
-    if (autoStartConfig.mode === 'daily') {
-        const today = now.getDay();
-        const startTime = autoStartConfig.daily[today];
-
-        if (startTime) {
-            const [hours, minutes] = startTime.split(':').map(Number);
-            const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-
-            if (startDateTime > now) {
-                const timeUntilStart = startDateTime - now;
+    if (server_schedule_data.mode === 'daily') {
+        const kill_numbers = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        const start_time_utc = server_schedule_data.daily[kill_numbers[now_date.getUTCDay()]];
+        if (start_time_utc) {
+            const [hours, minutes] = start_time_utc.split(':').map(Number);
+            const start_date_utc = new Date(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), hours, minutes, 0);
+            if (start_date_utc > now_utc) {
+                const time_remaining = start_date_utc - now_utc;
                 game_server.update_custom_operators_data['additional']['autostart'] = setTimeout(async () => {
                     await autoStartServer(client, game_server);
-                }, timeUntilStart);
+                }, time_remaining);
             }
         }
     }
-    if (autoStartConfig.mode === 'specific_days') {
-        const specificDays = autoStartConfig.specific_days || [];
-        const todayString = now.toISOString().split('T')[0];
-        if (specificDays.includes(todayString)) {
-            const [hours, minutes] = autoStartConfig.time.split(':').map(Number);
-            const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
-            if (startDateTime > now) {
-                const timeUntilStart = startDateTime - now;
+    if (server_schedule_data.mode === 'specific_days' && server_schedule_data.specific_days) {
+        if (server_schedule_data.specific_days.includes(now_utc_string)) {
+            const [hours, minutes] = server_schedule_data.time.split(':').map(Number);
+            const start_date_utc = new Date(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), hours, minutes, 0);
+            if (start_date_utc > now_utc) {
+                const time_remaining = start_date_utc - now_utc;
                 if (!game_server.update_custom_operators_data) {
                     game_server.update_custom_operators_data = setTimeout(async () => {
                         await autoStartServer(client, game_server);
-                    }, timeUntilStart);
+                    }, time_remaining);
                 }
             }
         }
