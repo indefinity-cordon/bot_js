@@ -45,7 +45,7 @@ module.exports = (client, game_server) => {
             let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
             if (!server_schedule_data.length || !isJsonString(server_schedule_data[0].param)) throw "Setup schedule";
             server_schedule_data = JSON.parse(server_schedule_data[0].param);
-            const schedule = getSchedule(JSON.parse(server_schedule_data[0].param));
+            const schedule = await getSchedule(JSON.parse(server_schedule_data[0].param));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(schedule).setColor('#669917').setTimestamp()],
@@ -807,7 +807,7 @@ async function autoStartServer(client, game_server) {
 
 
 async function viewSchedule(interaction, client, game_server, server_schedule_data) {
-    const schedule = getSchedule(server_schedule_data);
+    const schedule = await getSchedule(server_schedule_data);
     if (schedule) {
         await client.ephemeralEmbed({
             title: `Request`,
