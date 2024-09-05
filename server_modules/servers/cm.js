@@ -747,6 +747,11 @@ async function updateServerCustomOperators(client, game_server) {
     }
 
     const now = new Date();
+    if (autoStartConfig.specific_days) {
+        const nowString = now.toISOString().split('T')[0];
+        autoStartConfig.specific_days = autoStartConfig.specific_days.filter(date => date >= nowString);
+        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(autoStartConfig), game_server.server_name]);
+    }
     if (autoStartConfig.mode === 'daily') {
         const today = now.getDay();
         const startTime = autoStartConfig.daily[today];
@@ -764,11 +769,6 @@ async function updateServerCustomOperators(client, game_server) {
         }
     }
     if (autoStartConfig.mode === 'specific_days') {
-        if (autoStartConfig.specific_days) {
-            const nowString = now.toISOString().split('T')[0];
-            autoStartConfig.specific_days = autoStartConfig.specific_days.filter(date => date >= nowString);
-            await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(autoStartConfig), game_server.server_name]);
-        }
         const specificDays = autoStartConfig.specific_days || [];
         const todayString = now.toISOString().split('T')[0];
         if (specificDays.includes(todayString)) {
