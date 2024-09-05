@@ -59,6 +59,16 @@ module.exports = class Server {
      */
     update_roles_interval;
 
+    /**
+     * @type {NodeJS.Timer}
+     */
+    update_custom_operatos_interval;
+
+    /**
+     * @type {Array}
+     */
+    update_custom_operatos_data;
+
     constructor() {
         this.server_name = '';
         this.database = '';
@@ -71,5 +81,7 @@ module.exports = class Server {
         this.message_updater_intervals = null;
         this.update_status_messages_interval = null;
         this.update_roles_interval = null;
+        this.update_custom_operatos_interval = null;
+        this.update_custom_operatos_data = {'intervals': {}, 'additional': {}};
     }
 }

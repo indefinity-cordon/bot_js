@@ -11,7 +11,6 @@ module.exports = async (client) => {
             game_server
         );
     };
-    client.ServerActions(client);
 };
 
 async function updateUpdatersMessages(client, game_server) {

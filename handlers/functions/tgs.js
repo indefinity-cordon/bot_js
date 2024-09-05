@@ -106,6 +106,7 @@ module.exports = async (client) => {
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.put(`${tgs_address[0].param}/api/DreamDaemon`, null, { headers });
+        if(!interaction) return;
         await client.ephemeralEmbed({
             title: `Action`,
             desc: `${response.data}`,
@@ -118,6 +119,7 @@ module.exports = async (client) => {
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.delete(`${tgs_address[0].param}/api/DreamDaemon`, { headers });
+        if(!interaction) return;
         await client.ephemeralEmbed({
             title: `Action`,
             desc: `${response.data}`,
@@ -130,6 +132,7 @@ module.exports = async (client) => {
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const tgs_address = await client.databaseSettingsRequest("tgs_address");
         const response = await axios.put(`${tgs_address[0].param}/api/DreamMaker`, null, { headers });
+        if(!interaction) return;
         await client.ephemeralEmbed({
             title: `Action`,
             desc: `${response.data}`,

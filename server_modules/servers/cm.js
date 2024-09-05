@@ -270,7 +270,7 @@ module.exports = (client, game_server) => {
     };
 
 
-    //HANDLING COMMMANDS
+
 /*
     game_server.admin_playtimes = async function (client, interaction) {
         
@@ -311,12 +311,16 @@ module.exports = (client, game_server) => {
         if (selectedAction) {
             switch (selectedAction) {
                 case 'add': {
-                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to add as admin:', ephemeral: true });
+                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to add as admin', ephemeral: true });
                     const ckey = await client.collectUserInput(interaction);
                     if (!ckey) return;
                     const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                     if (!playerData.length) {
-                        await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
+                        await client.ephemeralEmbed({
+                            title: `Request`,
+                            desc: `No player found with that ckey`,
+                            color: `#c70058`
+                        }, interaction);
                         return;
                     }
                     const playerOptions = playerData.map(player => ({
@@ -352,7 +356,7 @@ module.exports = (client, game_server) => {
                     if (adminList.length === 0) {
                         await client.ephemeralEmbed({
                             title: `Request`,
-                            desc: `No admins found to remove.`,
+                            desc: `No admins found to remove`,
                             color: `#c70058`
                         }, interaction);
                         return;
@@ -373,7 +377,7 @@ module.exports = (client, game_server) => {
                     if (adminList.length === 0) {
                         await client.ephemeralEmbed({
                             title: `Request`,
-                            desc: `No admins found to update.`,
+                            desc: `No admins found to update`,
                             color: `#c70058`
                         }, interaction);
                         return;
@@ -436,83 +440,81 @@ module.exports = (client, game_server) => {
             { label: 'Update Rank', value: 'update' }
         ];
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', actionOptions, 'Choose an action for rank management:');
-        if (selectedAction) {
-            switch (selectedAction) {
-                case 'add': {
-                    await interaction.followUp({ content: 'Enter the name of the new rank:', ephemeral: true });
-                    const rankName = await client.collectUserInput(interaction);
-                    if (!rankName) return;
-                    await interaction.followUp({ content: 'Enter the text rights for this rank:', ephemeral: true });
-                    const textRights = await client.collectUserInput(interaction);
-                    if (!textRights) return;
-                    await client.databaseRequest(game_server.game_connection, "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)", [rankName, textRights]);
+        switch (selectedAction) {
+            case 'add': {
+                await interaction.followUp({ content: 'Enter the name of the new rank', ephemeral: true });
+                const rankName = await client.collectUserInput(interaction);
+                if (!rankName) return;
+                await interaction.followUp({ content: 'Enter the text rights for this rank', ephemeral: true });
+                const textRights = await client.collectUserInput(interaction);
+                if (!textRights) return;
+                await client.databaseRequest(game_server.game_connection, "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)", [rankName, textRights]);
+                await client.ephemeralEmbed({
+                    title: `Request`,
+                    desc: `Rank ${rankName} added successfully!`,
+                    color: `#669917`
+                }, interaction);
+            } break;
+
+            case 'remove': {
+                const rankList = await getRankOptions(client, game_server.game_connection);
+                if (rankList.length === 0) {
                     await client.ephemeralEmbed({
                         title: `Request`,
-                        desc: `Rank ${rankName} added successfully!`,
+                        desc: `No ranks found to remove`,
+                        color: `#c70058`
+                    }, interaction);
+                    return;
+                }
+                const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
+                if (selectedRankId) {
+                    await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
+                    const playersWithExtraTitles = await client.databaseRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
+                    for (const admin of playersWithExtraTitles) {
+                        let extraTitles = JSON.parse(admin.extra_titles_encoded);
+                        extraTitles = extraTitles.filter(id => id !== selectedRankId);
+                        const updatedExtraTitles = extraTitles.length > 0 ? JSON.stringify(extraTitles) : null;
+                        await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [updatedExtraTitles, admin.player_id]);
+                    }
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Rank removed successfully!`,
                         color: `#669917`
                     }, interaction);
-                } break;
+                }
+            } break;
 
-                case 'remove': {
-                    const rankList = await getRankOptions(client, game_server.game_connection);
-                    if (rankList.length === 0) {
-                        await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `No ranks found to remove.`,
-                            color: `#c70058`
-                        }, interaction);
-                        return;
+            case 'update': {
+                const rankList = await getRankOptions(client, game_server.game_connection);
+                if (rankList.length === 0) {
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `No ranks found to update`,
+                        color: `#c70058`
+                    }, interaction);
+                    return;
+                }
+                const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
+                if (selectedRankId) {
+                    const askRankOptions = [{ label: 'Update', value: 'update' }, { label: 'Skip', value: 'skip' }]
+                    const seelectRank = await client.sendInteractionSelectMenu(interaction, `select-name`, 'Update Rank', askRankOptions, 'Would you like to update rank name?');
+                    if (seelectRank === 'update') {
+                        await interaction.followUp({ content: 'Enter the new name for the rank', ephemeral: true });
+                        const newRankName = await client.collectUserInput(interaction);
+                        if (!newRankName) return;
+                        await client.databaseRequest(game_server.game_connection, "UPDATE admin_ranks SET rank_name = ? WHERE id = ?", [newRankName, selectedRankId]);
                     }
-                    const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
-                    if (selectedRankId) {
-                        await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
-                        const playersWithExtraTitles = await client.databaseRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
-                        for (const admin of playersWithExtraTitles) {
-                            let extraTitles = JSON.parse(admin.extra_titles_encoded);
-                            extraTitles = extraTitles.filter(id => id !== selectedRankId);
-                            const updatedExtraTitles = extraTitles.length > 0 ? JSON.stringify(extraTitles) : null;
-                            await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [updatedExtraTitles, admin.player_id]);
-                        }
-                        await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `Rank removed successfully!`,
-                            color: `#669917`
-                        }, interaction);
-                    }
-                } break;
-
-                case 'update': {
-                    const rankList = await getRankOptions(client, game_server.game_connection);
-                    if (rankList.length === 0) {
-                        await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `No ranks found to update.`,
-                            color: `#c70058`
-                        }, interaction);
-                        return;
-                    }
-                    const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
-                    if (selectedRankId) {
-                        const askRankOptions = [{ label: 'Update', value: 'update' }, { label: 'Skip', value: 'skip' }]
-                        const seelectRank = await client.sendInteractionSelectMenu(interaction, `select-name`, 'Update Rank', askRankOptions, 'Would you like to update rank name?');
-                        if (seelectRank === 'update') {
-                            await interaction.followUp({ content: 'Enter the new name for the rank:', ephemeral: true });
-                            const newRankName = await client.collectUserInput(interaction);
-                            if (!newRankName) return;
-                            await client.databaseRequest(game_server.game_connection, "UPDATE admin_ranks SET rank_name = ? WHERE id = ?", [newRankName, selectedRankId]);
-                        }
-                        await interaction.followUp({ content: 'Enter the text rights for this rank:', ephemeral: true });
-                        const newTextRights = await client.collectUserInput(interaction);
-                        if (!newTextRights) return;
-                        await client.databaseRequest(game_server.game_connection, "UPDATE admin_ranks SET text_rights = ? WHERE id = ?", [newTextRights, selectedRankId]);
-                        await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `Rank updated successfully!`,
-                            color: `#669917`
-                        }, interaction);
-                    }
-                } break;
-            }
+                    await interaction.followUp({ content: 'Enter the text rights for this rank', ephemeral: true });
+                    const newTextRights = await client.collectUserInput(interaction);
+                    if (!newTextRights) return;
+                    await client.databaseRequest(game_server.game_connection, "UPDATE admin_ranks SET text_rights = ? WHERE id = ?", [newTextRights, selectedRankId]);
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Rank updated successfully!`,
+                        color: `#669917`
+                    }, interaction);
+                }
+            } break;
         }
     };
 
@@ -539,92 +541,250 @@ module.exports = (client, game_server) => {
             "WHITELIST_YAUTJA_LEADER": "Yautja Leader"
         };
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select Action', actionOptions, 'Choose an action for admin role management:');
-        if (selectedAction) {
-            switch (selectedAction) {
-                case 'add': {
-                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist:', ephemeral: true });
-                    const ckey = await client.collectUserInput(interaction);
-                    if (!ckey) return;
-                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
-                    if (!playerData.length) {
-                        await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
-                        return;
-                    }
-                    const playerOptions = playerData.map(player => ({
-                        label: player.ckey,
-                        value: player.id.toString()
-                    }));
-                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for adding whitelists:');
-                    if (!selectedPlayerId) return;
-                    const player = playerData.find(p => p.id.toString() === selectedPlayerId);
-                    let currentRoles = player.whitelist_status ? player.whitelist_status.split('|') : [];
-                    const availableRoles = Object.entries(acting_wls).filter(([key]) => !currentRoles.includes(key)).map(([key, value]) => ({
-                        label: value,
-                        value: key
-                    }));
-                    if (availableRoles.length === 0) {
-                        await interaction.followUp({ content: 'No roles available to add. The player already has all possible roles.', ephemeral: true });
-                        return;
-                    }
-                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', availableRoles, 'Select the roles to add:', true);
-                    if (!selectedRoles) return;
-                    currentRoles = [...new Set([...currentRoles, ...selectedRoles])];
-                    await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+        switch (selectedAction) {
+            case 'add': {
+                await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist', ephemeral: true });
+                const ckey = await client.collectUserInput(interaction);
+                if (!ckey) return;
+                const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                if (!playerData.length) {
                     await client.ephemeralEmbed({
                         title: `Request`,
-                        desc: `Roles added successfully!`,
-                        color: `#669917`
+                        desc: `No player found with that ckey`,
+                        color: `#c70058`
                     }, interaction);
-                } break;
+                    return;
+                }
+                const playerOptions = playerData.map(player => ({
+                    label: player.ckey,
+                    value: player.id.toString()
+                }));
+                const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for adding whitelists:');
+                if (!selectedPlayerId) return;
+                const player = playerData.find(p => p.id.toString() === selectedPlayerId);
+                let currentRoles = player.whitelist_status ? player.whitelist_status.split('|') : [];
+                const availableRoles = Object.entries(acting_wls).filter(([key]) => !currentRoles.includes(key)).map(([key, value]) => ({
+                    label: value,
+                    value: key
+                }));
+                if (availableRoles.length === 0) {
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `No roles available to add. The player already has all possible roles`,
+                        color: `#c70058`
+                    }, interaction);
+                    return;
+                }
+                const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', availableRoles, 'Select the roles to add:', true);
+                if (!selectedRoles) return;
+                currentRoles = [...new Set([...currentRoles, ...selectedRoles])];
+                await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+                await client.ephemeralEmbed({
+                    title: `Request`,
+                    desc: `Roles added successfully!`,
+                    color: `#669917`
+                }, interaction);
+            } break;
 
-                case 'remove': {
-                    await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to remove whitelists from:', ephemeral: true });
-                    const ckey = await client.collectUserInput(interaction);
-                    if (!ckey) return;
-                    const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
-                    if (!playerData.length) {
-                        await interaction.followUp({ content: 'No player found with that ckey.', ephemeral: true });
-                        return;
-                    }
-                    const playerOptions = playerData.map(player => ({
-                        label: player.ckey,
-                        value: player.id.toString()
-                    }));
-                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for removing whitelists:');
-                    if (!selectedPlayerId) return;
-                    const player = playerData.find(p => p.id.toString() === selectedPlayerId);
-                    if (!player.whitelist_status) {
-                        await interaction.followUp({ content: 'This player has no roles to remove.', ephemeral: true });
-                        return;
-                    }
-                    let currentRoles = player.whitelist_status.split('|');
-                    const roleOptions = currentRoles.map(role => ({
-                        label: acting_wls[role] || role,
-                        value: role
-                    }));
-                    const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', true);
-                    if (!selectedRoles) return;
-                    selectedRoles.forEach(selectedRole => {
-                        const index = currentRoles.indexOf(selectedRole);
-                        if (index > -1) {
-                            currentRoles.splice(index, 1);
-                        }
-                    });
-                    await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+            case 'remove': {
+                await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to remove whitelists from', ephemeral: true });
+                const ckey = await client.collectUserInput(interaction);
+                if (!ckey) return;
+                const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                if (!playerData.length) {
                     await client.ephemeralEmbed({
                         title: `Request`,
-                        desc: `Roles removed successfully!`,
-                        color: `#669917`
+                        desc: `No player found with that ckey`,
+                        color: `#c70058`
                     }, interaction);
-                } break;
+                    return;
+                }
+                const playerOptions = playerData.map(player => ({
+                    label: player.ckey,
+                    value: player.id.toString()
+                }));
+                const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for removing whitelists:');
+                if (!selectedPlayerId) return;
+                const player = playerData.find(p => p.id.toString() === selectedPlayerId);
+                if (!player.whitelist_status) {
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `This player has no roles to remove`,
+                        color: `#c70058`
+                    }, interaction);
+                    return;
+                }
+                let currentRoles = player.whitelist_status.split('|');
+                const roleOptions = currentRoles.map(role => ({
+                    label: acting_wls[role] || role,
+                    value: role
+                }));
+                const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', true);
+                if (!selectedRoles) return;
+                selectedRoles.forEach(selectedRole => {
+                    const index = currentRoles.indexOf(selectedRole);
+                    if (index > -1) {
+                        currentRoles.splice(index, 1);
+                    }
+                });
+                await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+                await client.ephemeralEmbed({
+                    title: `Request`,
+                    desc: `Roles removed successfully!`,
+                    color: `#669917`
+                }, interaction);
+            } break;
+        }
+    };
+
+    game_server.serverCustomOperators = async function () {
+        await game_server.game_connection
+        await updateServerCustomOperators(client, game_server);
+        game_server.update_custom_operatos_interval = setInterval(
+            updateServerCustomOperators,
+            60 * 60 * 1000, // Каждые N минут (первое число)
+            client,
+            game_server
+        );
+    };
+
+    game_server.configureAutoStartMenu = async function (interaction) {
+        const actionOptions = [
+            { label: "Set Mode", value: "set_mode" },
+            { label: "Set Daily Times", value: "set_daily_time" },
+            { label: "Set Specific Days", value: "set_specific_days" },
+            { label: "Add Exceptions", value: "add_exception" }
+        ];
+        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Choose an action', actionOptions, 'Configure the automatic server start system:');
+        switch (selectedAction) {
+            case 'set_mode': {
+                await setMode(interaction);
+            } break;
+            case 'set_daily_time': {
+                await setDailyTimes(interaction);
+            } break;
+            case 'set_specific_days': {
+                await setSpecificDays(interaction);
+            } break;
+            case 'add_exception': {
+                await addException(interaction);
+            } break;
+        }
+    };
+
+    game_server.setMode = async function (interaction) {
+        const modeOptions = [
+            { label: "Daily", value: "daily" },
+            { label: "Specific Days", value: "weekly" }
+        ];
+        const selectedMode = await client.sendInteractionSelectMenu(interaction, `select-mode`, 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
+        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+        autoStartConfig.mode = selectedMode;
+        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `Mode set to ${selectedMode} for server ${game_server.server_name}`,
+            color: `#669917`
+        }, interaction);
+    };
+
+    game_server.setDailyTimes = async function (interaction) {
+        const dayOptions = [
+            { label: "Monday", value: "monday" },
+            { label: "Tuesday", value: "tuesday" },
+            { label: "Wednesday", value: "wednesday" },
+            { label: "Thursday", value: "thursday" },
+            { label: "Friday", value: "friday" },
+            { label: "Saturday", value: "saturday" },
+            { label: "Sunday", value: "sunday" }
+        ];
+        const selectedDay = await client.sendInteractionSelectMenu(interaction, `select-day`, 'Select day', dayOptions, 'Choose a day for setting up auto-start time:');
+        await interaction.followUp({ content: 'Please enter the time for auto-start in hh:mm format', ephemeral: true });
+        const timeInput = await client.collectUserInput(interaction);
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+        if (!timeRegex.test(timeInput)) {
+            await client.ephemeralEmbed({
+                title: `Request`,
+                desc: `Invalid time format. Please use hh:mm format`,
+                color: `#c70058`
+            }, interaction);
+            return;
+        }
+        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+        autoStartConfig.daily_times = autoStartConfig.daily_times || {};
+        autoStartConfig.daily_times[selectedDay] = timeInput;
+        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
+            color: `#669917`
+        }, interaction);
+    };
+
+    async function setSpecificDays(interaction) {
+        const specificDays = [];
+        let moreDays = true;
+        while (moreDays) {
+            await interaction.followUp({ content: 'Please enter a date for specific start in YYYY-MM-DD format (1984-01-01) or type "done" to finish', ephemeral: true });
+            const dateInput = await client.collectUserInput(interaction);
+            if (dateInput.toLowerCase() === 'done') {
+                moreDays = false;
+            } else {
+                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                if (!dateRegex.test(dateInput)) {
+                    await client.ephemeralEmbed({
+                        title: `Request`,
+                        desc: `Invalid date format. Please use YYYY-MM-DD format`,
+                        color: `#c70058`
+                    }, interaction);
+                    return;
+                } else {
+                    specificDays.push(dateInput);
+                }
             }
         }
+        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+        autoStartConfig.specific_days = specificDays;
+        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `Specific start days set for server ${game_serverserver_name}`,
+            color: `#669917`
+        }, interaction);
+    };
+
+    game_server.addException = async function(interaction) {
+        await interaction.followUp({ content: 'Please enter the exception date in YYYY-MM-DD format (1984-01-01)', ephemeral: true });
+        const dateInput = await client.collectUserInput(interaction);
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(dateInput)) {
+            await client.ephemeralEmbed({
+                title: `Request`,
+                desc: `Invalid date format. Please use YYYY-MM-DD format`,
+                color: `#c70058`
+            }, interaction);
+            return;
+        }
+        let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+        let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
+        autoStartConfig.exceptions = autoStartConfig.exceptions || [];
+        autoStartConfig.exceptions.push(dateInput);
+        await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `Exempt for ${date} added on server ${game_server.server_name}`,
+            color: `#669917`
+        }, interaction);
     };
 
     game_server.handling_actions = {
         "manage_admins": game_server.manageAdmins,
         "manage_ranks": game_server.manageRanks,
         "manage_whitelists": game_server.manageWhitelists,
+        "manage_autostart": game_server.configureAutoStartMenu,
 //        "manage_battlepass_player": game_server.manageBattlepassPlayers,
 //        "manage_battlepass_reward": game_server.manageBattlepassReward,
 //        "manage_battlepass_server": game_server.manageBattlepassServer,
@@ -634,7 +794,8 @@ module.exports = (client, game_server) => {
     game_server.handling_commands = [
         { label: "Manage Admins", value: "manage_admins" },
         { label: "Manage Ranks", value: "manage_ranks" },
-        { label: "Manage Whitelists", value: "manage_whitelists" }
+        { label: "Manage Whitelists", value: "manage_whitelists" },
+        { label: "Manage Auto Start", value: "manage_autostart" }
     ];
 }
 
@@ -654,4 +815,69 @@ async function getRankOptions(client, database_connection) {
         label: rank.rank_name,
         value: rank.id.toString()
     }));
+};
+
+async function updateServerCustomOperators(client, game_server) {
+    const serverConfig = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
+
+    if (!serverConfig.length) {
+        return;
+    }
+
+    let autoStartConfig;
+    try {
+        autoStartConfig = JSON.parse(serverConfig[0].param);
+    } catch (error) {
+        return;
+    }
+
+    if (game_server.update_custom_operatos_data['additional']['autostart']) {
+        clearTimeout(game_server.update_custom_operatos_data['additional']['autostart'])
+    }
+
+    const now = new Date();
+    if (autoStartConfig.mode === 'daily') {
+        const today = now.getDay();
+        const startTime = autoStartConfig.daily[today];
+
+        if (startTime) {
+            const [hours, minutes] = startTime.split(':').map(Number);
+            const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+            if (startDateTime > now) {
+                const timeUntilStart = startDateTime - now;
+                game_server.update_custom_operatos_data['additional']['autostart'] = setTimeout(async () => {
+                    await autoStartServer(client, game_server);
+                }, timeUntilStart);
+            }
+        }
+    }
+    if (autoStartConfig.mode === 'specific_days') {
+        const specificDays = autoStartConfig.specific_days || [];
+        const todayString = now.toISOString().split('T')[0];
+        if (specificDays.includes(todayString)) {
+            const [hours, minutes] = autoStartConfig.time.split(':').map(Number);
+            const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+            if (startDateTime > now) {
+                const timeUntilStart = startDateTime - now;
+                if (!game_server.update_custom_operatos_data) {
+                    game_server.update_custom_operatos_data = setTimeout(async () => {
+                        await autoStartServer(client, game_server);
+                    }, timeUntilStart);
+                }
+            }
+        }
+    }
+};
+
+async function autoStartServer(client, game_server) {
+    const instanceId = await client.tgs_getInstance(game_server.tgs_id);
+    if(!instanceId) return;
+    tgs_start(null, instanceId)
+    const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+    const channel = await client.channels.fetch(status[0].channel_id);
+    if (channel) {
+        const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
+        await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000)}:t>`).setColor(`#669917`)], content: `<@&${role.id}>`}, channel);
+    }
 };

@@ -3,7 +3,7 @@ const chalk = require('chalk');
 require('dotenv').config('.env');
 
 const manager = new Discord.ShardingManager('./bot.js', {
-    totalShards: 'auto',
+    totalShards: 1,//'auto', for now auto is broken, because scaling for bot a little bit harder with different shards, cause - need redo a little bit of systems, so all info about game servers is moduled, so we can load based on what shard numbers is and how many servers per shard
     token: process.env.DISCORD_TOKEN,
     respawn: true
 });

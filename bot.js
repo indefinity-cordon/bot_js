@@ -65,6 +65,7 @@ async function initializeMess (client) {
             require(`./handlers/${dir}/${handler}`)(client);
         });
     });
+    client.ServerActions(client);
 }
 
 client.commands = new Discord.Collection();

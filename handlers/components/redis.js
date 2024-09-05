@@ -98,7 +98,6 @@ module.exports = (client) => {
         }
     };
 
-//TODO: Replace this garbage with normal embed: new Discord.EmbedBuilder() and then params
     function addToQueue(handler, channel, data) {
         messageQueue.push({ handler, channel, data });
     };
@@ -256,7 +255,7 @@ module.exports = (client) => {
             await client.sendEmbed({ embeds: [embed] }, channel);
         }
     }
-    
+
     setInterval(async () => {
         for (const channelId in messageQueue) {
             const messages = messageQueue[channelId];
