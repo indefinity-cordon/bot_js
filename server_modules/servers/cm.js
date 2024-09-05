@@ -815,7 +815,7 @@ async function viewSchedule(interaction, client, game_server, server_schedule_da
             color: `#669917`
         }, interaction);
     } else {
-        return client.ephemeralEmbed({
+        await client.ephemeralEmbed({
             title: `Request`,
             desc: `An error occurred while retrieving the schedule.`,
             color: `#c70058`
