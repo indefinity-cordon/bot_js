@@ -40,6 +40,32 @@ module.exports = (client, game_server) => {
         }
     };
 
+    game_server.updateScheduleMessage = async function (type) {
+        try {
+            let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
+            if (!server_schedule_data.length || !isJsonString(server_schedule_data[0].param)) throw "Setup schedule";
+            server_schedule_data = JSON.parse(server_schedule_data[0].param);
+            const schedule = getSchedule(JSON.parse(server_schedule_data[0].param));
+            for (const message of game_server.updater_messages[type]) {
+                await client.sendEmbed({
+                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(schedule).setColor('#669917').setTimestamp()],
+                    content: `${game_server.server_name} start schedule`,
+                    components: [],
+                    type: `edit`
+                }, message);
+            }
+        } catch (error) {
+            for (const message of game_server.updater_messages[type]) {
+                await client.sendEmbed({
+                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`something went wrong`).setColor('#a00f0f').setTimestamp()],
+                    content: `${game_server.server_name} start schedule`,
+                    components: [],
+                    type: `edit`
+                }, message);
+            }
+        }
+    };
+
     game_server.updateAdminsMessage = async function (type) {
         try {
             const db_request_admin = await client.databaseRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins", []);
@@ -201,6 +227,7 @@ module.exports = (client, game_server) => {
 
     game_server.handling_updaters = {
         "message_status": game_server.updateStatusMessage,
+        "message_schedule": game_server.updateScheduleMessage,
         "message_admin": game_server.updateAdminsMessage,
         "message_rank": game_server.updateRanksMessage,
         "message_whitelist": game_server.updateWhitelistsMessage
@@ -667,26 +694,15 @@ module.exports = (client, game_server) => {
             { label: "Remove Specific Days", value: "remove_specific_days" }
         ];
         const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
-        switch (selectedAction) {
-            case 'view': {
-                await viewSchedule(interaction, client, game_server, server_schedule_data);
-            } break;
-            case 'set_mode': {
-                await setMode(interaction, client, game_server, server_schedule_data);
-            } break;
-            case 'set_daily_time': {
-                await setDailyTimes(interaction, client, game_server, server_schedule_data);
-            } break;
-            case 'remove_daily_time': {
-                await removeDailyTimes(interaction, client, game_server, server_schedule_data);
-            } break;
-            case 'set_specific_days': {
-                await setSpecificDays(interaction, client, game_server, server_schedule_data);
-            } break;
-            case 'remove_specific_days': {
-                await removeSpecificDays(interaction, client, game_server, server_schedule_data);
-            } break;
-        }
+        const handlingOptions = {
+            "view": viewSchedule,
+            "set_mode": setMode,
+            "set_daily_time": setDailyTimes,
+            "remove_daily_time": removeDailyTimes,
+            "set_specific_days": setSpecificDays,
+            "remove_specific_days": removeSpecificDays
+        };
+        await handlingOptions[selectedAction](interaction, client, game_server, server_schedule_data);
     };
 
     game_server.handling_actions = {
@@ -791,40 +807,48 @@ async function autoStartServer(client, game_server) {
 
 
 async function viewSchedule(interaction, client, game_server, server_schedule_data) {
-    try {
-        let scheduleOutput = 'Server start schedule (UTC+0):\n\n';
-        const now = new Date();
-        if (server_schedule_data.daily) {
-            scheduleOutput += '**Daily Schedule:**\n';
-            for (const [day, time] of Object.entries(server_schedule_data.daily)) {
-                const [hours, minutes] = time.split(':').map(Number);
-                const start_time = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0));
-                scheduleOutput += `- ${day}: <t:${Math.floor(start_time.getTime() / 1000)}:t> UTC\n`;
-            }
-        }
-        if (server_schedule_data.spec) {
-            scheduleOutput += '\n**Specific Dates:**\n';
-            for (const [date, time] of Object.entries(server_schedule_data.spec)) {
-                const [hours, minutes] = time.split(':').map(Number);
-                const [year, month, day] = date.split('-').map(Number);
-                const start_time = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
-                scheduleOutput += `- ${date}: <t:${Math.floor(start_time.getTime() / 1000)}:t> UTC\n`;
-            }
-        }
-        if (!server_schedule_data.daily && !server_schedule_data.spec) {
-            scheduleOutput += 'No scheduled times available.';
-        }
+    const schedule = getSchedule(server_schedule_data);
+    if (schedule) {
         await client.ephemeralEmbed({
             title: `Request`,
-            desc: scheduleOutput,
+            desc: schedule,
             color: `#669917`
         }, interaction);
-    } catch (error) {
+    } else {
         return client.ephemeralEmbed({
             title: `Request`,
             desc: `An error occurred while retrieving the schedule.`,
             color: `#c70058`
         }, interaction);
+    }
+};
+
+async function getSchedule(server_schedule_data) {
+    try {
+        const now = new Date();
+        if (server_schedule_data.daily) {
+            schedule += '**Daily Schedule:**\n';
+            for (const [day, time] of Object.entries(server_schedule_data.daily)) {
+                const [hours, minutes] = time.split(':').map(Number);
+                const start_time = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0));
+                schedule += `- ${day}: <t:${Math.floor(start_time.getTime() / 1000)}:t>\n`;
+            }
+        }
+        if (server_schedule_data.spec) {
+            schedule += '\n**Specific Dates:**\n';
+            for (const [date, time] of Object.entries(server_schedule_data.spec)) {
+                const [hours, minutes] = time.split(':').map(Number);
+                const [year, month, day] = date.split('-').map(Number);
+                const start_time = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+                schedule += `- ${date}: <t:${Math.floor(start_time.getTime() / 1000)}:t>\n`;
+            }
+        }
+        if (!server_schedule_data.daily && !server_schedule_data.spec) {
+            schedule += 'No scheduled times available.';
+        }
+        return schedule;
+    } catch (error) {
+        return;
     }
 };
 
@@ -872,6 +896,37 @@ async function setDailyTimes(interaction, client, game_server, server_schedule_d
     await client.ephemeralEmbed({
         title: `Request`,
         desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
+        color: `#669917`
+    }, interaction);
+};
+
+async function removeDailyTimes(interaction, client, game_server, server_schedule_data) {
+    if (!server_schedule_data.daily || Object.keys(server_schedule_data.daily).length === 0) {
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `No daily start times are set for server ${game_server.server_name}`,
+            color: `#c70058`
+        }, interaction);
+        return;
+    }
+    const dayOptions = Object.keys(server_schedule_data.daily).map(day => ({
+        label: day,
+        value: day
+    }));
+    if (!dayOptions.length) {
+        await client.ephemeralEmbed({
+            title: `Request`,
+            desc: `No days are available for removal from daily start schedule for server ${game_server.server_name}`,
+            color: `#c70058`
+        }, interaction);
+        return;
+    }
+    const selectedDay = await client.sendInteractionSelectMenu(interaction, 'select-day', 'Select a day to remove from daily start schedule', dayOptions, 'Choose a day to remove:');
+    delete server_schedule_data.daily[selectedDay];
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await client.ephemeralEmbed({
+        title: `Request`,
+        desc: `Removed daily start time for ${selectedDay} on server ${game_server.server_name}`,
         color: `#669917`
     }, interaction);
 };
