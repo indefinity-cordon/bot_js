@@ -655,7 +655,7 @@ module.exports = (client, game_server) => {
             { label: "Set Specific Days", value: "set_specific_days" },
             { label: "Add Exceptions", value: "add_exception" }
         ];
-        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Choose an action', actionOptions, 'Configure the automatic server start system:');
+        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
         switch (selectedAction) {
             case 'set_mode': {
                 await setMode(interaction);
