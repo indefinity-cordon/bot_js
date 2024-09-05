@@ -806,7 +806,7 @@ async function viewSchedule(interaction, client, game_server, server_schedule_da
         if (server_schedule_data.daily) {
             scheduleOutput += '**Daily Schedule:**\n';
             for (const [day, time] of Object.entries(server_schedule_data.daily)) {
-                scheduleOutput += `- ${capitalizeFirstLetter(day)}: ${time} UTC\n`;
+                scheduleOutput += `- ${day}: ${time} UTC\n`;
             }
         }
         if (server_schedule_data.spec) {
