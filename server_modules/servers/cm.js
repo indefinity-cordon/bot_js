@@ -784,7 +784,7 @@ async function viewSchedule(interaction, client, game_server) {
         if (!schedule.length) {
             return client.ephemeralEmbed({
                 title: `Request`,
-                desc: `No schedule found for server ${game_server.server_name}.`,
+                desc: `No schedule found for server ${game_server.server_name}`,
                 color: `#c70058`
             }, interaction);
         }
@@ -825,10 +825,10 @@ async function setMode(interaction, client, game_server) {
         { label: "Specific Days", value: "weekly" }
     ];
     const selectedMode = await client.sendInteractionSelectMenu(interaction, `select-mode`, 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
-    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
     let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
     autoStartConfig.mode = selectedMode;
-    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(autoStartConfig), game_server.server_name]);
     await client.ephemeralEmbed({
         title: `Request`,
         desc: `Mode set to ${selectedMode} for server ${game_server.server_name}`,
@@ -858,11 +858,11 @@ async function setDailyTimes(interaction, client, game_server) {
         }, interaction);
         return;
     }
-    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
     let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
     autoStartConfig.daily = autoStartConfig.daily || {};
     autoStartConfig.daily[selectedDay] = timeInput;
-    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(autoStartConfig), game_server.server_name]);
     await client.ephemeralEmbed({
         title: `Request`,
         desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
@@ -899,14 +899,13 @@ async function setSpecificDays(interaction, client, game_server) {
                 }, interaction);
                 return;
             }
-
-            specificTimes[dateInput] = timeInput;
+            specificTimes[dateInput] = timeInput;c
         }
     }
-    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = ?", [game_server.server_name, 'auto_start_config']);
+    let config = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'autostart_schedule'", [game_server.server_name]);
     let autoStartConfig = config.length ? JSON.parse(config[0].param) : {};
     autoStartConfig.spec = { ...autoStartConfig.spec, ...specificTimes };
-    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = ?", [JSON.stringify(autoStartConfig), game_server.server_name, 'auto_start_config']);
+    await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(autoStartConfig), game_server.server_name]);
     await client.ephemeralEmbed({
         title: `Request`,
         desc: `Specific start days set for server ${game_server.server_name}`,
