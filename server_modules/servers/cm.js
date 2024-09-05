@@ -651,7 +651,7 @@ module.exports = (client, game_server) => {
     game_server.configureAutoStartMenu = async function (interaction) {
         let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
         if(!server_schedule_data.length) {
-            await client.databaseRequest(client.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [server_name, 'auto_start_config', ""]);
+            await client.databaseRequest(client.database, "REPLACE INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [server_name, 'auto_start_config', ""]);
             server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
         }
         server_schedule_data = JSON.parse(server_schedule_data[0].param);
