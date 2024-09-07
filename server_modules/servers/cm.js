@@ -793,7 +793,9 @@ async function updateServerCustomOperators(client, game_server) {
 
 
 async function autoStartServer(client, game_server) {
-    client.tgs_start(null, instanceId)
+    const instance = await client.tgs_getInstance(game_server.tgs_id);
+    if(!instance) return;
+    client.tgs_start(null, game_server.tgs_id)
     const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
     const channel = await client.channels.fetch(status[0].channel_id);
     if (channel) {
