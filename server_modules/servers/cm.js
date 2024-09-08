@@ -800,6 +800,7 @@ async function autoStartServer(client, game_server) {
     const channel = await client.channels.fetch(status[0].channel_id);
     if (channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
+        const start_time = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0));
         await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000)}:t>`).setColor(`#669917`)], content: `<@&${role.id}>`}, channel);
     }
 };
