@@ -770,7 +770,7 @@ async function updateServerCustomOperators(client, game_server) {
             if (start_date_utc > now_utc) {
                 const time_remaining = start_date_utc - now_utc;
                 game_server.update_custom_operators_data['additional']['autostart'] = setTimeout(async () => {
-                    await autoStartServer(client, game_server);
+                    await autoStartServer(client, game_server, now_date, hours, minutes);
                 }, time_remaining);
             }
         }
@@ -783,7 +783,7 @@ async function updateServerCustomOperators(client, game_server) {
                 const time_remaining = start_date_utc - now_utc;
                 if (!game_server.update_custom_operators_data) {
                     game_server.update_custom_operators_data = setTimeout(async () => {
-                        await autoStartServer(client, game_server);
+                        await autoStartServer(client, game_server, now_date, hours, minutes);
                     }, time_remaining);
                 }
             }
@@ -792,7 +792,7 @@ async function updateServerCustomOperators(client, game_server) {
 };
 
 
-async function autoStartServer(client, game_server) {
+async function autoStartServer(client, game_server, now_date, hours, minutes) {
     const instance = await client.tgs_getInstance(game_server.tgs_id);
     if(!instance) return;
     client.tgs_start(null, game_server.tgs_id)
@@ -800,8 +800,7 @@ async function autoStartServer(client, game_server) {
     const channel = await client.channels.fetch(status[0].channel_id);
     if (channel) {
         const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
-        const now = new Date();
-        const start_time = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, 0));
+        const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), hours, minutes + 30, 0));
         await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000)}:t>`).setColor(`#669917`)], content: `<@&${role.id}>`}, channel);
     }
 };
