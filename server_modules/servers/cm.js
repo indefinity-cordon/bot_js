@@ -746,8 +746,15 @@ module.exports = (client, game_server) => {
     async function addToQueue(channel, data) {
         let ref_function;
         switch (data.state) {
-            case "ooc": ref_function = handleOOC;
-            case "asay": ref_function = handleAsay;
+            case "ooc": {
+                ref_function = handleOOC;
+            } break;
+            case "asay": {
+                ref_function = handleAsay;
+            } break;
+            default: {
+                return;
+            }
         }
         if (!messageQueue[channel.id]) {
             messageQueue[channel.id] = [];
