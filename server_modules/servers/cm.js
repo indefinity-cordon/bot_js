@@ -721,6 +721,217 @@ module.exports = (client, game_server) => {
         { label: "Manage Whitelists", value: "manage_whitelists" },
         { label: "Manage Auto Start", value: "manage_autostart" }
     ];
+
+    const messageQueue = {};
+
+    game_server.handledStatuses = {
+        "ooc": addToQueue,
+        "asay": addToQueue,
+        "start": handleRoundStart,
+        "predator": handlePredator,
+        "ahelp":  handleAhelp,
+        "add_time_ban": handleTimeBan,
+        "remove_time_ban": handleTimeBan,
+        "add_job_ban": handleJobBan,
+        "remove_job_ban": handleJobBan,
+        "add_perma_ban": handlePermaBan,
+        "remove_perma_ban": handlePermaBan,
+        "auto_unban": handleAutoUnban,
+        "auto_unjobban": handleAutoUnjobban,
+        "fax": handleFax,
+        "login": handleLogin,
+        "logout": handleLogout
+    };
+
+    async function addToQueue(channel, data) {
+        let ref_function;
+        switch (data.state) {
+            case "ooc": ref_function = handleOOC;
+            case "asay": ref_function = handleAsay;
+        }
+        if (!messageQueue[channel.id]) {
+            messageQueue[channel.id] = [];
+        }
+        messageQueue[channel.id].push({ ref_function, data });
+    }
+
+    async function handleRoundStart(channel) {
+        if (!game_server.new_round_message) {
+            game_server.new_round_message = true;
+            return;
+        }
+        const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(`NEW ROUND!`).setDescription(` `).setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
+    };
+
+    async function handlePredator(channel) {
+        const role = channel.guild.roles.cache.find(role => role.name === `Predator gamer`);
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(`PREDATOR ROUND!`).setDescription(` `).setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
+    };
+
+    async function handleAhelp(channel, data) {
+        const embed = {
+            title: data.embed.title,
+            desc: data.embed.desc,
+            footer: data.embed.footer,
+            content: data.embed.content,
+            url: data.embed.url,
+            author: data.embed.author,
+            color: `#5a2944`
+        };
+        if (data.embed && data.embed.fields.lenght) embed[fields] = data.embed.fields;
+        await client.embed(embed, channel);
+    };
+
+    async function handleTimeBan(channel, data) {
+        const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
+        let adding_ban = data.state === "add_time_ban";
+        let start_time;
+        if (adding_ban) {
+            const now_date = new Date(player.time_ban_expiration * 1000);
+            start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
+        }
+        const embed = {
+            title: `Time Ban ${adding_ban ? "Added" : "Removed"}`,
+            desc: `Player: ${player.ckey}\nReason: ${player.time_ban_reason}${start_time ? `\nExpiration: <t:${Math.floor(start_time.getTime() / 1000)}:t>` : ``}`,
+            color: adding_ban ? '#ff0000' : '#00ff00'
+        };
+        await client.embed(embed, channel);
+    };
+
+    async function handleJobBan(channel, data) {
+        const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
+        const jobBan = await fetchJobBanByPlayerId(data.ref_player_id, game_server.game_connection);
+        let adding_ban = data.state === "add_job_ban";
+        let start_time;
+        if (adding_ban) {
+            const now_date = new Date(jobBan.expiration * 1000);
+            start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
+        }
+        const embed = {
+            title: `Job Ban ${adding_ban ? "Added" : "Removed"}`,
+            desc: `Player: ${player.ckey}\nRole: ${jobBan.role}\nReason: ${jobBan.text}${start_time ? `\nExpiration: <t:${Math.floor(start_time.getTime() / 1000)}:t>` : ``}`,
+            color: adding_ban ? '#ff0000' : '#00ff00'
+        };
+        await client.embed(embed, channel);
+    };
+
+    async function handlePermaBan(channel, data) {
+        const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
+        let adding_ban = data.state === "add_perma_ban";
+        const embed = {
+            title: `Perma Ban ${adding_ban ? "Added" : "Removed"}`,
+            desc: `Player: ${player.ckey}\nReason: ${player.permaban_reason}`,
+            color: adding_ban ? '#ff0000' : '#00ff00'
+        };
+        await client.embed(embed, channel);
+    };
+
+    async function handleAutoUnban(channel, data) {
+        const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
+        const embed = {
+            title: `Auto Unban`,
+            desc: `Player: ${player.ckey} has been automatically unbanned.`,
+            color: '#00ff00'
+        };
+        await client.embed(embed, channel);
+    };
+
+    async function handleAutoUnjobban(channel, data) {
+        const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
+        const embed = {
+            title: `Auto Unjobban`,
+            desc: `Player: ${player.ckey} has been automatically unjobbanned.`,
+            color: '#00ff00'
+        };
+        await client.embed(embed, channel);
+    };
+
+    async function handleFax(channel, data) {
+        const embed = {
+            title: `Fax from ${data.sender_name}`,
+            desc: `Department: ${data.departament}\nMessage: ${data.message}\nAdmins: ${data.admins}`,
+            color: `#3498db`
+        };
+        await client.embed(embed, channel);
+    };
+
+    async function handleLogin(channel, data) {
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Admin Login: ${data.key}`).setColor(`#2ecc71`)]}, channel);
+    };
+
+    async function handleLogout(channel, data) {
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Admin Logout: ${data.key}`).setColor(`#e74c3c`)]}, channel);
+    };
+
+    async function fetchPlayerById(playerId, database) {
+        const players = await client.databaseRequest(database, "SELECT * FROM players WHERE id = ?", [playerId]);
+        return players.length ? players[0] : null;
+    };
+
+    async function fetchJobBanByPlayerId(playerId, database) {
+        const jobBans = await client.databaseRequest(database, "SELECT * FROM player_job_bans WHERE player_id = ?", [playerId]);
+        return jobBans.length ? jobBans[0] : null;
+    };
+
+    async function handleOOC(channel, data, combine = false) {
+        const messageContent = data.message
+            .replace(/<@&(\d+)>/g, ' ')
+            .replace(/<@!?(\d+)>/g, ' ')
+            .replace(/https?:\/\/\S+/g, ' ')
+            .replace(/@everyone/g, ' ')
+            .replace(/@here/g, ' ');
+        const embed = new Discord.EmbedBuilder()
+            .setTitle(' ')
+            .setDescription(`OOC: ${data.author}: ${messageContent}`)
+            .setColor('#7289da');
+        if (combine) {
+            return embed;
+        } else {
+            await client.sendEmbed({ embeds: [embed] }, channel);
+        }
+    }
+
+    async function handleAsay(channel, data, combine = false) {
+        const messageContent = data.message
+            .replace(/<@&(\d+)>/g, ' ')
+            .replace(/<@!?(\d+)>/g, ' ')
+            .replace(/https?:\/\/\S+/g, ' ')
+            .replace(/@everyone/g, ' ')
+            .replace(/@here/g, ' ');
+        const embed = new Discord.EmbedBuilder()
+            .setTitle(' ')
+            .setDescription(`Asay: ${data.author}: ${messageContent} (${data.rank})`)
+            .setColor('#7289da');
+        if (combine) {
+            return embed;
+        } else {
+            await client.sendEmbed({ embeds: [embed] }, channel);
+        }
+    }
+
+    setInterval(async () => {
+        for (const channelId in messageQueue) {
+            const messages = messageQueue[channelId];
+            const messagesToSend = [];
+            while (messages.length > 0) {
+                const { handler, data } = messages.shift();
+                const embed = await handler(null, data, true);
+                if (messagesToSend.length < 5) {
+                    messagesToSend.push(embed);
+                } else {
+                    messages.unshift({ handler, data });
+                    break;
+                }
+            }
+            if (messagesToSend.length > 0) {
+                await client.sendEmbed({ embeds: messagesToSend }, await client.channels.fetch(channelId));
+            }
+            if (messages.length === 0) {
+                delete messageQueue[channelId];
+            }
+        }
+    }, 2000);
 }
 
 
@@ -796,6 +1007,7 @@ async function autoStartServer(client, game_server, now_date, hours, minutes) {
     const instance = await client.tgs_getInstance(game_server.tgs_id);
     if(!instance) return;
     client.tgs_start(null, game_server.tgs_id)
+    game_server.new_round_message = false;
     const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
     const channel = await client.channels.fetch(status[0].channel_id);
     if (channel) {
@@ -840,7 +1052,7 @@ async function getSchedule(server_schedule_data) {
             for (const [date, time] of Object.entries(server_schedule_data.spec)) {
                 const [hours, minutes] = time.split(':').map(Number);
                 const [year, month, day] = date.split('-').map(Number);
-                const start_time = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+                const start_time = new Date(Date.UTC(year, month, day, hours, minutes, 0));
                 schedule += `- ${date}: <t:${Math.floor(start_time.getTime() / 1000)}:t>\n`;
             }
         }
