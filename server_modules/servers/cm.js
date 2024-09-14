@@ -771,7 +771,6 @@ module.exports = (client, game_server) => {
             footer: data.embed.footer,
             content: data.embed.content,
             url: data.embed.url,
-            author: data.embed.author,
             color: `#5a2944`
         };
         if (data.embed && data.embed.fields.lenght) embed[fields] = data.embed.fields;
