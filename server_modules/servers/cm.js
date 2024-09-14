@@ -744,22 +744,10 @@ module.exports = (client, game_server) => {
     };
 
     async function addToQueue(channel, data) {
-        let ref_function;
-        switch (data.state) {
-            case "ooc": {
-                ref_function = handleOOC;
-            } break;
-            case "asay": {
-                ref_function = handleAsay;
-            } break;
-            default: {
-                return;
-            }
-        }
         if (!messageQueue[channel.id]) {
             messageQueue[channel.id] = [];
         }
-        messageQueue[channel.id].push({ ref_function, data });
+        messageQueue[channel.id].push({ data });
     }
 
     async function handleRoundStart(channel) {
@@ -910,7 +898,7 @@ module.exports = (client, game_server) => {
             .setTitle(' ')
             .setDescription(`Asay: ${data.author}: ${messageContent} (${data.rank})`)
             .setColor('#7289da');
-        if (combine) {
+        if (combine || !channel) {
             return embed;
         } else {
             await client.sendEmbed({ embeds: [embed] }, channel);
@@ -922,12 +910,23 @@ module.exports = (client, game_server) => {
             const messages = messageQueue[channelId];
             const messagesToSend = [];
             while (messages.length > 0) {
-                const { handler, data } = messages.shift();
-                const embed = await handler(null, data, true);
-                if (messagesToSend.length < 5) {
+                const { data } = messages.shift();
+                let embed;
+                switch (data.state) {
+                    case "ooc": {
+                        embed = await handleOOC(null, data, true);
+                    } break;
+                    case "asay": {
+                        embed = await handleAsay(null, data, true);
+                    } break;
+                    default: {
+                        console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Something went wrong, not found: ${data.state}, for server: ${game_server.server_name}`));
+                    } break;
+                }
+                if (messagesToSend.length < 5 && embed) {
                     messagesToSend.push(embed);
                 } else {
-                    messages.unshift({ handler, data });
+                    messages.unshift({ data });
                     break;
                 }
             }
