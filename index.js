@@ -11,7 +11,7 @@ const manager = new Discord.ShardingManager('./bot.js', {
 console.clear();
 console.log(chalk.blue(chalk.bold(`System`)), chalk.white(`>>`), chalk.green(`Starting up`), chalk.white(`...`));
 console.log(`\u001b[0m`);
-console.log(chalk.red(`© Skill Issuers Incorporated 0000 - ${new Date().getFullYear()}`));
+console.log(chalk.red(`© Skill Issuers Incorporated 0000 - ${new Date().getFullYear()}`));//Joke here, don't mind, only for local use and no copyright license and etc, because I lazy and fuck da, everybody can use my trash as they want
 console.log(chalk.red(`All rights reserved`));
 console.log(`\u001b[0m`);
 console.log(`\u001b[0m`);
