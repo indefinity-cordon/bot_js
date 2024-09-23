@@ -7,9 +7,10 @@ module.exports = async (client) => {
     console.log(chalk.blue(chalk.bold('Bot')), chalk.white('>>'), chalk.green('Started on'), chalk.red(`${client.guilds.cache.size}`), chalk.green('servers!'));
     client.user.setPresence({
         activities: [{
-            name: 'Simulator of life',
+            name: 'Simulator of Life',
             type: Discord.ActivityType.Playing,
-            timestamps: { start: Date.now() }
+            state: 'Playing Simulator of Life',
+            url: 'https://colonialmarines.ru/wiki/Заглавная_страница'
         }],
         status: 'online'
     });
