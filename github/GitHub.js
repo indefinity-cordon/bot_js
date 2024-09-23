@@ -56,7 +56,6 @@ module.exports = async (client) => {
     client.tryForUpdate = async function (client) {
         const remoteCommit = await client.getLastCommit(client);
         const localCommit = await client.getLastLocalCommit(client);
-
         if (!remoteCommit || !localCommit) {
             console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed version check, make sure all setted up right: remote, local and github pat`));
             const embed = new Discord.EmbedBuilder()
