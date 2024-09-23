@@ -69,7 +69,7 @@ module.exports = async (client) => {
 
     client.generateEmbed = async function (start, end, lb, title, interaction) {
         const current = lb.slice(start, end + 10);
-        const result = current.join("\n");
+        const result = current.join('\n');
 
         let embed = client.templateEmbed()
             .setTitle(`${title}`)
@@ -117,9 +117,9 @@ module.exports = async (client) => {
             collector.on('end', async collected => {
                 if (collected.size === 0) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `Time ran out! Please try again.`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'Time ran out! Please try again.',
+                        color: '#c70058'
                     }, interaction);
                     await interaction.editReply({ components: [] });
                 }
@@ -190,9 +190,9 @@ module.exports = async (client) => {
             collector.on('end', async collected => {
                 if (collected.size === 0) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `Time ran out! Please try again.`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'Time ran out! Please try again.',
+                        color: '#c70058'
                     }, interaction);
                     await interaction.editReply({ components: [] });
                 }

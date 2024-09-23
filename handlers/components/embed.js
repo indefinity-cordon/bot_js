@@ -8,7 +8,7 @@ const Discord = require('discord.js');
 module.exports = (client) => {
     client.templateEmbed = function () {
         return new Discord.EmbedBuilder()
-            .setColor("#42ab3e")
+            .setColor('#42ab3e')
             .setTimestamp();
     }
 
@@ -45,9 +45,9 @@ module.exports = (client) => {
         components: components,
         type: type
     }, interaction) {
-        if (interaction.guild == undefined) interaction.guild = { id: "0" };
+        if (interaction.guild == undefined) interaction.guild = { id: '0' };
         if (title) embed.setTitle(title);
-        if (desc && desc.length >= 2048) embed.setDescription(desc.substr(0, 2044) + "...");
+        if (desc && desc.length >= 2048) embed.setDescription(desc.substr(0, 2044) + '...');
         else if (desc) embed.setDescription(desc);
         if (image) embed.setImage(image);
         if (thumbnail) embed.setThumbnail(thumbnail);
@@ -78,10 +78,10 @@ module.exports = (client) => {
         type: type
     }, interaction) {
         let embed = new Discord.EmbedBuilder()
-            .setColor("#42ab3e");
+            .setColor('#42ab3e');
 
         if (title) embed.setTitle(title);
-        if (desc && desc.length >= 2048) embed.setDescription(desc.substr(0, 2044) + "...");
+        if (desc && desc.length >= 2048) embed.setDescription(desc.substr(0, 2044) + '...');
         else if (desc) embed.setDescription(desc);
         if (image) embed.setImage(image);
         if (thumbnail) embed.setThumbnail(thumbnail);
@@ -104,7 +104,7 @@ module.exports = (client) => {
         components: components = [],
         type: type
     }, interaction) {
-        if (type && type.toLowerCase() == "edit") {
+        if (type && type.toLowerCase() == 'edit') {
             return await interaction.edit({
                 embeds: embeds,
                 content: content,
@@ -112,7 +112,7 @@ module.exports = (client) => {
                 fetchReply: true
             }).catch(e => { });
         }
-        else if (type && type.toLowerCase() == "editreply") {
+        else if (type && type.toLowerCase() == 'editreply') {
             return await interaction.editReply({
                 embeds: embeds,
                 content: content,
@@ -120,7 +120,7 @@ module.exports = (client) => {
                 fetchReply: true
             }).catch(e => { });
         }
-        else if (type && type.toLowerCase() == "reply") {
+        else if (type && type.toLowerCase() == 'reply') {
             return await interaction.reply({
                 embeds: embeds,
                 content: content,
@@ -128,7 +128,7 @@ module.exports = (client) => {
                 fetchReply: true
             }).catch(e => { });
         }
-        else if (type && type.toLowerCase() == "update") {
+        else if (type && type.toLowerCase() == 'update') {
             return await interaction.update({
                 embeds: embeds,
                 content: content,
@@ -136,7 +136,7 @@ module.exports = (client) => {
                 fetchReply: true
             }).catch(e => { });
         }
-        else if (type && type.toLowerCase() == "ephemeraledit") {
+        else if (type && type.toLowerCase() == 'ephemeraledit') {
             return await interaction.editReply({
                 embeds: embeds,
                 content: content,
@@ -145,7 +145,7 @@ module.exports = (client) => {
                 ephemeral: true
             }).catch(e => { });
         }
-        else if (type && type.toLowerCase() == "ephemeral") {
+        else if (type && type.toLowerCase() == 'ephemeral') {
             return await interaction.reply({
                 embeds: embeds,
                 content: content,

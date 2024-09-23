@@ -39,7 +39,7 @@ async function updateUpdatersMessages(client, game_server) {
         if (found_message === null) {
             await client.embed({
                 title: `${game_server.server_name}`,
-                desc: `preparing...`
+                desc: 'preparing...'
             }, channel).then((message) => {
                 found_message = message;
                 client.databaseRequest(client.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, game_server.server_name, updater.type, updater.channel_id]);

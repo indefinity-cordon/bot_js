@@ -28,13 +28,13 @@ if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
 
 // Use in funny moments
 client.restartApp = async function (reason) {
-    console.log(chalk.blue(chalk.bold(`System`)), chalk.white(`>>`), chalk.green(`App`), chalk.white(`...`), chalk.red(`Restarting process`), chalk.white(`...`));
+    console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.green('App'), chalk.white('...'), chalk.red('Restarting process'), chalk.white('...'));
     const embed = new Discord.EmbedBuilder()
-    .setTitle(`System`)
+    .setTitle('System')
     .addFields([
         {
-            name: "Restart",
-            value: reason ? `Reason: ${reason}` : "Reason is not provided",
+            name: 'Restart',
+            value: reason ? `Reason: ${reason}` : 'Unspecified',
         }
     ])
     await global.LogsHandler.send_log(embed);
@@ -44,9 +44,9 @@ client.restartApp = async function (reason) {
 client.handling_commands_actions = [];
 client.handling_commands = [];
 
-require("./database/MySQL")(client);
-if (process.env.REDIS_STRING) require("./socket/Redis")(client);
-if (process.env.GITHUB_PAT) require("./github/GitHub")(client);
+require('./database/MySQL')(client);
+if (process.env.REDIS_STRING) require('./socket/Redis')(client);
+if (process.env.GITHUB_PAT) require('./github/GitHub')(client);
 
 initializeMess(client);
 
@@ -72,20 +72,20 @@ client.commands = new Discord.Collection();
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
-    global.LogsHandler.error(error, "Unhandled promise rejection", "error");
+    global.LogsHandler.error(error, 'Unhandled promise rejection', 'error');
 });
 
 process.on('uncaughtException', error => {
-    console.error("uncaughtException:", error);
-    global.LogsHandler.error(error, "New critical error found", "critical error");
+    console.error('uncaughtException:', error);
+    global.LogsHandler.error(error, 'New critical error found', 'critical error');
 });
 
 process.on('warning', error => {
-    console.warn("Warning:", error);
-    global.LogsHandler.error(error, "New warning found", "warning");
+    console.warn('Warning:', error);
+    global.LogsHandler.error(error, 'New warning found', 'warning');
 });
 
 client.on(Discord.ShardEvents.Error, error => {
     console.log(error);
-    global.LogsHandler.error(error, "A websocket connection encountered an error", "error");
+    global.LogsHandler.error(error, 'A websocket connection encountered an error', 'error');
 });

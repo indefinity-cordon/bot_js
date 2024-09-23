@@ -64,7 +64,7 @@ module.exports = class LogsHandlerclass {
         this.send_log = async function (embed) {
             if (!this.botLogs) {
                 if (!this.notified) {
-                    console.log(chalk.blue(chalk.bold(`Webhook`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`no webhook`));
+                    console.log(chalk.blue(chalk.bold('Webhook')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('no webhook'));
                     this.notified = true;
                 }
                 return;
@@ -73,7 +73,7 @@ module.exports = class LogsHandlerclass {
                 username: 'Bot Logs',
                 embeds: [embed],
             }).catch((error) => {
-                console.log(chalk.blue(chalk.bold(`Webhook`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(error));
+                console.log(chalk.blue(chalk.bold('Webhook')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(error));
             });
         };
     }

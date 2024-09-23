@@ -13,9 +13,9 @@ module.exports = async (client) => {
 
             let github_link, github_branch, github_token;
 
-            github_link = await client.databaseSettingsRequest("github_link");
+            github_link = await client.databaseSettingsRequest('github_link');
             
-            github_branch = await client.databaseSettingsRequest("github_branch");
+            github_branch = await client.databaseSettingsRequest('github_branch');
             github_token = process.env.GITHUB_PAT;
 
             await client.git.remote(['set-url', 'origin', `https://${github_token}@github.com/${github_link[0].param}.git`]);
@@ -29,27 +29,27 @@ module.exports = async (client) => {
             );
             return response.data.sha;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed remote: ${error}`));
+            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed remote: ${error}`));
         }
     };
 
     client.getLastLocalCommit = async function (client) {
         try {
-            let github_branch = await client.databaseSettingsRequest("github_branch");
+            let github_branch = await client.databaseSettingsRequest('github_branch');
             const log = await client.git.log([github_branch[0].param]);
             return log.latest.hash;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed local: ${error}`));
+            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed local: ${error}`));
         }
     };
 
     client.pullChanges = async function (client) {
         try {
-            let github_branch = await client.databaseSettingsRequest("github_branch");
+            let github_branch = await client.databaseSettingsRequest('github_branch');
             await client.git.pull('origin', github_branch[0].param);
-            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`Pulled latest changes`));
+            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('Pulled latest changes'));
         } catch (error) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed: ${error}`));
+            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed: ${error}`));
         }
     };
 
@@ -57,20 +57,20 @@ module.exports = async (client) => {
         const remoteCommit = await client.getLastCommit(client);
         const localCommit = await client.getLastLocalCommit(client);
         if (!remoteCommit || !localCommit) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed version check, make sure all setted up right: remote, local and github pat`));
+            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed version check, make sure all setted up right: remote, local and github pat'));
             const embed = new Discord.EmbedBuilder()
-            .setTitle(`Git`)
+            .setTitle('Git')
             .addFields([
                 {
-                    name: `Warning`,
-                    value: `Failed version check, make sure all setted up right: remote, local and github pat`,
+                    name: 'Warning',
+                    value: 'Failed version check, make sure all setted up right: remote, local and github pat',
                 }
             ])
             await global.LogsHandler.send_log(embed);
         } else if (remoteCommit !== localCommit) {
-            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`New commit found, pulling changes`));
+            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('New commit found, pulling changes'));
             await client.pullChanges(client);
-            client.restartApp("Pulling new changes from GIT");
+            client.restartApp('Pulling new changes from GIT');
         }
     };
 
@@ -78,15 +78,15 @@ module.exports = async (client) => {
 
     client.git_commit = await client.getLastLocalCommit(client);
     const embed = new Discord.EmbedBuilder()
-        .setTitle(`System`)
+        .setTitle('System')
         .addFields([
             {
-                name: "Start",
+                name: 'Start',
                 value: `Commit SHA: ${client.git_commit}`,
             }
         ])
     global.LogsHandler.send_log(embed);
-    console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.green(`Current commit: ${client.git_commit}`));
+    console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.green(`Current commit: ${client.git_commit}`));
     setInterval(
         client.tryForUpdate,
         1 * 60 * 1000, // Каждые N минут (первое число)

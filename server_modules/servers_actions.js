@@ -2,7 +2,7 @@ module.exports = async (client) => {
     const GameServerClass = require('./index.js');
     const servers = await client.databaseRequest(client.database, "SELECT * FROM servers", []);
     if (!servers.length) {
-        console.log(`Failed to find servers. Aborting.`);
+        console.log('Failed to find servers. Aborting.');
     } else {
         let updated_servers = {};
         for (const server of servers) {

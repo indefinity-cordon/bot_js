@@ -3,38 +3,38 @@ const Discord = require('discord.js');
 module.exports = (client, game_server) => {
     game_server.updateStatusMessage = async function (type) {
         try {
-            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: "status", auth: "anonymous", source: "bot"}), port: game_server.port, address: game_server.ip});
-            if (!server_response) throw "Returned no response";
+            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.port, address: game_server.ip});
+            if (!server_response) throw 'Returned no response';
             const response = JSON.parse(server_response);
             const data = response.data;
-            if (!data) throw "Returned no data";
+            if (!data) throw 'Returned no data';
             const time = Math.floor(data.round_duration / 600);
             let fields = [];
-            fields.push({ name: `**Round Name**`, value: `${data.round_name} `, inline: true});
-            fields.push({ name: `**Round ID**`, value: `${data.round_id} `, inline: true});
-            fields.push({ name: `**Map**`, value: `${data.map_name} `, inline: true});
-            if (data.next_map_name) fields.push({ name: `**Next Map**`, value: `${data.next_map_name} `, inline: true});
-            fields.push({ name: `**Ship Map**`, value: `${data.ship_map_name} `, inline: true});
-            if (data.next_map_name) fields.push({ name: `***Next Ship Map**`, value: `${data.next_ship_map_name} `, inline: true});
-            fields.push({ name: `**Total Players**`, value: `${data.players} `, inline: true});
-            fields.push({ name: `**Gamemode**`, value: `${data.mode}`, inline: true});
-            fields.push({ name: `**Round Time**`, value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0'), inline: true});
-            if (data.round_end_state) fields.push({ name: `**Rouned End State**`, value: `${data.round_end_state} `, inline: true});
+            fields.push({ name: '**Round Name**', value: `${data.round_name} `, inline: true});
+            fields.push({ name: '**Round ID**', value: `${data.round_id} `, inline: true});
+            fields.push({ name: '**Map**', value: `${data.map_name} `, inline: true});
+            if (data.next_map_name) fields.push({ name: '**Next Map**', value: `${data.next_map_name} `, inline: true});
+            fields.push({ name: '**Ship Map**', value: `${data.ship_map_name} `, inline: true});
+            if (data.next_map_name) fields.push({ name: '***Next Ship Map**', value: `${data.next_ship_map_name} `, inline: true});
+            fields.push({ name: '**Total Players**', value: `${data.players} `, inline: true});
+            fields.push({ name: '**Gamemode**', value: `${data.mode}`, inline: true});
+            fields.push({ name: '**Round Time**', value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0'), inline: true});
+            if (data.round_end_state) fields.push({ name: '**Rouned End State**', value: `${data.round_end_state} `, inline: true});
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917').setTimestamp()],
+                    embeds: [new Discord.EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
                     content: `${game_server.server_name} Status`,
                     components: [],
-                    type: `edit`
+                    type: 'edit'
                 }, message);
             }
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`# SERVER OFFLINE`).setColor('#a00f0f').setTimestamp()],
+                    embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
                     content: `${game_server.server_name} Status`,
                     components: [],
-                    type: `edit`
+                    type: 'edit'
                 }, message);
             }
         }
@@ -43,23 +43,23 @@ module.exports = (client, game_server) => {
     game_server.updateScheduleMessage = async function (type) {
         try {
             let server_schedule_data = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name]);
-            if (!server_schedule_data.length || !isJsonString(server_schedule_data[0].param)) throw "Setup schedule";
+            if (!server_schedule_data.length || !isJsonString(server_schedule_data[0].param)) throw 'Setup schedule';
             const schedule = await getSchedule(JSON.parse(server_schedule_data[0].param));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(schedule).setColor('#669917').setTimestamp()],
+                    embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(schedule).setColor('#669917').setTimestamp()],
                     content: `${game_server.server_name} start schedule`,
                     components: [],
-                    type: `edit`
+                    type: 'edit'
                 }, message);
             }
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`something went wrong`).setColor('#a00f0f').setTimestamp()],
+                    embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('something went wrong').setColor('#a00f0f').setTimestamp()],
                     content: `${game_server.server_name} start schedule`,
                     components: [],
-                    type: `edit`
+                    type: 'edit'
                 }, message);
             }
         }
@@ -80,7 +80,7 @@ module.exports = (client, game_server) => {
                 roleMap.set(row.id, row.rank_name);
             });
             const embeds = [];
-            let description = ``;
+            let description = '';
             let embed_description = null;
             let fields = [];
             for (const db_admin of db_request_admin) {
@@ -92,45 +92,45 @@ module.exports = (client, game_server) => {
                 }
                 description += `**Ckey:** ${profile.ckey} [Last Login ${profile.last_login}]\n**Rank:** ${roleMap.get(db_admin.rank_id)}`;
                 if (extra_ranks.length) {
-                    description += ` [Extra Ranks ${extra_ranks.join(' & ')}]`;
+                    description += ` [Extra Ranks ${extra_ranks.join(` & `)}]`;
                 }
-                description += `\n\n`;
+                description += '\n\n';
                 if (embed_description && description.length > 824) {
-                    fields.push({ name: ` `, value: description});
-                    description = ``;
+                    fields.push({ name: ' ', value: description});
+                    description = '';
                 } else if (description.length > 3896) {
                     embed_description = description;
-                    description = ``;
+                    description = '';
                 }
                 if (fields.length == 25) {
-                    embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(embed_description).addFields(fields).setColor('#669917'));
+                    embeds.push(new Discord.EmbedBuilder().setTitle(' ').setDescription(embed_description).addFields(fields).setColor('#669917'));
                     embed_description = null;
                     fields = [];
                 }
             }
             if (embed_description && description.length) {
-                fields.push({ name: ` `, value: description});
+                fields.push({ name: ' ', value: description});
             } else if (description.length) {
                 embed_description = description;
             }
             if (fields.length || embed_description) {
-                embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(embed_description ? embed_description : ` `).addFields(fields.length ? fields : { name: ` `, value: ` `}).setColor('#669917'));
+                embeds.push(new Discord.EmbedBuilder().setTitle(' ').setDescription(embed_description ? embed_description : ' ').addFields(fields.length ? fields : { name: ' ', value: ' '}).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
                     content: `${game_server.server_name} Actual Admins`,
                     components: [],
-                    type: `edit`
+                    type: 'edit'
                 }, message);
             }
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
                     content: `${game_server.server_name} Actual Admins`,
-                    title: ``,
-                    desc: `# ERROR`,
-                    color: `#a00f0f`,
+                    title: '',
+                    desc: '# ERROR',
+                    color: '#a00f0f',
                     type: 'edit'
                 }, message);
             }
@@ -141,28 +141,28 @@ module.exports = (client, game_server) => {
         try {
             const db_request = await client.databaseRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const embeds = [];
-            let description = ``;
+            let description = '';
             for (const db_rank of db_request) {
                 const rank_fields = db_rank.text_rights.split('|');
                 description += `**${db_rank.rank_name}**\n`;
                 description += `${rank_fields.join(' & ')}\n\n`;
             }
-            embeds.push(new Discord.EmbedBuilder().setTitle(` `).setDescription(description).setColor('#669917'));
+            embeds.push(new Discord.EmbedBuilder().setTitle(' ').setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
                     content: `${game_server.server_name} Actual Ranks`,
                     components: [],
-                    type: `edit`
+                    type: 'edit'
                 }, message);
             }
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
                     content: `${game_server.server_name} Actual Ranks`,
-                    title: ``,
-                    desc: `# ERROR`,
-                    color: `#a00f0f`,
+                    title: '',
+                    desc: '# ERROR',
+                    color: '#a00f0f',
                     type: 'edit'
                 }, message);
             }
@@ -171,16 +171,16 @@ module.exports = (client, game_server) => {
 
     game_server.updateWhitelistsMessage = async function (type) {
         try {
-            const db_request = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != \"\"", []);
+            const db_request = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != ''", []);
             const acting_wls = {
-                "Commander": ["WHITELIST_COMMANDER", "WHITELIST_COMMANDER_COUNCIL", "WHITELIST_COMMANDER_COUNCIL_LEGACY", "WHITELIST_COMMANDER_COLONEL", "WHITELIST_COMMANDER_LEADER"],
-                "Synthetic": ["WHITELIST_SYNTHETIC", "WHITELIST_SYNTHETIC_COUNCIL", "WHITELIST_SYNTHETIC_COUNCIL_LEGACY", "WHITELIST_SYNTHETIC_LEADER", "WHITELIST_JOE"],
-                "Yautja": ["WHITELIST_YAUTJA", "WHITELIST_YAUTJA_LEGACY", "WHITELIST_YAUTJA_COUNCIL", "WHITELIST_YAUTJA_COUNCIL_LEGACY", "WHITELIST_YAUTJA_LEADER"]
+                'Commander': ['WHITELIST_COMMANDER', 'WHITELIST_COMMANDER_COUNCIL', 'WHITELIST_COMMANDER_COUNCIL_LEGACY', 'WHITELIST_COMMANDER_COLONEL', 'WHITELIST_COMMANDER_LEADER'],
+                'Synthetic': ['WHITELIST_SYNTHETIC', 'WHITELIST_SYNTHETIC_COUNCIL', 'WHITELIST_SYNTHETIC_COUNCIL_LEGACY', 'WHITELIST_SYNTHETIC_LEADER', 'WHITELIST_JOE'],
+                'Yautja': ['WHITELIST_YAUTJA', 'WHITELIST_YAUTJA_LEGACY', 'WHITELIST_YAUTJA_COUNCIL', 'WHITELIST_YAUTJA_COUNCIL_LEGACY', 'WHITELIST_YAUTJA_LEADER']
             };
             const replacements = {
-                "Commander": { "WHITELIST_COMMANDER": "CO", "WHITELIST_COMMANDER_COUNCIL": "CO Council", "WHITELIST_COMMANDER_COUNCIL_LEGACY": "CO Council Legacy", "WHITELIST_COMMANDER_COLONEL": "Colonel", "WHITELIST_COMMANDER_LEADER": "CO Leader" },
-                "Synthetic": { "WHITELIST_SYNTHETIC": "Synthetic", "WHITELIST_SYNTHETIC_COUNCIL": "Synthetic Council", "WHITELIST_SYNTHETIC_COUNCIL_LEGACY": "Synthetic Council Legacy", "WHITELIST_SYNTHETIC_LEADER": "Synthetic Leader", "WHITELIST_JOE": "Joe" },
-                "Yautja": { "WHITELIST_YAUTJA": "Yautja", "WHITELIST_YAUTJA_LEGACY": "Yautja Legacy", "WHITELIST_YAUTJA_COUNCIL": "Yautja Council", "WHITELIST_YAUTJA_COUNCIL_LEGACY": "Yautja Council Legacy", "WHITELIST_YAUTJA_LEADER": "Yautja Leader" }
+                'Commander': { 'WHITELIST_COMMANDER': 'CO', 'WHITELIST_COMMANDER_COUNCIL': 'CO Council', 'WHITELIST_COMMANDER_COUNCIL_LEGACY': 'CO Council Legacy', 'WHITELIST_COMMANDER_COLONEL': 'Colonel', 'WHITELIST_COMMANDER_LEADER': 'CO Leader' },
+                'Synthetic': { 'WHITELIST_SYNTHETIC': 'Synthetic', 'WHITELIST_SYNTHETIC_COUNCIL': 'Synthetic Council', 'WHITELIST_SYNTHETIC_COUNCIL_LEGACY': 'Synthetic Council Legacy', 'WHITELIST_SYNTHETIC_LEADER': 'Synthetic Leader', 'WHITELIST_JOE': 'Joe' },
+                'Yautja': { 'WHITELIST_YAUTJA': 'Yautja', 'WHITELIST_YAUTJA_LEGACY': 'Yautja Legacy', 'WHITELIST_YAUTJA_COUNCIL': 'Yautja Council', 'WHITELIST_YAUTJA_COUNCIL_LEGACY': 'Yautja Council Legacy', 'WHITELIST_YAUTJA_LEADER': 'Yautja Leader' }
             };
             const embeds = [];
             for(const type in acting_wls) {
@@ -200,23 +200,23 @@ module.exports = (client, game_server) => {
                     if (!players.length) continue;
                     fields.push({ name: `**${replacements[type][status]}**`, value: players.join(', '), inline: true});
                 }
-                if (fields.length) embeds.push(new Discord.EmbedBuilder().setTitle(` `).addFields(fields).setColor('#669917'));
+                if (fields.length) embeds.push(new Discord.EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
                     content: `${game_server.server_name} Actual Whitelists`,
                     components: [],
-                    type: `edit`
+                    type: 'edit'
                 }, message);
             }
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
                     content: `${game_server.server_name} Actual Whitelists`,
-                    title: ``,
-                    desc: `# ERROR`,
-                    color: `#a00f0f`,
+                    title: '',
+                    desc: '# ERROR',
+                    color: '#a00f0f',
                     type: 'edit'
                 }, message);
             }
@@ -225,18 +225,18 @@ module.exports = (client, game_server) => {
 
 
     game_server.handling_updaters = {
-        "message_status": game_server.updateStatusMessage,
-        "message_schedule": game_server.updateScheduleMessage,
-        "message_admin": game_server.updateAdminsMessage,
-        "message_rank": game_server.updateRanksMessage,
-        "message_whitelist": game_server.updateWhitelistsMessage
+        'message_status': game_server.updateStatusMessage,
+        'message_schedule': game_server.updateScheduleMessage,
+        'message_admin': game_server.updateAdminsMessage,
+        'message_rank': game_server.updateRanksMessage,
+        'message_whitelist': game_server.updateWhitelistsMessage
     };
 
 
     game_server.infoRequest = async function ({
         request: request
     }, interaction) {
-        let rank_info = ``;
+        let rank_info = '';
         if (request[0].role_rank) {
             const db_role = await client.databaseRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].role_rank]);
             let db_stable_role;
@@ -255,9 +255,9 @@ module.exports = (client, game_server) => {
         const db_player_profile = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", [request[0].player_id]);
         if (!db_player_profile[0]) {
             client.ephemeralEmbed({
-                title: `Request`,
-                desc: `This is user don't have CM profile`,
-                color: `#c70058`
+                title: 'Request',
+                desc: 'This is user don\'t have CM profile',
+                color: '#c70058'
             }, interaction);
             return;
         }
@@ -289,9 +289,9 @@ module.exports = (client, game_server) => {
             if (extra_ranks.length > 0) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
         }
         client.ephemeralEmbed({
-            title: `**${request[0].role_rank ? `HIDDEN` : db_player_profile[0].ckey}** player info`,
+            title: `**${request[0].role_rank ? 'HIDDEN' : db_player_profile[0].ckey}** player info`,
             desc: `\n${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`,
-            color: `#c70058`
+            color: '#c70058'
         }, interaction);
     };
 
@@ -333,7 +333,7 @@ module.exports = (client, game_server) => {
             { label: 'Remove Admin', value: 'remove' },
             { label: 'Update Admin', value: 'update' }
         ];
-        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', actionOptions, 'Choose an action for admin management:');
+        const selectedAction = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', actionOptions, 'Choose an action for admin management:');
         if (selectedAction) {
             switch (selectedAction) {
                 case 'add': {
@@ -343,9 +343,9 @@ module.exports = (client, game_server) => {
                     const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                     if (!playerData.length) {
                         await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `No player found with that ckey`,
-                            color: `#c70058`
+                            title: 'Request',
+                            desc: 'No player found with that ckey',
+                            color: '#c70058'
                         }, interaction);
                         return;
                     }
@@ -353,25 +353,25 @@ module.exports = (client, game_server) => {
                         label: player.ckey,
                         value: player.id.toString()
                     }));
-                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player to add as admin:');
+                    const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, 'select-player', 'Select Player', playerOptions, 'Select the player to add as admin:');
                     if (selectedPlayerId) {
                         const rankOptions = await getRankOptions(client, game_server.game_connection);
-                        const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the rank to assign:');
+                        const selectedRankId = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', rankOptions, 'Select the rank to assign:');
                         if (selectedRankId) {
                             await client.databaseRequest(game_server.game_connection, "INSERT INTO admins (player_id, rank_id) VALUES (?, ?)", [selectedPlayerId, selectedRankId]);
                             const titlesOptions = [{ label: 'Set Up', value: 'set' }, { label: 'Skip', value: 'skip' }]
-                            const seelectTitles = await client.sendInteractionSelectMenu(interaction, `select-titles`, 'Set Titles', titlesOptions, 'Would you like to assign extra titles to this admin?');
+                            const seelectTitles = await client.sendInteractionSelectMenu(interaction, 'select-titles', 'Set Titles', titlesOptions, 'Would you like to assign extra titles to this admin?');
                             if (seelectTitles === 'set') {
                                 const extraRankOptions = await getRankOptions(client, game_server.game_connection);
-                                const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', extraRankOptions, 'Select extra titles to assign:', true);
+                                const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', extraRankOptions, 'Select extra titles to assign:', true);
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
                                     await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(selectedExtraRanks), selectedPlayerId]);
                                 }
                             }
                             await client.ephemeralEmbed({
-                                title: `Request`,
-                                desc: `Admin added successfully!`,
-                                color: `#669917`
+                                title: 'Request',
+                                desc: 'Admin added successfully!',
+                                color: '#669917'
                             }, interaction);
                         }
                     }
@@ -381,19 +381,19 @@ module.exports = (client, game_server) => {
                     const adminList = await getAdminOptions(client, game_server.game_connection);
                     if (adminList.length === 0) {
                         await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `No admins found to remove`,
-                            color: `#c70058`
+                            title: 'Request',
+                            desc: 'No admins found to remove',
+                            color: '#c70058'
                         }, interaction);
                         return;
                     }
-                    const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to remove:');
+                    const selectedAdminId = await client.sendInteractionSelectMenu(interaction, 'select-admin', 'Select Admin', adminList, 'Select the admin to remove:');
                     if (selectedAdminId) {
                         await client.databaseRequest(game_server.game_connection, "DELETE FROM admins WHERE player_id = ?", [selectedAdminId]);
                         await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `Admin removed successfully!`,
-                            color: `#669917`
+                            title: 'Request',
+                            desc: 'Admin removed successfully!',
+                            color: '#669917'
                         }, interaction);
                     }
                 } break;
@@ -402,32 +402,32 @@ module.exports = (client, game_server) => {
                     const adminList = await getAdminOptions(client, game_server.game_connection);
                     if (adminList.length === 0) {
                         await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `No admins found to update`,
-                            color: `#c70058`
+                            title: 'Request',
+                            desc: 'No admins found to update',
+                            color: '#c70058'
                         }, interaction);
                         return;
                     }
-                    const selectedAdminId = await client.sendInteractionSelectMenu(interaction, `select-admin`, 'Select Admin', adminList, 'Select the admin to update:');
+                    const selectedAdminId = await client.sendInteractionSelectMenu(interaction, 'select-admin', 'Select Admin', adminList, 'Select the admin to update:');
                     if (selectedAdminId) {
                         const askRankOptions = [{ label: 'Update', value: 'update' }, { label: 'Skip', value: 'skip' }]
-                        const seelectRank = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Update Rank', askRankOptions, 'Would you like to update rank to this admin?');
+                        const seelectRank = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Update Rank', askRankOptions, 'Would you like to update rank to this admin?');
                         if (seelectRank === 'update') {
                             const rankOptions = await getRankOptions(client, game_server.game_connection);
-                            const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankOptions, 'Select the new rank to assign:');
+                            const selectedRankId = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', rankOptions, 'Select the new rank to assign:');
                             if (selectedRankId) {
                                 await client.databaseRequest(game_server.game_connection, "UPDATE admins SET rank_id = ? WHERE player_id = ?", [selectedRankId, selectedAdminId]);
                             }
                         }
                         const titlesOptions = [{ label: 'Update', value: 'update' }, { label: 'Remove', value: 'remove' }, { label: 'Skip', value: 'skip' }]
-                        const seelectTitles = await client.sendInteractionSelectMenu(interaction, `select-titles`, 'Update Titles', titlesOptions, 'Would you like to update extra titles to this admin?');
+                        const seelectTitles = await client.sendInteractionSelectMenu(interaction, 'select-titles', 'Update Titles', titlesOptions, 'Would you like to update extra titles to this admin?');
                         switch (seelectTitles) {
                             case 'update': {
                                 const currentPlayer = await client.databaseRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedAdminId]);
                                 let extraTitles = currentPlayer[0].extra_titles_encoded ? JSON.parse(currentPlayer[0].extra_titles_encoded) : [];
                                 const extraRankOptions = await getRankOptions(client, game_server.game_connection);
                                 const availableOptions = extraRankOptions.filter(option => !extraTitles.includes(option.value));
-                                const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', availableOptions, 'Select extra titles to assign:', true);
+                                const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', availableOptions, 'Select extra titles to assign:', true);
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
                                     extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks])];
                                     await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
@@ -440,7 +440,7 @@ module.exports = (client, game_server) => {
                                     let extraTitles = JSON.parse(currentPlayer[0].extra_titles_encoded);
                                     const extraRankOptions = await getRankOptions(client, game_server.game_connection);
                                     const assignedOptions = extraRankOptions.filter(option => extraTitles.includes(option.value));
-                                    const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, `select-extra-ranks`, 'Select Extra Titles', assignedOptions, 'Select extra titles to remove:', true);
+                                    const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', assignedOptions, 'Select extra titles to remove:', true);
                                     if (selectedExtraRanks && selectedExtraRanks.length > 0) {
                                         extraTitles = extraTitles.filter(title => !selectedExtraRanks.includes(title));
                                         await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
@@ -449,9 +449,9 @@ module.exports = (client, game_server) => {
                             } break;
                         }
                         await client.ephemeralEmbed({
-                            title: `Request`,
-                            desc: `Admin updated successfully!`,
-                            color: `#669917`
+                            title: 'Request',
+                            desc: 'Admin updated successfully!',
+                            color: '#669917'
                         }, interaction);
                     }
                 } break;
@@ -465,7 +465,7 @@ module.exports = (client, game_server) => {
             { label: 'Remove Rank', value: 'remove' },
             { label: 'Update Rank', value: 'update' }
         ];
-        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select action', actionOptions, 'Choose an action for rank management:');
+        const selectedAction = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', actionOptions, 'Choose an action for rank management:');
         switch (selectedAction) {
             case 'add': {
                 await interaction.followUp({ content: 'Enter the name of the new rank', ephemeral: true });
@@ -476,9 +476,9 @@ module.exports = (client, game_server) => {
                 if (!textRights) return;
                 await client.databaseRequest(game_server.game_connection, "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)", [rankName, textRights]);
                 await client.ephemeralEmbed({
-                    title: `Request`,
-                    desc: `Rank ${rankName} added successfully!`,
-                    color: `#669917`
+                    title: 'Request',
+                    desc: 'Rank ${rankName} added successfully!',
+                    color: '#669917'
                 }, interaction);
             } break;
 
@@ -486,13 +486,13 @@ module.exports = (client, game_server) => {
                 const rankList = await getRankOptions(client, game_server.game_connection);
                 if (rankList.length === 0) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `No ranks found to remove`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'No ranks found to remove',
+                        color: '#c70058'
                     }, interaction);
                     return;
                 }
-                const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to remove:');
+                const selectedRankId = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', rankList, 'Select the rank to remove:');
                 if (selectedRankId) {
                     await client.databaseRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
                     const playersWithExtraTitles = await client.databaseRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
@@ -503,9 +503,9 @@ module.exports = (client, game_server) => {
                         await client.databaseRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [updatedExtraTitles, admin.player_id]);
                     }
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `Rank removed successfully!`,
-                        color: `#669917`
+                        title: 'Request',
+                        desc: 'Rank removed successfully!',
+                        color: '#669917'
                     }, interaction);
                 }
             } break;
@@ -514,16 +514,16 @@ module.exports = (client, game_server) => {
                 const rankList = await getRankOptions(client, game_server.game_connection);
                 if (rankList.length === 0) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `No ranks found to update`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'No ranks found to update',
+                        color: '#c70058'
                     }, interaction);
                     return;
                 }
-                const selectedRankId = await client.sendInteractionSelectMenu(interaction, `select-rank`, 'Select Rank', rankList, 'Select the rank to update:');
+                const selectedRankId = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', rankList, 'Select the rank to update:');
                 if (selectedRankId) {
                     const askRankOptions = [{ label: 'Update', value: 'update' }, { label: 'Skip', value: 'skip' }]
-                    const seelectRank = await client.sendInteractionSelectMenu(interaction, `select-name`, 'Update Rank', askRankOptions, 'Would you like to update rank name?');
+                    const seelectRank = await client.sendInteractionSelectMenu(interaction, 'select-name', 'Update Rank', askRankOptions, 'Would you like to update rank name?');
                     if (seelectRank === 'update') {
                         await interaction.followUp({ content: 'Enter the new name for the rank', ephemeral: true });
                         const newRankName = await client.collectUserInput(interaction);
@@ -535,9 +535,9 @@ module.exports = (client, game_server) => {
                     if (!newTextRights) return;
                     await client.databaseRequest(game_server.game_connection, "UPDATE admin_ranks SET text_rights = ? WHERE id = ?", [newTextRights, selectedRankId]);
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `Rank updated successfully!`,
-                        color: `#669917`
+                        title: 'Request',
+                        desc: 'Rank updated successfully!',
+                        color: '#669917'
                     }, interaction);
                 }
             } break;
@@ -550,23 +550,23 @@ module.exports = (client, game_server) => {
             { label: 'Remove Whitelists', value: 'remove' }
         ];
         const acting_wls = {
-            "WHITELIST_COMMANDER": "CO",
-            "WHITELIST_COMMANDER_COUNCIL": "CO Council",
-            "WHITELIST_COMMANDER_COUNCIL_LEGACY": "CO Council Legacy",
-            "WHITELIST_COMMANDER_COLONEL": "Colonel",
-            "WHITELIST_COMMANDER_LEADER": "CO Leader",
-            "WHITELIST_SYNTHETIC": "Synthetic",
-            "WHITELIST_SYNTHETIC_COUNCIL": "Synthetic Council",
-            "WHITELIST_SYNTHETIC_COUNCIL_LEGACY": "Synthetic Council Legacy",
-            "WHITELIST_SYNTHETIC_LEADER": "Synthetic Leader",
-            "WHITELIST_JOE": "Joe",
-            "WHITELIST_YAUTJA": "Yautja",
-            "WHITELIST_YAUTJA_LEGACY": "Yautja Legacy",
-            "WHITELIST_YAUTJA_COUNCIL": "Yautja Council",
-            "WHITELIST_YAUTJA_COUNCIL_LEGACY": "Yautja Council Legacy",
-            "WHITELIST_YAUTJA_LEADER": "Yautja Leader"
+            'WHITELIST_COMMANDER': 'CO',
+            'WHITELIST_COMMANDER_COUNCIL': 'CO Council',
+            'WHITELIST_COMMANDER_COUNCIL_LEGACY': 'CO Council Legacy',
+            'WHITELIST_COMMANDER_COLONEL': 'Colonel',
+            'WHITELIST_COMMANDER_LEADER': 'CO Leader',
+            'WHITELIST_SYNTHETIC': 'Synthetic',
+            'WHITELIST_SYNTHETIC_COUNCIL': 'Synthetic Council',
+            'WHITELIST_SYNTHETIC_COUNCIL_LEGACY': 'Synthetic Council Legacy',
+            'WHITELIST_SYNTHETIC_LEADER': 'Synthetic Leader',
+            'WHITELIST_JOE': 'Joe',
+            'WHITELIST_YAUTJA': 'Yautja',
+            'WHITELIST_YAUTJA_LEGACY': 'Yautja Legacy',
+            'WHITELIST_YAUTJA_COUNCIL': 'Yautja Council',
+            'WHITELIST_YAUTJA_COUNCIL_LEGACY': 'Yautja Council Legacy',
+            'WHITELIST_YAUTJA_LEADER': 'Yautja Leader'
         };
-        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-action`, 'Select Action', actionOptions, 'Choose an action for admin role management:');
+        const selectedAction = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select Action', actionOptions, 'Choose an action for admin role management:');
         switch (selectedAction) {
             case 'add': {
                 await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist', ephemeral: true });
@@ -575,9 +575,9 @@ module.exports = (client, game_server) => {
                 const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                 if (!playerData.length) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `No player found with that ckey`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'No player found with that ckey',
+                        color: '#c70058'
                     }, interaction);
                     return;
                 }
@@ -585,7 +585,7 @@ module.exports = (client, game_server) => {
                     label: player.ckey,
                     value: player.id.toString()
                 }));
-                const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for adding whitelists:');
+                const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, 'select-player', 'Select Player', playerOptions, 'Select the player for adding whitelists:');
                 if (!selectedPlayerId) return;
                 const player = playerData.find(p => p.id.toString() === selectedPlayerId);
                 let currentRoles = player.whitelist_status ? player.whitelist_status.split('|') : [];
@@ -595,20 +595,20 @@ module.exports = (client, game_server) => {
                 }));
                 if (availableRoles.length === 0) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `No roles available to add. The player already has all possible roles`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'No roles available to add. The player already has all possible roles',
+                        color: '#c70058'
                     }, interaction);
                     return;
                 }
-                const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', availableRoles, 'Select the roles to add:', true);
+                const selectedRoles = await client.sendInteractionSelectMenu(interaction, 'select-roles', 'Select Roles', availableRoles, 'Select the roles to add:', true);
                 if (!selectedRoles) return;
                 currentRoles = [...new Set([...currentRoles, ...selectedRoles])];
                 await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
                 await client.ephemeralEmbed({
-                    title: `Request`,
-                    desc: `Roles added successfully!`,
-                    color: `#669917`
+                    title: 'Request',
+                    desc: 'Roles added successfully!',
+                    color: '#669917'
                 }, interaction);
             } break;
 
@@ -619,9 +619,9 @@ module.exports = (client, game_server) => {
                 const playerData = await client.databaseRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                 if (!playerData.length) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `No player found with that ckey`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'No player found with that ckey',
+                        color: '#c70058'
                     }, interaction);
                     return;
                 }
@@ -629,14 +629,14 @@ module.exports = (client, game_server) => {
                     label: player.ckey,
                     value: player.id.toString()
                 }));
-                const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, `select-player`, 'Select Player', playerOptions, 'Select the player for removing whitelists:');
+                const selectedPlayerId = await client.sendInteractionSelectMenu(interaction, 'select-player', 'Select Player', playerOptions, 'Select the player for removing whitelists:');
                 if (!selectedPlayerId) return;
                 const player = playerData.find(p => p.id.toString() === selectedPlayerId);
                 if (!player.whitelist_status) {
                     await client.ephemeralEmbed({
-                        title: `Request`,
-                        desc: `This player has no roles to remove`,
-                        color: `#c70058`
+                        title: 'Request',
+                        desc: 'This player has no roles to remove',
+                        color: '#c70058'
                     }, interaction);
                     return;
                 }
@@ -645,7 +645,7 @@ module.exports = (client, game_server) => {
                     label: acting_wls[role] || role,
                     value: role
                 }));
-                const selectedRoles = await client.sendInteractionSelectMenu(interaction, `select-roles`, 'Select Roles', roleOptions, 'Select the roles to remove:', true);
+                const selectedRoles = await client.sendInteractionSelectMenu(interaction, 'select-roles', 'Select Roles', roleOptions, 'Select the roles to remove:', true);
                 if (!selectedRoles) return;
                 selectedRoles.forEach(selectedRole => {
                     const index = currentRoles.indexOf(selectedRole);
@@ -655,9 +655,9 @@ module.exports = (client, game_server) => {
                 });
                 await client.databaseRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
                 await client.ephemeralEmbed({
-                    title: `Request`,
-                    desc: `Roles removed successfully!`,
-                    color: `#669917`
+                    title: 'Request',
+                    desc: 'Roles removed successfully!',
+                    color: '#669917'
                 }, interaction);
             } break;
         }
@@ -685,62 +685,62 @@ module.exports = (client, game_server) => {
         }
         server_schedule_data = JSON.parse(server_schedule_data[0].param);
         const actionOptions = [
-            { label: "View Schedule", value: "view" },
-            { label: "Set Mode", value: "set_mode" },
-            { label: "Set Daily Times", value: "set_daily_time" },
-            { label: "Remove Daily Times", value: "remove_daily_time" },
-            { label: "Set Specific Days", value: "set_specific_days" },
-            { label: "Remove Specific Days", value: "remove_specific_days" }
+            { label: 'View Schedule', value: 'view' },
+            { label: 'Set Mode', value: 'set_mode' },
+            { label: 'Set Daily Times', value: 'set_daily_time' },
+            { label: 'Remove Daily Times', value: 'remove_daily_time' },
+            { label: 'Set Specific Days', value: 'set_specific_days' },
+            { label: 'Remove Specific Days', value: 'remove_specific_days' }
         ];
-        const selectedAction = await client.sendInteractionSelectMenu(interaction, `select-auto-start`, 'Select Action', actionOptions, 'Configure the automatic server start system:');
+        const selectedAction = await client.sendInteractionSelectMenu(interaction, 'select-auto-start', 'Select Action', actionOptions, 'Configure the automatic server start system:');
         const handlingOptions = {
-            "view": viewSchedule,
-            "set_mode": setMode,
-            "set_daily_time": setDailyTimes,
-            "remove_daily_time": removeDailyTimes,
-            "set_specific_days": setSpecificDays,
-            "remove_specific_days": removeSpecificDays
+            'view': viewSchedule,
+            'set_mode': setMode,
+            'set_daily_time': setDailyTimes,
+            'remove_daily_time': removeDailyTimes,
+            'set_specific_days': setSpecificDays,
+            'remove_specific_days': removeSpecificDays
         };
         await handlingOptions[selectedAction](interaction, client, game_server, server_schedule_data);
     };
 
     game_server.handling_actions = {
-        "manage_admins": game_server.manageAdmins,
-        "manage_ranks": game_server.manageRanks,
-        "manage_whitelists": game_server.manageWhitelists,
-        "manage_autostart": game_server.configureAutoStartMenu,
-//        "manage_battlepass_player": game_server.manageBattlepassPlayers,
-//        "manage_battlepass_reward": game_server.manageBattlepassReward,
-//        "manage_battlepass_server": game_server.manageBattlepassServer,
-//        "player_by_ckey": game_server.managePlayer
+        'manage_admins': game_server.manageAdmins,
+        'manage_ranks': game_server.manageRanks,
+        'manage_whitelists': game_server.manageWhitelists,
+        'manage_autostart': game_server.configureAutoStartMenu,
+//        'manage_battlepass_player': game_server.manageBattlepassPlayers,
+//        'manage_battlepass_reward': game_server.manageBattlepassReward,
+//        'manage_battlepass_server': game_server.manageBattlepassServer,
+//        'player_by_ckey': game_server.managePlayer
     };
 
     game_server.handling_commands = [
-        { label: "Manage Admins", value: "manage_admins" },
-        { label: "Manage Ranks", value: "manage_ranks" },
-        { label: "Manage Whitelists", value: "manage_whitelists" },
-        { label: "Manage Auto Start", value: "manage_autostart" }
+        { label: 'Manage Admins', value: 'manage_admins' },
+        { label: 'Manage Ranks', value: 'manage_ranks' },
+        { label: 'Manage Whitelists', value: 'manage_whitelists' },
+        { label: 'Manage Auto Start', value: 'manage_autostart' }
     ];
 
     const messageQueue = {};
 
     game_server.handledStatuses = {
-        "ooc": addToQueue,
-        "asay": addToQueue,
-        "start": handleRoundStart,
-        "predator": handlePredator,
-        "ahelp":  handleAhelp,
-        "add_time_ban": handleTimeBan,
-        "remove_time_ban": handleTimeBan,
-        "add_job_ban": handleJobBan,
-        "remove_job_ban": handleJobBan,
-        "add_perma_ban": handlePermaBan,
-        "remove_perma_ban": handlePermaBan,
-        "auto_unban": handleAutoUnban,
-        "auto_unjobban": handleAutoUnjobban,
-        "fax": handleFax,
-        "login": handleLogin,
-        "logout": handleLogout
+        'ooc': addToQueue,
+        'asay': addToQueue,
+        'start': handleRoundStart,
+        'predator': handlePredator,
+        'ahelp':  handleAhelp,
+        'add_time_ban': handleTimeBan,
+        'remove_time_ban': handleTimeBan,
+        'add_job_ban': handleJobBan,
+        'remove_job_ban': handleJobBan,
+        'add_perma_ban': handlePermaBan,
+        'remove_perma_ban': handlePermaBan,
+        'auto_unban': handleAutoUnban,
+        'auto_unjobban': handleAutoUnjobban,
+        'fax': handleFax,
+        'login': handleLogin,
+        'logout': handleLogout
     };
 
     async function addToQueue(channel, data) {
@@ -755,13 +755,13 @@ module.exports = (client, game_server) => {
             game_server.new_round_message = true;
             return;
         }
-        const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(`NEW ROUND!`).setDescription(` `).setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
+        const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
     };
 
     async function handlePredator(channel) {
-        const role = channel.guild.roles.cache.find(role => role.name === `Predator gamer`);
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(`PREDATOR ROUND!`).setDescription(` `).setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
+        const role = channel.guild.roles.cache.find(role => role.name === 'Predator gamer');
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('PREDATOR ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
     };
 
     async function handleAhelp(channel, data) {
@@ -771,7 +771,7 @@ module.exports = (client, game_server) => {
             footer: data.embed.footer,
             content: data.embed.content,
             url: data.embed.url,
-            color: `#5a2944`
+            color: '#5a2944'
         };
         if (data.embed && data.embed.fields.lenght) embed[fields] = data.embed.fields;
         await client.embed(embed, channel);
@@ -779,15 +779,15 @@ module.exports = (client, game_server) => {
 
     async function handleTimeBan(channel, data) {
         const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
-        let adding_ban = data.state === "add_time_ban";
+        let adding_ban = data.state === 'add_time_ban';
         let start_time;
         if (adding_ban) {
             const now_date = new Date(player.time_ban_expiration * 1000);
             start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
         }
         const embed = {
-            title: `Time Ban ${adding_ban ? "Added" : "Removed"}`,
-            desc: `Player: ${player.ckey}\nReason: ${player.time_ban_reason}${start_time ? `\nExpiration: <t:${Math.floor(start_time.getTime() / 1000)}:t>` : ``}`,
+            title: `Time Ban ${adding_ban ? 'Added' : 'Removed'}`,
+            desc: `Player: ${player.ckey}\nReason: ${player.time_ban_reason}${start_time ? `\nExpiration: <t:${Math.floor(start_time.getTime() / 1000)}:t>` : ''}`,
             color: adding_ban ? '#ff0000' : '#00ff00'
         };
         await client.embed(embed, channel);
@@ -796,15 +796,15 @@ module.exports = (client, game_server) => {
     async function handleJobBan(channel, data) {
         const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
         const jobBan = await fetchJobBanByPlayerId(data.ref_player_id, game_server.game_connection);
-        let adding_ban = data.state === "add_job_ban";
+        let adding_ban = data.state === 'add_job_ban';
         let start_time;
         if (adding_ban) {
             const now_date = new Date(jobBan.expiration * 1000);
             start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
         }
         const embed = {
-            title: `Job Ban ${adding_ban ? "Added" : "Removed"}`,
-            desc: `Player: ${player.ckey}\nRole: ${jobBan.role}\nReason: ${jobBan.text}${start_time ? `\nExpiration: <t:${Math.floor(start_time.getTime() / 1000)}:t>` : ``}`,
+            title: `Job Ban ${adding_ban ? 'Added' : 'Removed'}`,
+            desc: `Player: ${player.ckey}\nRole: ${jobBan.role}\nReason: ${jobBan.text}${start_time ? `\nExpiration: <t:${Math.floor(start_time.getTime() / 1000)}:t>` : ''}`,
             color: adding_ban ? '#ff0000' : '#00ff00'
         };
         await client.embed(embed, channel);
@@ -812,9 +812,9 @@ module.exports = (client, game_server) => {
 
     async function handlePermaBan(channel, data) {
         const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
-        let adding_ban = data.state === "add_perma_ban";
+        let adding_ban = data.state === 'add_perma_ban';
         const embed = {
-            title: `Perma Ban ${adding_ban ? "Added" : "Removed"}`,
+            title: `Perma Ban ${adding_ban ? 'Added' : 'Removed'}`,
             desc: `Player: ${player.ckey}\nReason: ${player.permaban_reason}`,
             color: adding_ban ? '#ff0000' : '#00ff00'
         };
@@ -824,7 +824,7 @@ module.exports = (client, game_server) => {
     async function handleAutoUnban(channel, data) {
         const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
         const embed = {
-            title: `Auto Unban`,
+            title: 'Auto Unban',
             desc: `Player: ${player.ckey} has been automatically unbanned.`,
             color: '#00ff00'
         };
@@ -834,7 +834,7 @@ module.exports = (client, game_server) => {
     async function handleAutoUnjobban(channel, data) {
         const player = await fetchPlayerById(data.ref_player_id, game_server.game_connection);
         const embed = {
-            title: `Auto Unjobban`,
+            title: 'Auto Unjobban',
             desc: `Player: ${player.ckey} has been automatically unjobbanned.`,
             color: '#00ff00'
         };
@@ -845,17 +845,17 @@ module.exports = (client, game_server) => {
         const embed = {
             title: `Fax from ${data.sender_name}`,
             desc: `Department: ${data.departament}\nMessage: ${data.message}\nAdmins: ${data.admins}`,
-            color: `#3498db`
+            color: '#3498db'
         };
         await client.embed(embed, channel);
     };
 
     async function handleLogin(channel, data) {
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Admin Login: ${data.key}`).setColor(`#2ecc71`)]}, channel);
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Admin Login: ${data.key}`).setColor('#2ecc71')]}, channel);
     };
 
     async function handleLogout(channel, data) {
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Admin Logout: ${data.key}`).setColor(`#e74c3c`)]}, channel);
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Admin Logout: ${data.key}`).setColor('#e74c3c')]}, channel);
     };
 
     async function fetchPlayerById(playerId, database) {
@@ -912,14 +912,14 @@ module.exports = (client, game_server) => {
                 const { data } = messages.shift();
                 let embed;
                 switch (data.state) {
-                    case "ooc": {
+                    case 'ooc': {
                         embed = await handleOOC(null, data, true);
                     } break;
-                    case "asay": {
+                    case 'asay': {
                         embed = await handleAsay(null, data, true);
                     } break;
                     default: {
-                        console.log(chalk.blue(chalk.bold(`Socket`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Something went wrong, not found: ${data.state}, for server: ${game_server.server_name}`));
+                        console.log(chalk.blue(chalk.bold('Socket')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Something went wrong, not found: ${data.state}, for server: ${game_server.server_name}`));
                     } break;
                 }
                 if (messagesToSend.length < 5 && embed) {
@@ -978,7 +978,7 @@ async function updateServerCustomOperators(client, game_server) {
         await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     }
     if (server_schedule_data.mode === 'daily') {
-        const kill_numbers = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        const kill_numbers = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const start_time_utc = server_schedule_data.daily[kill_numbers[now_date.getUTCDay()]];
         if (start_time_utc) {
             const [hours, minutes] = start_time_utc.split(':').map(Number);
@@ -1016,9 +1016,9 @@ async function autoStartServer(client, game_server, now_date, hours, minutes) {
     const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
     const channel = await client.channels.fetch(status[0].channel_id);
     if (channel) {
-        const role = channel.guild.roles.cache.find(role => role.name === `Round Alert`);
+        const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
         const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), hours, minutes + 30, 0));
-        await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(` `).setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000)}:t>`).setColor(`#669917`)], content: `<@&${role.id}>`}, channel);
+        await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
     }
 };
 
@@ -1027,15 +1027,15 @@ async function viewSchedule(interaction, client, game_server, server_schedule_da
     const schedule = await getSchedule(server_schedule_data);
     if (schedule) {
         await client.ephemeralEmbed({
-            title: `Request`,
+            title: 'Request',
             desc: schedule,
-            color: `#669917`
+            color: '#669917'
         }, interaction);
     } else {
         await client.ephemeralEmbed({
-            title: `Request`,
-            desc: `An error occurred while retrieving the schedule.`,
-            color: `#c70058`
+            title: 'Request',
+            desc: 'An error occurred while retrieving the schedule.',
+            color: '#c70058'
         }, interaction);
     }
 };
@@ -1072,39 +1072,39 @@ async function getSchedule(server_schedule_data) {
 
 async function setMode(interaction, client, game_server, server_schedule_data) {
     const modeOptions = [
-        { label: "Daily", value: "daily" },
-        { label: "Specific Days", value: "weekly" },
-        { label: "OFF", value: "off" }
+        { label: 'Daily', value: 'daily' },
+        { label: 'Specific Days', value: 'weekly' },
+        { label: 'OFF', value: 'off' }
     ];
-    const selectedMode = await client.sendInteractionSelectMenu(interaction, `select-mode`, 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
+    const selectedMode = await client.sendInteractionSelectMenu(interaction, 'select-mode', 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
     server_schedule_data.mode = selectedMode;
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
-        title: `Request`,
+        title: 'Request',
         desc: `Mode set to ${selectedMode} for server ${game_server.server_name}`,
-        color: `#669917`
+        color: '#669917'
     }, interaction);
 };
 
 async function setDailyTimes(interaction, client, game_server, server_schedule_data) {
     const dayOptions = [
-        { label: "Monday", value: "monday" },
-        { label: "Tuesday", value: "tuesday" },
-        { label: "Wednesday", value: "wednesday" },
-        { label: "Thursday", value: "thursday" },
-        { label: "Friday", value: "friday" },
-        { label: "Saturday", value: "saturday" },
-        { label: "Sunday", value: "sunday" }
+        { label: 'Monday', value: 'monday' },
+        { label: 'Tuesday', value: 'tuesday' },
+        { label: 'Wednesday', value: 'wednesday' },
+        { label: 'Thursday', value: 'thursday' },
+        { label: 'Friday', value: 'friday' },
+        { label: 'Saturday', value: 'saturday' },
+        { label: 'Sunday', value: 'sunday' }
     ];
-    const selectedDay = await client.sendInteractionSelectMenu(interaction, `select-day`, 'Select day', dayOptions, 'Choose a day for setting up auto-start time:');
+    const selectedDay = await client.sendInteractionSelectMenu(interaction, 'select-day', 'Select day', dayOptions, 'Choose a day for setting up auto-start time:');
     await interaction.followUp({ content: 'Please enter the time for auto-start in hh:mm (UTC+0) format', ephemeral: true });
     const timeInput = await client.collectUserInput(interaction);
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!timeRegex.test(timeInput)) {
         await client.ephemeralEmbed({
-            title: `Request`,
-            desc: `Invalid time format. Please use hh:mm format`,
-            color: `#c70058`
+            title: 'Request',
+            desc: 'Invalid time format. Please use hh:mm format',
+            color: '#c70058'
         }, interaction);
         return;
     }
@@ -1112,18 +1112,18 @@ async function setDailyTimes(interaction, client, game_server, server_schedule_d
     server_schedule_data.daily[selectedDay] = timeInput;
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
-        title: `Request`,
+        title: 'Request',
         desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
-        color: `#669917`
+        color: '#669917'
     }, interaction);
 };
 
 async function removeDailyTimes(interaction, client, game_server, server_schedule_data) {
     if (!server_schedule_data.daily || Object.keys(server_schedule_data.daily).length === 0) {
         await client.ephemeralEmbed({
-            title: `Request`,
+            title: 'Request',
             desc: `No daily start times are set for server ${game_server.server_name}`,
-            color: `#c70058`
+            color: '#c70058'
         }, interaction);
         return;
     }
@@ -1133,9 +1133,9 @@ async function removeDailyTimes(interaction, client, game_server, server_schedul
     }));
     if (!dayOptions.length) {
         await client.ephemeralEmbed({
-            title: `Request`,
+            title: 'Request',
             desc: `No days are available for removal from daily start schedule for server ${game_server.server_name}`,
-            color: `#c70058`
+            color: '#c70058'
         }, interaction);
         return;
     }
@@ -1143,9 +1143,9 @@ async function removeDailyTimes(interaction, client, game_server, server_schedul
     delete server_schedule_data.daily[selectedDay];
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
-        title: `Request`,
+        title: 'Request',
         desc: `Removed daily start time for ${selectedDay} on server ${game_server.server_name}`,
-        color: `#669917`
+        color: '#669917'
     }, interaction);
 };
 
@@ -1161,9 +1161,9 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
             const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
             if (!dateRegex.test(dateInput)) {
                 await client.ephemeralEmbed({
-                    title: `Request`,
-                    desc: `Invalid date format. Please use YYYY-MM-DD format`,
-                    color: `#c70058`
+                    title: 'Request',
+                    desc: 'Invalid date format. Please use YYYY-MM-DD format',
+                    color: '#c70058'
                 }, interaction);
                 return;
             }
@@ -1172,9 +1172,9 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
             const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
             if (!timeRegex.test(timeInput)) {
                 await client.ephemeralEmbed({
-                    title: `Request`,
-                    desc: `Invalid time format. Please use hh:mm format`,
-                    color: `#c70058`
+                    title: 'Request',
+                    desc: 'Invalid time format. Please use hh:mm format',
+                    color: '#c70058'
                 }, interaction);
                 return;
             }
@@ -1187,9 +1187,9 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
     });
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
-        title: `Request`,
+        title: 'Request',
         desc: `Specific start days set for server ${game_server.server_name}`,
-        color: `#669917`
+        color: '#669917'
     }, interaction);
 };
 
@@ -1197,9 +1197,9 @@ async function removeSpecificDays(interaction, client, game_server, server_sched
     const now = new Date().toISOString().split('T')[0];
     if (!server_schedule_data.spec || Object.keys(server_schedule_data.spec).length === 0) {
         await client.ephemeralEmbed({
-            title: `Request`,
+            title: 'Request',
             desc: `No specific dates are set for server ${game_server.server_name}`,
-            color: `#c70058`
+            color: '#c70058'
         }, interaction);
         return;
     }
@@ -1208,21 +1208,21 @@ async function removeSpecificDays(interaction, client, game_server, server_sched
         .map(date => ({ label: date, value: date }));
     if (!specificDayOptions.length) {
         await client.ephemeralEmbed({
-            title: `Request`,
+            title: 'Request',
             desc: `All specific dates have passed for server ${game_server.server_name}`,
-            color: `#c70058`
+            color: '#c70058'
         }, interaction);
         return;
     }
-    const selectedDates = await client.sendInteractionSelectMenu(interaction, `select-date`, 'Select a date to remove', specificDayOptions, 'Choose a specific date to remove:', true);
+    const selectedDates = await client.sendInteractionSelectMenu(interaction, 'select-date', 'Select a date to remove', specificDayOptions, 'Choose a specific date to remove:', true);
     selectedDates.forEach(selectedDate => {
         delete server_schedule_data.spec[selectedDate];
     });
     await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await client.ephemeralEmbed({
-        title: `Request`,
+        title: 'Request',
         desc: `Removed specific start dates for server ${game_server.server_name}`,
-        color: `#669917`
+        color: '#669917'
     }, interaction);
 };
 

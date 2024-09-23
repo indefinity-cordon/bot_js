@@ -18,13 +18,13 @@ async function updateRoles(client, game_server) {
         let db_roles, db_links, guild;
         try {
             db_roles = await client.databaseRequest(game_server.game_connection, "SELECT role_id, rank_id FROM discord_ranks", []);
-            if (!db_roles.length) throw "No discord ranks";
+            if (!db_roles.length) throw 'No discord ranks';
             guild = await client.guilds.cache.get(game_server.guild);
-            if (!guild) throw "No guild";
+            if (!guild) throw 'No guild';
             db_links = await client.databaseRequest(game_server.game_connection, "SELECT discord_id, stable_rank FROM discord_links", []);
-            if (!db_links.length) throw "No discord links";
+            if (!db_links.length) throw 'No discord links';
         } catch (cancel_reason) {
-            console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`${cancel_reason}`));
+            console.log(chalk.blue(chalk.bold('Roles')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`${cancel_reason}`));
             return;
         }
 
@@ -74,6 +74,6 @@ async function updateRoles(client, game_server) {
         }
         await fetchAndProcessMembers();
     } catch (error) {
-        console.log(chalk.blue(chalk.bold(`Roles`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Something went wrong, error: ${error}`));
+        console.log(chalk.blue(chalk.bold('Roles')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Something went wrong, error: ${error}`));
     }
 };
