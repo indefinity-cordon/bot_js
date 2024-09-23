@@ -10,11 +10,12 @@ module.exports = async (client) => {
 }
 
 async function updateStatus(client) {
+    const current_date = new Date();
     client.user.setPresence({
         activities: [{
             name: 'Simulator of Life',
             type: Discord.ActivityType.Playing,
-            state: `Building Better Worlds for ${Date.now() / 1000 / 60 / 60} hour(s)`,
+            state: `Building Better Worlds for ${Math.round(current_date.getTime() / 1000 / 60 / 60)} hour(s)`,
 //            url: 'https://colonialmarines.ru/wiki/Заглавная_страница'
         }],
         status: 'online'
