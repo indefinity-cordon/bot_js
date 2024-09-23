@@ -9,8 +9,8 @@ module.exports = async (client) => {
         activities: [{
             name: 'Simulator of Life',
             type: Discord.ActivityType.Playing,
-            state: 'Playing Simulator of Life',
-            url: 'https://colonialmarines.ru/wiki/Заглавная_страница'
+            state: 'Building Better Worlds',
+//            url: 'https://colonialmarines.ru/wiki/Заглавная_страница'
         }],
         status: 'online'
     });
