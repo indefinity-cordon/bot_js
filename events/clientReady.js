@@ -9,7 +9,7 @@ module.exports = async (client) => {
         activities: [{
             name: 'Simulator of life',
             type: Discord.ActivityType.Playing,
-            timestamps: { start: 0 }
+            timestamps: { start: Date.now() }
         }],
         status: 'online'
     });
