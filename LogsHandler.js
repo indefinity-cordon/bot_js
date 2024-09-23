@@ -69,7 +69,7 @@ module.exports = class LogsHandlerclass {
                 }
                 return;
             }
-            this.botLogs.send({
+            await this.botLogs.send({
                 username: 'Bot Logs',
                 embeds: [embed],
             }).catch((error) => {

@@ -27,7 +27,7 @@ if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
 }
 
 // Use in funny moments
-client.restartApp = function (reason) {
+client.restartApp = async function (reason) {
     console.log(chalk.blue(chalk.bold(`System`)), chalk.white(`>>`), chalk.green(`App`), chalk.white(`...`), chalk.red(`Restarting process`), chalk.white(`...`));
     const embed = new Discord.EmbedBuilder()
     .setTitle(`System`)
@@ -37,7 +37,7 @@ client.restartApp = function (reason) {
             value: reason ? `Reason: ${reason}` : "Reason is not provided",
         }
     ])
-    global.LogsHandler.send_log(embed);
+    await global.LogsHandler.send_log(embed);
     process.exit(1);
 };
 

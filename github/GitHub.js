@@ -57,10 +57,21 @@ module.exports = async (client) => {
         const remoteCommit = await client.getLastCommit(client);
         const localCommit = await client.getLastLocalCommit(client);
 
-        if (remoteCommit !== localCommit) {
+        if (!remoteCommit || !localCommit) {
+            console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`[ERROR]`), chalk.white(`>>`), chalk.red(`Failed version check, make sure all setted up right: remote, local and github pat`));
+            const embed = new Discord.EmbedBuilder()
+            .setTitle(`Git`)
+            .addFields([
+                {
+                    name: `Warning`,
+                    value: `Failed version check, make sure all setted up right: remote, local and github pat`,
+                }
+            ])
+            await global.LogsHandler.send_log(embed);
+        } else if (remoteCommit !== localCommit) {
             console.log(chalk.blue(chalk.bold(`GitHub`)), chalk.white(`>>`), chalk.red(`New commit found, pulling changes`));
             await client.pullChanges(client);
-            client.restartApp();
+            client.restartApp("Pulling new changes from GIT");
         }
     };
 
