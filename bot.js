@@ -65,7 +65,7 @@ async function initializeBot(reboot) {
 
 client.hotSwap = async function () {
     console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.green('App'), chalk.white('...'), chalk.red('Hot swap triggered'), chalk.white('...'));
-    await global.LogsHandler.sendSimplyLog('System', null, [{ name: 'HotSwap', value: `Ongoing hotswap` }]);
+    await global.LogsHandler.sendSimplyLog('System', null, [{ name: 'Hot swap', value: `Ongoing hot swap` }]);
 
     // CLEAR ALL
     for (const interval in client.INT_modules) {
