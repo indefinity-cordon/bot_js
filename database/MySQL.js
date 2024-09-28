@@ -8,15 +8,13 @@ module.exports = async (client) => {
         return new Promise(async (resolve, reject) => {
             try {
                 await mysqlConnect(connection);
-                if (game_server) game_server.game_connection = connection;
-                else client.database = connection;
                 client.INT_modules += setInterval(async () => {
                     const mysql_active = await checkMySQLConnection(connection);
                     if (!mysql_active) {
                         console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed to restore MySQL connection'));
                     }
                 }, 60000);
-                resolve(result);
+                resolve(connection);
             } catch (err) {
                 reject(err);
             }
