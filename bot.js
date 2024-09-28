@@ -45,6 +45,7 @@ async function initializeBot(reboot) {
     if (process.env.REDIS_STRING) require('./database/Redis')(client);
     client.INT_modules = [];
     await client.login(process.env.DISCORD_TOKEN);
+    await client.database;
     fs.readdirSync('./handlers').forEach((dir) => {
         fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
             if (reboot) delete require.cache[require.resolve(`./handlers/${dir}/${handler}`)];

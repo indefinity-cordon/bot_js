@@ -27,7 +27,7 @@ module.exports = async (client) => {
                 game_server.pull_data_update();
             } else {
                 game_server = new GameServerClass(server, client);
-                await game_server.game_connection
+                game_server.game_connection = await client.mysqlCreate({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: game_server.database});
                 await require(`./servers/${game_server.init_file_name}`)(client, game_server);
             }
             updated_servers[`${game_server.server_name}`] = game_server;
