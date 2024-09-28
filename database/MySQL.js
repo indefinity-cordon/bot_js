@@ -3,11 +3,9 @@ const chalk = require('chalk');
 
 module.exports = async (client) => {
     client.mysqlCreate = async function (connection_params) {
-        console.log(`nigger alarm ${JSON.stringify(connection_params)}`)
         const connection = mysql.createConnection(connection_params);
-        console.log(connection)
         connection.on('error', err => console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.blue('MySQL'), chalk.red(err)));
-        return new Promise(async (resolve, reject) => {
+        new Promise(async (resolve, reject) => {
             try {
                 await mysqlConnect(connection);
                 client.INT_modules += setInterval(async () => {
@@ -16,17 +14,17 @@ module.exports = async (client) => {
                         console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed to restore MySQL connection'));
                     }
                 }, 60000);
-                resolve(connection);
+                resolve(result);
             } catch (err) {
                 reject(err);
             }
         });
+        return connection
     };
 
     if (!client.database) {
         console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('MySQL'), chalk.green('connecting'), chalk.white('...'));
         client.database = client.mysqlCreate({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME})
-        console.log(client.database)
     };
 
 
