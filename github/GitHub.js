@@ -7,18 +7,12 @@ module.exports = async (client) => {
         try {
             await client.git.addConfig('credential.helper', 'store');
 
-            let github_link, github_branch, github_token;
-
-            github_link = await client.mysqlSettingsRequest('github_link');
-            github_branch = await client.mysqlSettingsRequest('github_branch');
-            github_token = process.env.GITHUB_PAT;
-
-            await client.git.remote(['set-url', 'origin', `https://${github_token}@github.com/${github_link[0].param}.git`]);
+            await client.git.remote(['set-url', 'origin', `https://${process.env.GITHUB_PAT}@github.com/${process.env.GITHUB_LINK}.git`]);
             const response = await axios.get(
-                `https://api.github.com/repos/${github_link[0].param}/commits/${github_branch[0].param}`,
+                `https://api.github.com/repos/${process.env.GITHUB_LINK}/commits/${process.env.GITHUB_BRANCH}`,
                 {
                     headers: {
-                        Authorization: `token ${github_token}`,
+                        Authorization: `token ${process.env.GITHUB_PAT}`,
                     },
                 }
             );
