@@ -36,7 +36,6 @@ async function initializeBot(reboot) {
         if (!client.git) client.git = simpleGit(process.cwd());
         require('./github/GitHub')(client);
         client.git_commit = await client.getLastLocalCommit(client);
-        global.LogsHandler.sendSimplyLog('System', null, [{ name: reboot ? 'Update Finished' : 'Start', value: `Commit SHA: ${client.git_commit}` }]);
         console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.green(`Current commit: ${client.git_commit}`));
     }
     client.handling_commands_actions = [];
@@ -59,6 +58,7 @@ async function initializeBot(reboot) {
     }));
     client.servers_link = {};
     require(`${process.cwd()}/server_modules/servers_actions.js`)(client);
+    global.LogsHandler.sendSimplyLog('System', null, [{ name: reboot ? 'Update Finished' : 'Start', value: `Commit SHA: ${client.git_commit}` }]);
 };
 
 // HOTSWAP
