@@ -25,6 +25,7 @@ module.exports = async (client) => {
     if (!client.database) {
         console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('MySQL'), chalk.green('connecting'), chalk.white('...'));
         client.database = await client.mysqlCreate({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME})
+        console.log(typeof(client.database))
     };
 
 
