@@ -1,5 +1,3 @@
-const Discord = require('discord.js');
-
 module.exports = async (client) => {
     client.handleServerAdminSelection = async function (interaction) {
         let options = []

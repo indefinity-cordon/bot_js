@@ -1,4 +1,3 @@
-const Discord = require('discord.js');
 const chalk = require('chalk');
 
 module.exports = async (client) => {
@@ -6,7 +5,7 @@ module.exports = async (client) => {
         clearInterval(game_server.update_roles_interval);
         game_server.update_roles_interval = setInterval(
             updateRoles,
-            60 * 60 * 1000, // Каждые N минут (первое число)
+            60 * 60000, // Каждые N минут (первое число)
             client,
             game_server
         );
@@ -17,11 +16,11 @@ async function updateRoles(client, game_server) {
     try {
         let db_roles, db_links, guild;
         try {
-            db_roles = await client.databaseRequest(game_server.game_connection, "SELECT role_id, rank_id FROM discord_ranks", []);
+            db_roles = await client.mysqlRequest(game_server.game_connection, "SELECT role_id, rank_id FROM discord_ranks", []);
             if (!db_roles.length) throw 'No discord ranks';
             guild = await client.guilds.cache.get(game_server.guild);
             if (!guild) throw 'No guild';
-            db_links = await client.databaseRequest(game_server.game_connection, "SELECT discord_id, stable_rank FROM discord_links", []);
+            db_links = await client.mysqlRequest(game_server.game_connection, "SELECT discord_id, stable_rank FROM discord_links", []);
             if (!db_links.length) throw 'No discord links';
         } catch (cancel_reason) {
             console.log(chalk.blue(chalk.bold('Roles')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`${cancel_reason}`));
@@ -58,14 +57,14 @@ async function updateRoles(client, game_server) {
             }
             if (updates.length) {
                 for (const [rank_id, discord_id] of updates) {
-                    await client.databaseRequest(game_server.game_connection, "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank_id, discord_id]);
+                    client.mysqlRequest(game_server.game_connection, "UPDATE discord_links SET role_rank = ? WHERE discord_id = ?", [rank_id, discord_id]);
                 }
             }
         }
         async function fetchAndProcessMembers() {
             let after = null;
             do {
-                const members = await guild.members.list({ limit: 500, time: 5 * 60 * 1000, after });
+                const members = await guild.members.list({ limit: 10000, time: 5 * 60000, after });
                 if (members.size === 0) break;
                 await processBatch(members);
                 processedMembers += members.size;

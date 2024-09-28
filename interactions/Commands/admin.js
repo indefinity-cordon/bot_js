@@ -1,4 +1,4 @@
-const { Client, SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, InteractionType, CommandInteraction, EmbedBuilder } = require('discord.js');
+const { Client, SlashCommandBuilder, InteractionType, CommandInteraction } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,7 +23,7 @@ module.exports = {
                 let roleId = roleCache.get(command.role_req);
 
                 if (!roleId) {
-                    const roleResult = await client.databaseSettingsRequest(command.role_req);
+                    const roleResult = await client.mysqlSettingsRequest(command.role_req);
                     roleId = roleResult[0]?.param;
                     roleCache.set(command.role_req, roleId);
                 }

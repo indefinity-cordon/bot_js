@@ -1,12 +1,9 @@
-const Discord = require('discord.js');
-
 module.exports = async (client) => {
     client.serverMessageUpdator = async function (game_server) {
-        await game_server.game_connection
         await updateUpdatersMessages(client, game_server);
         game_server.update_status_messages_interval = setInterval(
             updateUpdatersMessages,
-            60 * 60 * 1000, // Каждые N минут (первое число)
+            60 * 60000, // Каждые N минут (первое число)
             client,
             game_server
         );
@@ -14,7 +11,7 @@ module.exports = async (client) => {
 };
 
 async function updateUpdatersMessages(client, game_server) {
-    const db_request = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id NOT LIKE '-%'", [game_server.server_name]);
+    const db_request = await client.mysqlRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id NOT LIKE '-%'", [game_server.server_name]);
     if (!db_request.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
@@ -42,7 +39,7 @@ async function updateUpdatersMessages(client, game_server) {
                 desc: 'preparing...'
             }, channel).then((message) => {
                 found_message = message;
-                client.databaseRequest(client.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, game_server.server_name, updater.type, updater.channel_id]);
+                client.mysqlRequest(client.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, game_server.server_name, updater.type, updater.channel_id]);
             });
         }
         if (!game_server.updater_messages[updater.type]) game_server.updater_messages[updater.type] = []
@@ -51,7 +48,7 @@ async function updateUpdatersMessages(client, game_server) {
     for(const type in game_server.updater_messages) {
         game_server.message_updater_intervals[type] = setInterval(
             game_server.handling_updaters[type],
-            1 * 60 * 1000, // Каждые N минут (первое число)
+            1 * 60000, // Каждые N минут (первое число)
             type
         );
     }

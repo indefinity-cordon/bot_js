@@ -1,6 +1,6 @@
 module.exports = async (client) => {
     const GameServerClass = require('./index.js');
-    const servers = await client.databaseRequest(client.database, "SELECT * FROM servers", []);
+    const servers = await client.mysqlRequest(client.database, "SELECT * FROM servers", []);
     if (!servers.length) {
         console.log('Failed to find servers. Aborting.');
     } else {
@@ -24,10 +24,11 @@ module.exports = async (client) => {
                 game_server.ip = server.ip;
                 game_server.port = server.port;
                 game_server.tgs_id = server.tgs_id;
+                game_server.pull_data_update();
             } else {
-                game_server = new GameServerClass(server);
-                await client.createDBConnection(game_server);
-                require(`./servers/${game_server.init_file_name}`)(client, game_server);
+                game_server = new GameServerClass(server, client);
+                await game_server.game_connection
+                await require(`./servers/${game_server.init_file_name}`)(client, game_server);
             }
             updated_servers[`${game_server.server_name}`] = game_server;
             if (!game_server.message_updater_intervals) {

@@ -1,7 +1,17 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const chalk = require('chalk');
+const simpleGit = require('simple-git');
 require('dotenv').config('.env');
+
+const LogsHandlerclass = require('./LogsHandler.js');
+global.LogsHandler = new LogsHandlerclass();
+if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
+    global.LogsHandler.botLogs = new Discord.WebhookClient({
+        id: process.env.WEBHOOK_ID,
+        token: process.env.WEBHOOK_TOKEN,
+    });
+}
 
 const client = new Discord.Client({
     autoReconnect: true,
@@ -17,58 +27,68 @@ const client = new Discord.Client({
     restTimeOffset: 0
 });
 
-const LogsHandlerclass = require('./LogsHandler.js');
-global.LogsHandler = new LogsHandlerclass();
-if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
-    global.LogsHandler.botLogs = new Discord.WebhookClient({
-        id: process.env.WEBHOOK_ID,
-        token: process.env.WEBHOOK_TOKEN,
+initializeBot();
+
+// INITIALIZE
+
+async function initializeBot(reboot) {
+    client.handling_commands_actions = [];
+    client.handling_commands = [];
+    require('./database/MySQL')(client);
+    if (process.env.REDIS_STRING) require('./database/Redis')(client);
+    client.INT_modules = [];
+    await client.login(process.env.DISCORD_TOKEN);
+    fs.readdirSync('./handlers').forEach((dir) => {
+        fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
+            if (reboot) delete require.cache[require.resolve(`./handlers/${dir}/${handler}`)];
+            require(`./handlers/${dir}/${handler}`)(client);
+        });
     });
-}
-
-// Use in funny moments
-client.restartApp = async function (reason) {
-    console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.green('App'), chalk.white('...'), chalk.red('Restarting process'), chalk.white('...'));
-    const embed = new Discord.EmbedBuilder()
-    .setTitle('System')
-    .addFields([
-        {
-            name: 'Restart',
-            value: reason ? `Reason: ${reason}` : 'Unspecified',
-        }
-    ])
-    await global.LogsHandler.send_log(embed);
-    process.exit(1);
-};
-
-client.handling_commands_actions = [];
-client.handling_commands = [];
-
-require('./database/MySQL')(client);
-if (process.env.REDIS_STRING) require('./socket/Redis')(client);
-if (process.env.GITHUB_PAT) require('./github/GitHub')(client);
-
-initializeMess(client);
-
-async function initializeMess (client) {
     await client.database;
-    client.handling_game_servers = await client.databaseRequest(client.database, "SELECT server_name, db_name FROM servers", []);
+    client.handling_game_servers = await client.mysqlRequest(client.database, "SELECT server_name, db_name FROM servers", []);
     client.servers_options = client.handling_game_servers.map(server => ({
         label: server.server_name,
         value: server.server_name
     }));
     client.servers_link = {};
-    client.ServerActions = require(`${process.cwd()}/server_modules/servers_actions.js`);
-    await client.login(process.env.DISCORD_TOKEN);
-    fs.readdirSync('./handlers').forEach((dir) => {
-        fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
-            require(`./handlers/${dir}/${handler}`)(client);
-        });
-    });
-    client.ServerActions(client);
+    require(`${process.cwd()}/server_modules/servers_actions.js`)(client);
+    if (process.env.GITHUB_PAT) {
+        if (!client.git) client.git = simpleGit(process.cwd());
+        require('./github/GitHub')(client);
+        client.git_commit = await client.getLastLocalCommit(client);
+        global.LogsHandler.sendSimplyLog('System', null, [{ name: reboot ? 'Update Finished' : 'Start', value: `Commit SHA: ${client.git_commit}` }]);
+        console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.green(`Current commit: ${client.git_commit}`));
+    }
 };
 
+// HOTSWAP
+
+client.hotSwap = async function () {
+    console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.green('App'), chalk.white('...'), chalk.red('Hot swap triggered'), chalk.white('...'));
+    await global.LogsHandler.sendSimplyLog('System', null, [{ name: 'HotSwap', value: `Ongoing hotswap` }]);
+
+    // CLEAR ALL
+    for (const interval in client.INT_modules) {
+        clearInterval(interval);
+    }
+    delete require.cache[require.resolve('./database/MySQL')];
+    delete require.cache[require.resolve('./database/Redis')];
+    delete require.cache[require.resolve('./github/GitHub')];
+    delete require.cache[require.resolve(`${process.cwd()}/server_modules/servers_actions.js`)];
+
+    //RELOAD ALL
+    initializeBot(true)
+};
+
+// END
+
 client.commands = new Discord.Collection();
+
+client.restartApp = async function (reason) {
+    console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.green('App'), chalk.white('...'), chalk.red('Restarting process'), chalk.white('...'));
+    await global.LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
+    process.exit(1);
+};
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);

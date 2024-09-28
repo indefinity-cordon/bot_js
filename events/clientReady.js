@@ -6,7 +6,7 @@ module.exports = async (client) => {
     console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.red(`Shard #${client.shard.ids[0] + 1}`), chalk.green('is ready!'));
     console.log(chalk.blue(chalk.bold('Bot')), chalk.white('>>'), chalk.green('Started on'), chalk.red(`${client.guilds.cache.size}`), chalk.green('servers!'));
     updateStatus(client)
-    setInterval(() => { updateStatus(client) }, 3600000); 
+    client.INT_modules += setInterval(() => { updateStatus(client) }, 3600000); 
 }
 
 async function updateStatus(client) {

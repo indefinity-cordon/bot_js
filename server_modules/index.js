@@ -74,7 +74,12 @@ module.exports = class Server {
      */
     server_online
 
-    constructor(database_server) {
+    /**
+     * @type {Number}
+     */
+    online
+
+    constructor(database_server, client) {
         this.server_name = database_server.server_name;
         this.database = database_server.db_name;
         this.init_file_name = database_server.file_name;
@@ -84,11 +89,19 @@ module.exports = class Server {
         this.tgs_id = database_server.tgs_id;
         this.updater_messages = {};
         this.update_custom_operators_data = {'intervals': {}, 'additional': {}};
-        this.game_connection = null;
+        this.game_connection = client.mysqlCreate({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: game_server.database});
         this.message_updater_intervals = null;
         this.update_status_messages_interval = null;
         this.update_roles_interval = null;
         this.update_custom_operatos_interval = null;
         this.server_online = false;
+        this.online = 0;
+        this.pull_data_update = async function () {
+            const server_settings = await client.mysqlRequest(client.database, "SELECT name, param FROM server_settings WHERE server_name = ?", [this.server_name]);
+            for (const setting of server_settings) {
+                this[setting.name] = setting.param;
+            }
+        };
+        this.pull_data_update()
     }
 }

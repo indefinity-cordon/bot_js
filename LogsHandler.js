@@ -25,7 +25,12 @@ module.exports = class LogsHandlerclass {
     /**
      * @type {Function}
      */
-    send_log;
+    sendLog;
+
+    /**
+     * @type {Function}
+     */
+    sendSimplyLog;
 
     /**
      * @type {boolean}
@@ -59,9 +64,9 @@ module.exports = class LogsHandlerclass {
         this.error = async function (error, title, name) {
             this.handle_message(error);
             const embed = await this.build_error_embed(error, title, name);
-            this.send_log(embed);
+            this.sendLog(embed);
         };
-        this.send_log = async function (embed) {
+        this.sendLog = async function (embed) {
             if (!this.botLogs) {
                 if (!this.notified) {
                     console.log(chalk.blue(chalk.bold('Webhook')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('no webhook'));
@@ -75,6 +80,13 @@ module.exports = class LogsHandlerclass {
             }).catch((error) => {
                 console.log(chalk.blue(chalk.bold('Webhook')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(error));
             });
+        };
+        this.sendSimplyLog = async function (title, desc, fields) {
+            const embed = new Discord.EmbedBuilder()
+            if (title) embed.setTitle(title);
+            if (desc) embed.setDescription(desc);
+            if (fields) embed.addFields(fields);
+            this.sendLog(embed)
         };
     }
 }

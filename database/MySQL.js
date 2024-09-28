@@ -1,41 +1,35 @@
 const mysql = require('mysql');
 const chalk = require('chalk');
 
-const connection = mysql.createConnection({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME});
-connection.on('error', err => console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('MySQL Main'), chalk.white('>>'), chalk.red(err)));
-
 module.exports = async (client) => {
-    console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('MySQL'), chalk.green('connecting'), chalk.white('...'));
-    client.database = new Promise((resolve, reject) => {
-        connection.connect((err, result) => {
-            if (err) {
-                console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.blue('MySQL'), chalk.red('Failed connect to the Main database'));
-                reject(err);
-            } else {
-                client.database = connection;
-                console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('MySQL'), chalk.green('Connected to the Main database'));
+    client.mysqlCreate = async function (connection_params) {
+        const connection = mysql.createConnection(connection_params);
+        connection.on('error', err => console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.blue('MySQL'), chalk.red(err)));
+        return new Promise(async (resolve, reject) => {
+            try {
+                await mysqlConnect(connection);
+                if (game_server) game_server.game_connection = connection;
+                else client.database = connection;
+                client.INT_modules += setInterval(async () => {
+                    const mysql_active = await checkMySQLConnection(connection);
+                    if (!mysql_active) {
+                        console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed to restore MySQL connection'));
+                    }
+                }, 60000);
                 resolve(result);
+            } catch (err) {
+                reject(err);
             }
         });
-    });
+    };
 
-    client.createDBConnection = async function (game_server) {
-        const game_connection = mysql.createConnection({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: game_server.database});
-        game_connection.on('error', err => console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.blue('MySQL Game'), chalk.red(err)));
-        return await new Promise((resolve, reject) => {
-            game_connection.connect((err, result) => {
-                if (err) {
-                    console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.blue('MySQL Game'), chalk.red('Failed connect to the Game database'));
-                    reject(err);
-                } else {
-                    game_server.game_connection = game_connection
-                    console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('MySQL Game'), chalk.green('Connected to the Game database'));
-                    resolve(result);
-                }
-            });
-        });
-    }
-    client.databaseRequest = async function (database, query, params) {
+    if (!client.database) {
+        console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('MySQL'), chalk.green('connecting'), chalk.white('...'));
+        client.database = client.mysqlCreate({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME})
+    };
+
+
+    client.mysqlRequest = async function (database, query, params) {
         if (!database) {
             console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.blue('MySQL'), chalk.red('Wrong DB at request'));
             return;
@@ -50,7 +44,8 @@ module.exports = async (client) => {
             });
         });
     };
-    client.databaseSettingsRequest = async function (query) {
+
+    client.mysqlSettingsRequest = async function (query) {
         if (!client.database) {
             console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.blue('MySQL'), chalk.red('No DB at request'));
             return;
@@ -65,4 +60,36 @@ module.exports = async (client) => {
             });
         });
     };
-}
+};
+
+async function checkMySQLConnection(connection) {
+    return new Promise((resolve) => {
+        connection.ping(async (err) => {
+            if (err) {
+                console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('MySQL Connection lost, attempting to reconnect...'));
+                try {
+                    await mysqlConnect(connection);
+                    resolve(true);
+                } catch (err) {
+                    resolve(false);
+                }
+            } else {
+                resolve(true);
+            }
+        });
+    });
+};
+
+async function mysqlConnect(connection) {
+    return new Promise((resolve, reject) => {
+        connection.connect((err) => {
+            if (err) {
+                console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed to connect to MySQL'), err);
+                reject(err);
+            } else {
+                console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.green('Connected to MySQL'));
+                resolve(true);
+            }
+        });
+    });
+};

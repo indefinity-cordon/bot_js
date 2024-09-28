@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-require('dotenv').config('.env');
 
 let subscriber;
 let collectors = [];
@@ -7,9 +6,9 @@ let collectors = [];
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
         startListining(client);
-        setInterval(
+        client.INT_modules += setInterval(
             startListining,
-            20 * 60 * 1000, // Каждые N минут (первое число),
+            20 * 60000, // Каждые N минут (первое число),
             client
         );
     });
@@ -33,7 +32,7 @@ async function startListining(client) {
         old_collector.stop();
     }
     for (const server_name in client.servers_link) {
-        const db_request = await client.databaseRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id = '-2'", [client.servers_link[server_name].server_name]);
+        const db_request = await client.mysqlRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id = '-2'", [client.servers_link[server_name].server_name]);
         for (const message_collector of db_request) {
             const channel = await client.channels.fetch(message_collector.channel_id);
             if (!channel) return;

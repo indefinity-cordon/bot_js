@@ -58,6 +58,7 @@ module.exports = (client) => {
                         client.notified[`${port}:${address}`] = true;
                         console.log(chalk.blue(chalk.bold('ByondAPI')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`));
                         if (game_server.handle_status) game_server.handle_status(false);
+                        game_server.online = 0
                     }
                     resolve();
                 });
