@@ -44,7 +44,6 @@ async function initializeBot(reboot) {
             require(`./handlers/${dir}/${handler}`)(client);
         });
     });
-    await client.database;
     client.handling_game_servers = await client.mysqlRequest(client.database, "SELECT server_name, db_name FROM servers", []);
     client.servers_options = client.handling_game_servers.map(server => ({
         label: server.server_name,
