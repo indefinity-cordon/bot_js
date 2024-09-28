@@ -24,8 +24,7 @@ module.exports = async (client) => {
 
     client.getLastLocalCommit = async function (client) {
         try {
-            let github_branch = await client.mysqlSettingsRequest('github_branch');
-            const log = await client.git.log([github_branch[0].param]);
+            const log = await client.git.log([process.env.GITHUB_BRANCH]);
             return log.latest.hash;
         } catch (error) {
             console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed local: ${error}`));
@@ -34,8 +33,7 @@ module.exports = async (client) => {
 
     client.pullChanges = async function (client) {
         try {
-            let github_branch = await client.mysqlSettingsRequest('github_branch');
-            await client.git.pull('origin', github_branch[0].param);
+            await client.git.pull('origin', process.env.GITHUB_BRANCH);
             console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('Pulled latest changes'));
         } catch (error) {
             console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed: ${error}`));
