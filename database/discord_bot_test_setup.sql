@@ -52,7 +52,6 @@ INSERT INTO `settings` (`id`, `name`, `param`) VALUES
 	(2, 'tgs_address', 'http://localhost:5000');
 	(3, 'verified_role', '1260279361593147392');
 	(4, 'anti_verified_role', '1260279307788488796');
-  (5, 'new_round_message', '<@&1197532464118239244>\nНовый раунд');
   (6, 'tgs_role_id', '1260284596365426771');
   (7, 'admin_role_id', '1260284596365426771');
   (8, 'github_branch', 'dev');

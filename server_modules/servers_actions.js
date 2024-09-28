@@ -25,15 +25,8 @@ module.exports = async (client) => {
                 game_server.port = server.port;
                 game_server.tgs_id = server.tgs_id;
             } else {
-                game_server = new GameServerClass();
-                game_server.server_name = server.server_name;
-                game_server.database = server.db_name;
+                game_server = new GameServerClass(server);
                 await client.createDBConnection(game_server);
-                game_server.init_file_name = server.file_name;
-                game_server.guild = server.guild;
-                game_server.ip = server.ip;
-                game_server.port = server.port;
-                game_server.tgs_id = server.tgs_id;
                 require(`./servers/${game_server.init_file_name}`)(client, game_server);
             }
             updated_servers[`${game_server.server_name}`] = game_server;

@@ -51,12 +51,20 @@ module.exports = (client) => {
                         reject();
                     }
                 });
-                client_api.on('error', (err) => {
+                client_api.on('error', async (err) => {
                     client.connections_in_proggress[`${port}:${address}`] = null;
                     client_api.end();
                     if(!client.notified[`${port}:${address}`]) {
                         client.notified[`${port}:${address}`] = true;
                         console.log(chalk.blue(chalk.bold('ByondAPI')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Can't connect to ${address}:${port}: ${err.message}`));
+                        if (game_server.server_online) {
+                            game_server.server_online = false;
+                            const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+                            const channel = await client.channels.fetch(status[0].channel_id);
+                            if (channel) {
+                                await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
+                            }
+                        }
                     }
                     resolve();
                 });

@@ -751,8 +751,16 @@ module.exports = (client, game_server) => {
     }
 
     async function handleRoundStart(channel) {
-        if (!game_server.new_round_message) {
-            game_server.new_round_message = true;
+        if (!game_server.server_online) {
+            game_server.server_online = true;
+            const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+            const channel = await client.channels.fetch(status[0].channel_id);
+            if (channel) {
+                const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
+                const now_date = new Date();
+                const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
+                await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 30)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
+            }
             return;
         }
         const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
@@ -986,7 +994,7 @@ async function updateServerCustomOperators(client, game_server) {
             if (start_date_utc > now_utc) {
                 const time_remaining = start_date_utc - now_utc;
                 game_server.update_custom_operators_data['additional']['autostart'] = setTimeout(async () => {
-                    await autoStartServer(client, game_server, now_date, hours, minutes);
+                    await autoStartServer(client, game_server);
                 }, time_remaining);
             }
         }
@@ -999,7 +1007,7 @@ async function updateServerCustomOperators(client, game_server) {
                 const time_remaining = start_date_utc - now_utc;
                 if (!game_server.update_custom_operators_data) {
                     game_server.update_custom_operators_data = setTimeout(async () => {
-                        await autoStartServer(client, game_server, now_date, hours, minutes);
+                        await autoStartServer(client, game_server);
                     }, time_remaining);
                 }
             }
@@ -1008,18 +1016,11 @@ async function updateServerCustomOperators(client, game_server) {
 };
 
 
-async function autoStartServer(client, game_server, now_date, hours, minutes) {
+async function autoStartServer(client, game_server) {
+    if(game_server.server_online) return;
     const instance = await client.tgs_getInstance(game_server.tgs_id);
     if(!instance) return;
     client.tgs_start(null, game_server.tgs_id)
-    game_server.new_round_message = false;
-    const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
-    const channel = await client.channels.fetch(status[0].channel_id);
-    if (channel) {
-        const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
-        const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), hours, minutes + 30, 0));
-        await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
-    }
 };
 
 
