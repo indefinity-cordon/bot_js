@@ -939,7 +939,7 @@ module.exports = async (client, game_server) => {
     if (server_status[0]) {
         game_server.server_online = !!server_status[0].param;
         game_server.handle_status = async function (new_status) {
-            if (!game_server.server_online == new_status) return;
+            if (game_server.server_online == new_status) return;
             game_server.server_online = new_status;
             await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.server_name]);
             if (!game_server.server_online) {
