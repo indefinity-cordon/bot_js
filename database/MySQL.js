@@ -14,7 +14,7 @@ module.exports = async (client) => {
                         console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed to restore MySQL connection'));
                     }
                 }, 60000);
-                resolve(result);
+                resolve(true);
             } catch (err) {
                 reject(err);
             }
