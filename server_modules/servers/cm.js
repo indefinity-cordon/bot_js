@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 
-module.exports = (client, game_server) => {
+module.exports = async (client, game_server) => {
     game_server.updateStatusMessage = async function (type) {
         try {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.port, address: game_server.ip});
@@ -748,21 +748,10 @@ module.exports = (client, game_server) => {
             messageQueue[channel.id] = [];
         }
         messageQueue[channel.id].push({ data });
-    }
+    };
 
     async function handleRoundStart(channel) {
-        if (!game_server.server_online) {
-            game_server.server_online = true;
-            const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
-            const channel = await client.channels.fetch(status[0].channel_id);
-            if (channel) {
-                const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
-                const now_date = new Date();
-                const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
-                await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 30)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
-            }
-            return;
-        }
+        game_server.handle_status(true);
         const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
         await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
     };
@@ -892,7 +881,7 @@ module.exports = (client, game_server) => {
         } else {
             await client.sendEmbed({ embeds: [embed] }, channel);
         }
-    }
+    };
 
     async function handleAsay(channel, data, combine = false) {
         const messageContent = data.message
@@ -910,7 +899,7 @@ module.exports = (client, game_server) => {
         } else {
             await client.sendEmbed({ embeds: [embed] }, channel);
         }
-    }
+    };
 
     setInterval(async () => {
         for (const channelId in messageQueue) {
@@ -945,6 +934,33 @@ module.exports = (client, game_server) => {
             }
         }
     }, 2000);
+
+    const server_status = await client.databaseRequest(client.database, "SELECT param FROM server_settings WHERE server_name = ? AND name = 'server_status'", [game_server.server_name]);
+    if (server_status[0]) {
+        game_server.server_online = !!server_status[0].param;
+        game_server.handle_status = async function (new_status) {
+            if (!game_server.server_online == new_status) return;
+            game_server.server_online = new_status;
+            await client.databaseRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.server_name]);
+            if (!game_server.server_online) {
+                const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+                const channel = await client.channels.fetch(status[0].channel_id);
+                if (channel) {
+                    await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
+                }
+            } else {
+                const status = await client.databaseRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+                const channel = await client.channels.fetch(status[0].channel_id);
+                if (channel) {
+                    const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
+                    const now_date = new Date();
+                    const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
+                    await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 30)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
+                }
+                return;
+            }
+        };
+    }
 }
 
 
