@@ -753,7 +753,7 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleRoundStart(channel) {
-        if (game_server.server_online == true && game_server.online < 10) {
+        if (game_server.server_online == true && game_server.online < 5) {
             game_server.handle_status(false);
             const instance = await client.tgs_getInstance(game_server.tgs_id);
             if (instance) client.tgs_stop(null, game_server.tgs_id);
