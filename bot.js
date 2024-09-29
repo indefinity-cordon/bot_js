@@ -27,9 +27,10 @@ const client = new Discord.Client({
     restTimeOffset: 0
 });
 
-initializeBot();
 
 // INITIALIZE
+
+initializeBot();
 
 async function initializeBot(reboot) {
     if (process.env.GITHUB_PAT) {
@@ -84,6 +85,7 @@ client.hotSwap = async function () {
 };
 
 // END
+
 
 client.commands = new Discord.Collection();
 
