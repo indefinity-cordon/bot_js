@@ -30,6 +30,8 @@ module.exports = async (client, game_server) => {
                 }, message);
             }
         } catch (error) {
+            if (game_server.handle_status) game_server.handle_status(false);
+            game_server.online = 0
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
