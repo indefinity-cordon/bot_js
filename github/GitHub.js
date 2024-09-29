@@ -42,8 +42,7 @@ module.exports = async (client) => {
 
     client.checkImportantFiles = async function () {
         try {
-            const diff = await client.git.diff(['HEAD', '--', 'bot.js', 'LogsHandler.json', 'package.json']);
-            return !!diff;
+            return await client.git.diff(['HEAD', '--', 'bot.js', 'LogsHandler.json', 'package.json']);
         } catch (error) {
             console.log(chalk.red('Failed to check important files:', error));
             return false;
@@ -62,7 +61,7 @@ module.exports = async (client) => {
             const full_reboot = await client.checkImportantFiles();
             await client.pullChanges(client);
             if (full_reboot) client.restartApp('Pulled new changes from GIT');
-            else client.hotSwap()
+            else client.hotSwap();
         }
     };
 
