@@ -4,7 +4,6 @@ const chalk = require('chalk');
 const simpleGit = require('simple-git');
 require('dotenv').config('.env');
 
-
 const LogsHandlerclass = require('./LogsHandler.js');
 global.LogsHandler = new LogsHandlerclass();
 if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
