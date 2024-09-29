@@ -753,12 +753,12 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleRoundStart(channel) {
-        if (game_server.online < 10) {
+        if (game_server.server_online == true && game_server.online < 10) {
             game_server.handle_status(false);
             const instance = await client.tgs_getInstance(game_server.tgs_id);
-            if(instance) client.tgs_stop(null, game_server.tgs_id);
+            if (instance) client.tgs_stop(null, game_server.tgs_id);
         } else {
-            game_server.handle_status(true);
+            if (game_server.handle_status(true)) return;
             const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
             await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
         }
@@ -945,7 +945,7 @@ module.exports = async (client, game_server) => {
     }, 2000);
 
     game_server.handle_status = async function (new_status) {
-        if (game_server.server_online == new_status) return;
+        if (game_server.server_online == new_status) return false;
         game_server.server_online = new_status;
         await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.server_name]);
         await game_server.pull_data_update();
@@ -958,7 +958,6 @@ module.exports = async (client, game_server) => {
                 const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 30)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
             }
-            return;
         } else {
             const status = await client.mysqlRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
             const channel = await client.channels.fetch(status[0].channel_id);
@@ -966,6 +965,7 @@ module.exports = async (client, game_server) => {
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
             }
         }
+        return true;
     };
 };
 
