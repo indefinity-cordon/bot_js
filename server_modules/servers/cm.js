@@ -753,12 +753,12 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleRoundStart(channel) {
-        if (game_server.server_online == true && game_server.online < 5) {
+        if (game_server.server_online == true && game_server.online < 5) {// TODO: five value in DB
             game_server.handle_status(false);
             const instance = await client.tgs_getInstance(game_server.tgs_id);
             if (instance) client.tgs_stop(null, game_server.tgs_id);
         } else {
-            if (game_server.handle_status(true)) return;
+            if (await game_server.handle_status(true)) return;
             const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
             await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
         }
