@@ -753,11 +753,12 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleRoundStart(channel) {
-        game_server.handle_status(true);
         if (game_server.online < 10) {
+            game_server.handle_status(false);
             const instance = await client.tgs_getInstance(game_server.tgs_id);
             if(instance) client.tgs_stop(null, game_server.tgs_id);
         } else {
+            game_server.handle_status(true);
             const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
             await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
         }
