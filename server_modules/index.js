@@ -103,5 +103,19 @@ module.exports = class Server {
             }
         };
         this.pull_data_update()
+        this.drop_link = async function () {
+            clearInterval(this.update_status_messages_interval);
+            clearInterval(this.update_roles_interval);
+            clearInterval(this.update_custom_operatos_interval);
+            for(const type in this.updater_messages) {
+                clearInterval(this.message_updater_intervals[type]);
+                delete this.message_updater_intervals[type];
+                delete this.updater_messages[type];
+            }
+            for(const type in this.update_custom_operators_data['intervals']) {
+                clearInterval(this.update_custom_operators_data[type]);
+            }
+            this.updater_messages = null;
+        };
     }
 }

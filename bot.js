@@ -75,6 +75,12 @@ client.hotSwap = async function () {
     for (const interval in client.INT_modules) {
         clearInterval(interval);
     }
+
+    for (const server_name in client.servers_link) {
+        const game_server = client.servers_link[server_name];
+        game_server.drop_link()
+    }
+
     delete require.cache[require.resolve('./database/MySQL')];
     delete require.cache[require.resolve('./database/Redis')];
     delete require.cache[require.resolve('./github/GitHub')];

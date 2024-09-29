@@ -40,19 +40,8 @@ module.exports = async (client) => {
         }
         for (const server_name in client.servers_link) {
             if (!updated_servers[server_name]) {
-                let remove_game_server = client.servers_link[server_name];
-                clearInterval(remove_game_server.update_status_messages_interval);
-                clearInterval(remove_game_server.update_roles_interval);
-                clearInterval(remove_game_server.update_custom_operatos_interval);
-                for(const type in remove_game_server.updater_messages) {
-                    clearInterval(remove_game_server.message_updater_intervals[type]);
-                    delete remove_game_server.message_updater_intervals[type];
-                    delete remove_game_server.updater_messages[type];
-                }
-                for(const type in remove_game_server.update_custom_operators_data['intervals']) {
-                    clearInterval(remove_game_server.update_custom_operators_data[type]);
-                }
-                remove_game_server.updater_messages = null;
+                const game_server = client.servers_link[server_name];
+                game_server.drop_link()
                 delete client.servers_link[server_name];
             }
         }
