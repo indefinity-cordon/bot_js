@@ -57,7 +57,10 @@ async function initializeBot(reboot) {
         value: server.server_name
     }));
     client.servers_link = {};
-    require(`${process.cwd()}/server_modules/servers_actions.js`)(client);
+    require('./server_modules/servers_actions.js')(client);
+    client.INT_modules += setInterval(async () => {
+        require('./server_modules/servers_actions.js')(client);
+    }, 120 * 60000);
     global.LogsHandler.sendSimplyLog('System', null, [{ name: reboot ? 'Update Finished' : 'Start', value: `Commit SHA: ${client.git_commit}` }]);
 };
 
@@ -74,7 +77,7 @@ client.hotSwap = async function () {
     delete require.cache[require.resolve('./database/MySQL')];
     delete require.cache[require.resolve('./database/Redis')];
     delete require.cache[require.resolve('./github/GitHub')];
-    delete require.cache[require.resolve(`${process.cwd()}/server_modules/servers_actions.js`)];
+    delete require.cache[require.resolve('./server_modules/servers_actions.js')];
 
     //RELOAD ALL
     initializeBot(true)
