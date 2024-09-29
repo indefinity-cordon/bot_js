@@ -42,11 +42,9 @@ module.exports = async (client) => {
 
     client.checkImportantFiles = async function () {
         try {
-            const diff = await client.git.diff(['HEAD', '--', 'bot.js', 'LogsHandler.json', 'package.json']);
-            console.log(chalk.blue('Git Diff Result:'), diff);
-            const cachedDiff = await client.git.diff(['--cached', 'HEAD', '--', 'bot.js', 'LogsHandler.json', 'package.json']);
-            console.log(chalk.blue('Git Cached Diff Result:'), cachedDiff);
-            return diff.length > 0 || cachedDiff.length > 0;
+            const remote_SHA = await client.git.raw(['rev-parse', `origin/${process.env.GITHUB_BRANCH}`]);
+            const diff = await client.git.diff([remote_SHA.trim(), '--', 'bot.js', 'LogsHandler.json', 'package.json']);
+            return diff.length > 0;
         } catch (error) {
             console.log(chalk.red('Failed to check important files:', error));
             return false;
