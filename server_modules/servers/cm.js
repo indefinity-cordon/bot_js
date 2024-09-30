@@ -8,7 +8,6 @@ module.exports = async (client, game_server) => {
             const response = JSON.parse(server_response);
             const data = response.data;
             if (!data) throw 'Returned no data';
-            game_server.online = data.players
             const time = Math.floor(data.round_duration / 600);
             let fields = [];
             fields.push({ name: '**Round Name**', value: `${data.round_name} `, inline: true});
@@ -31,7 +30,6 @@ module.exports = async (client, game_server) => {
             }
         } catch (error) {
             game_server.handle_status(false);
-            game_server.online = 0
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
@@ -753,12 +751,12 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleRoundStart(channel) {
-        if (game_server.server_online == true) {
+        if (game_server.player_low_autoshutdown && game_server.server_online == true) {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.port, address: game_server.ip});
             if (server_response) {
                 const response = JSON.parse(server_response);
                 const data = response.data;
-                if (data && data.players < 5) {
+                if (data && data.players < game_server.player_low_autoshutdown) {
                     game_server.handle_status(false);
                     const instance = await client.tgs_getInstance(game_server.tgs_id);
                     if (instance) client.tgs_stop(null, game_server.tgs_id);

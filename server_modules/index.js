@@ -74,11 +74,6 @@ module.exports = class Server {
      */
     server_online
 
-    /**
-     * @type {Number}
-     */
-    online
-
     constructor(database_server, client) {
         this.server_name = database_server.server_name;
         this.database = database_server.db_name;
@@ -95,7 +90,6 @@ module.exports = class Server {
         this.update_roles_interval = null;
         this.update_custom_operatos_interval = null;
         this.server_online = false;
-        this.online = 0;
         this.pull_data_update = async function () {
             const server_settings = await client.mysqlRequest(client.database, "SELECT name, param FROM server_settings WHERE server_name = ?", [this.server_name]);
             for (const setting of server_settings) {
