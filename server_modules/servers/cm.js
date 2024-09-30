@@ -753,14 +753,22 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleRoundStart(channel) {
-        if (game_server.server_online == true && game_server.online < 5) {// TODO: five value in DB
-            game_server.handle_status(false);
-            const instance = await client.tgs_getInstance(game_server.tgs_id);
-            if (instance) client.tgs_stop(null, game_server.tgs_id);
-        } else {
-            if (await game_server.handle_status(true)) return;
-            const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
-            await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
+        if (game_server.server_online == true) {
+            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.port, address: game_server.ip});
+            if (server_response) {
+                const response = JSON.parse(server_response);
+                const data = response.data;
+                if (data && data.players < 5) {
+                    game_server.handle_status(false);
+                    const instance = await client.tgs_getInstance(game_server.tgs_id);
+                    if (instance) client.tgs_stop(null, game_server.tgs_id);
+                    return
+                }
+            }
+
+        if (await game_server.handle_status(true)) return;
+        const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
+        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel)
         }
     };
 
