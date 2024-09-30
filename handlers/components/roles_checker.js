@@ -64,7 +64,7 @@ async function updateRoles(client, game_server) {
         async function fetchAndProcessMembers() {
             let after = null;
             do {
-                const members = await guild.members.list({ limit: 10000, time: 5 * 60000, after });
+                const members = await guild.members.list({ limit: 1000, time: 5 * 60000, after });
                 if (members.size === 0) break;
                 await processBatch(members);
                 processedMembers += members.size;
