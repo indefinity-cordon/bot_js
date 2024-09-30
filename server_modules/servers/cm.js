@@ -953,7 +953,6 @@ module.exports = async (client, game_server) => {
     game_server.handle_status = async function (new_status) {
         if (game_server.server_online == new_status) return false;
         game_server.server_online = new_status;
-        await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.server_name]);
         await game_server.pull_data_update();
         if (game_server.server_online) {
             const status = await client.mysqlRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
@@ -1001,8 +1000,8 @@ async function updateServerCustomOperators(client, game_server) {
     }
 
     const server_schedule_data = JSON.parse(game_server.auto_start_config);
-    if (game_server.update_custom_operators_data['additional']['autostart']) {
-        clearTimeout(game_server.update_custom_operators_data['additional']['autostart']);
+    if (game_server.update_custom_operators_data['intervals']['autostart']) {
+        clearTimeout(game_server.update_custom_operators_data['intervals']['autostart']);
     }
 
     const now_date = new Date();
@@ -1021,7 +1020,7 @@ async function updateServerCustomOperators(client, game_server) {
             const start_date_utc = new Date(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), hours, minutes, 0);
             if (start_date_utc > now_utc) {
                 const time_remaining = start_date_utc - now_utc;
-                game_server.update_custom_operators_data['additional']['autostart'] = setTimeout(async () => {
+                game_server.update_custom_operators_data['intervals']['autostart'] = setTimeout(async () => {
                     await autoStartServer(client, game_server);
                 }, time_remaining);
             }
@@ -1033,11 +1032,9 @@ async function updateServerCustomOperators(client, game_server) {
             const start_date_utc = new Date(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), hours, minutes, 0);
             if (start_date_utc > now_utc) {
                 const time_remaining = start_date_utc - now_utc;
-                if (!game_server.update_custom_operators_data) {
-                    game_server.update_custom_operators_data = setTimeout(async () => {
-                        await autoStartServer(client, game_server);
-                    }, time_remaining);
-                }
+                game_server.update_custom_operators_data['intervals']['autostart'] = setTimeout(async () => {
+                    await autoStartServer(client, game_server);
+                }, time_remaining);
             }
         }
     }
