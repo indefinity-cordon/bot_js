@@ -69,11 +69,6 @@ module.exports = class Server {
      */
     update_custom_operators_data;
 
-    /**
-     * @type {Boolean}
-     */
-    server_online
-
     constructor(database_server, client) {
         this.server_name = database_server.server_name;
         this.database = database_server.db_name;
@@ -89,7 +84,6 @@ module.exports = class Server {
         this.update_status_messages_interval = null;
         this.update_roles_interval = null;
         this.update_custom_operatos_interval = null;
-        this.server_online = false;
         this.pull_data_update = async function () {
             const server_settings = await client.mysqlRequest(client.database, "SELECT name, param FROM server_settings WHERE server_name = ?", [this.server_name]);
             for (const setting of server_settings) {
