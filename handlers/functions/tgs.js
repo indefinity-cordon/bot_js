@@ -1,6 +1,5 @@
 const base64 = require('base-64');
 const axios = require('axios');
-const chalk = require('chalk');
 
 let bearerValidUntil = 0;
 let bearer = { Authorization: 'fixme' };
@@ -27,7 +26,7 @@ module.exports = async (client) => {
             const now_date = new Date();
             bearerValidUntil = new Date(now_date.getTime() - now_date.getTimezoneOffset() * 60000);
         } catch (error) {
-            console.log(chalk.blue(chalk.bold('TGS')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Auth'), chalk.red(`Failed: ${error}`));
+            console.log('TGS >> [ERROR] >> Auth Failed:', error);
         }
     };
 

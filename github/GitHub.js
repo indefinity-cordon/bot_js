@@ -1,5 +1,3 @@
-const Discord = require('discord.js');
-const chalk = require('chalk');
 const axios = require('axios');
 
 module.exports = async (client) => {
@@ -18,7 +16,7 @@ module.exports = async (client) => {
             );
             return response.data.sha;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed remote: ${error}`));
+            console.log('GitHub >> [ERROR] >> Failed (remote):', error);
         }
     };
 
@@ -27,16 +25,16 @@ module.exports = async (client) => {
             const log = await client.git.log([process.env.GITHUB_BRANCH]);
             return log.latest.hash;
         } catch (error) {
-            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed local: ${error}`));
+            console.log('GitHub >> [ERROR] >> Failed (local):', error);
         }
     };
 
     client.pullChanges = async function (client) {
         try {
             await client.git.pull('origin', process.env.GITHUB_BRANCH);
-            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('Pulled latest changes'));
+            console.log('GitHub >> Pulled latest changes');
         } catch (error) {
-            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Failed: ${error}`));
+            console.log('GitHub >> [ERROR] >>', error);
         }
     };
 
@@ -46,7 +44,7 @@ module.exports = async (client) => {
             const diff = await client.git.diff([remote_SHA.trim(), '--', 'bot.js', 'LogsHandler.json', 'package.json']);
             return diff.length > 0;
         } catch (error) {
-            console.log(chalk.red('Failed to check important files:', error));
+            console.log('GitHub >> [ERROR] >>', error);
             return false;
         }
     };
@@ -55,10 +53,10 @@ module.exports = async (client) => {
         const remote_commit = await client.getLastCommit(client);
         const local_commit = await client.getLastLocalCommit(client);
         if (!remote_commit || !local_commit) {
-            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed version check, make sure all setted up right: remote, local and github pat'));
+            console.log('GitHub >> [WARNING] >> Failed version check, make sure all setted up right: remote, local and github pat');
             global.LogsHandler.sendSimplyLog('Git', null, [{ name: 'Warning', value: `Failed version check, make sure all setted up right: remote, local and github pat` }]);
         } else if (remote_commit !== local_commit) {
-            console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.red('New commit found, checking changes...'));
+            console.log('GitHub >> New commit found, checking changes...');
 
             const full_reboot = await client.checkImportantFiles();
             await client.pullChanges(client);

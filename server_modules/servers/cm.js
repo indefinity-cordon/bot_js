@@ -931,7 +931,7 @@ module.exports = async (client, game_server) => {
                         embed = await handleAsay(null, data, true);
                     } break;
                     default: {
-                        console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Something went wrong, not found: ${data.state}, for server: ${game_server.server_name}`));
+                        console.log(`CM >> [ERROR] >> Something went wrong, not found: ${data.state}, for server: ${game_server.server_name}`);
                     } break;
                 }
                 if (messagesToSend.length < 5 && embed) {

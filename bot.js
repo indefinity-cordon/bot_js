@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
 const fs = require('fs');
-const chalk = require('chalk');
 const simpleGit = require('simple-git');
 require('dotenv').config('.env');
 
@@ -37,13 +36,13 @@ async function initializeBot(reboot) {
         if (!client.git) client.git = simpleGit(process.cwd());
         require('./github/GitHub')(client);
         client.git_commit = await client.getLastLocalCommit(client);
-        console.log(chalk.blue(chalk.bold('GitHub')), chalk.white('>>'), chalk.green(`Current commit: ${client.git_commit}`));
+        console.log('GitHub >> Current commit:', client.git_commit);
     }
-    client.handling_commands_actions = [];
-    client.handling_commands = [];
     require('./database/MySQL')(client);
     if (process.env.REDIS_STRING) require('./database/Redis')(client);
     client.INT_modules = [];
+    client.handling_commands_actions = [];
+    client.handling_commands = [];
     await client.login(process.env.DISCORD_TOKEN);
     await client.database;
     fs.readdirSync('./handlers').forEach((dir) => {
@@ -52,42 +51,49 @@ async function initializeBot(reboot) {
             require(`./handlers/${dir}/${handler}`)(client);
         });
     });
-    client.handling_game_servers = await client.mysqlRequest(client.database, "SELECT server_name, db_name FROM servers", []);
-    client.servers_options = client.handling_game_servers.map(server => ({
+    const handling_game_servers = await client.mysqlRequest(client.database, "SELECT server_name, db_name FROM servers", []);
+    client.servers_options = handling_game_servers.map(server => ({
         label: server.server_name,
         value: server.server_name
     }));
-    client.servers_link = {};
-    require('./server_modules/servers_actions.js')(client);
-    client.INT_modules += setInterval(async () => {
+    if (!reboot) {
+        client.servers_link = {};
         require('./server_modules/servers_actions.js')(client);
-    }, 120 * 60000);
-    global.LogsHandler.sendSimplyLog('System', null, [{ name: reboot ? 'Update Finished' : 'Start', value: `Commit SHA: ${client.git_commit}` }]);
+        client.INT_modules += setInterval(async () => {
+            require('./server_modules/servers_actions.js')(client);
+        }, 120 * 60000);
+        global.LogsHandler.sendSimplyLog('System', null, [{ name: 'Start', value: `Commit SHA: ${client.git_commit}` }]);
+    }
 };
 
 // HOTSWAP
 
 client.hotSwap = async function () {
-    console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.green('App'), chalk.white('...'), chalk.red('Hot swap triggered'), chalk.white('...'));
+    console.log('System >> App ... Hot swap triggered ...');
     await global.LogsHandler.sendSimplyLog('System', null, [{ name: 'Hot swap', value: `Ongoing hot swap` }]);
 
-    // CLEAR ALL
-    for (const interval in client.INT_modules) {
-        clearInterval(interval);
-    }
-
-    for (const server_name in client.servers_link) {
-        const game_server = client.servers_link[server_name];
-        game_server.drop_link()
-    }
+    const old_INT_modules = client.INT_modules
 
     delete require.cache[require.resolve('./database/MySQL')];
     delete require.cache[require.resolve('./database/Redis')];
     delete require.cache[require.resolve('./github/GitHub')];
     delete require.cache[require.resolve('./server_modules/servers_actions.js')];
 
-    //RELOAD ALL
     initializeBot(true)
+
+    for (const server_name in client.servers_link) {
+        const game_server = client.servers_link[server_name];
+        game_server.drop_link()
+    }
+
+    require('./server_modules/servers_actions.js')(client);
+    client.INT_modules += setInterval(async () => {
+        require('./server_modules/servers_actions.js')(client);
+    }, 120 * 60000);
+
+    for (const interval in old_INT_modules) {
+        clearInterval(interval);
+    }
 };
 
 // END
@@ -96,7 +102,7 @@ client.hotSwap = async function () {
 client.commands = new Discord.Collection();
 
 client.restartApp = async function (reason) {
-    console.log(chalk.blue(chalk.bold('System')), chalk.white('>>'), chalk.green('App'), chalk.white('...'), chalk.red('Restarting process'), chalk.white('...'));
+    console.log('System >> App ... Restarting process ...');
     await global.LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
     process.exit(1);
 };

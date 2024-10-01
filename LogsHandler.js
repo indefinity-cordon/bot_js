@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-const chalk = require('chalk');
 
 module.exports = class LogsHandlerclass {
     /**
@@ -69,7 +68,7 @@ module.exports = class LogsHandlerclass {
         this.sendLog = async function (embed) {
             if (!this.botLogs) {
                 if (!this.notified) {
-                    console.log(chalk.blue(chalk.bold('Webhook')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('no webhook'));
+                    console.log('Webhook >> [ERROR] >> no webhook');
                     this.notified = true;
                 }
                 return;
@@ -78,7 +77,7 @@ module.exports = class LogsHandlerclass {
                 username: 'Bot Logs',
                 embeds: [embed],
             }).catch((error) => {
-                console.log(chalk.blue(chalk.bold('Webhook')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(error));
+                console.log('Webhook >> [ERROR] >>', error);
             });
         };
         this.sendSimplyLog = async function (title, desc, fields) {

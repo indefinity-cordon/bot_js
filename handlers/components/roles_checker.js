@@ -1,5 +1,3 @@
-const chalk = require('chalk');
-
 module.exports = async (client) => {
     client.serverRoles = async function (game_server) {
         clearInterval(game_server.update_roles_interval);
@@ -23,7 +21,7 @@ async function updateRoles(client, game_server) {
             db_links = await client.mysqlRequest(game_server.game_connection, "SELECT discord_id, stable_rank FROM discord_links", []);
             if (!db_links.length) throw 'No discord links';
         } catch (cancel_reason) {
-            console.log(chalk.blue(chalk.bold('Roles')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`${cancel_reason}`));
+            console.log('Roles >> [ERROR] >>', cancel_reason);
             return;
         }
 
@@ -73,6 +71,6 @@ async function updateRoles(client, game_server) {
         }
         await fetchAndProcessMembers();
     } catch (error) {
-        console.log(chalk.blue(chalk.bold('Roles')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red(`Something went wrong, error: ${error}`));
+        console.log('Roles >> [ERROR] >>', error);
     }
 };

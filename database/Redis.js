@@ -1,18 +1,17 @@
 const redis = require('redis');
-const chalk = require('chalk');
 
 module.exports = async (client) => {
     if (!client.redis_connection) {
         client.redis_connection = redis.createClient(process.env.REDIS_STRING);
-        client.redis_connection.on('error', err => console.log(chalk.blue(chalk.bold(`Database`)), chalk.white('>>'), chalk.red(`[ERROR]`), chalk.white('>>'), chalk.red(`Redis`), chalk.red(err)));
-        console.log(chalk.blue(chalk.bold(`Database`)), chalk.white('>>'), chalk.red(`Redis`), chalk.green(`starting connecting...`));
+        client.redis_connection.on('error', err => console.log('Database >> Redis >> [ERROR] >>', err));
+        console.log('Database >> Redis >> Connecting ...');
         redisConnect(client);
     }
 
     client.INT_modules += setInterval(async () => {
         const redisActive = await checkRedisConnection(client);
         if (!redisActive) {
-            console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed to restore Redis connection'));
+            console.log('Database >> Redis >> [ERROR] >> Failed to Restore Connection');
         }
     }, 60000);
 };
@@ -22,7 +21,7 @@ async function checkRedisConnection(client) {
         const result = await client.redis_connection.ping();
         if (result === 'PONG') return true;
     } catch (err) {
-        console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Redis Connection lost, attempting to reconnect...'));
+        console.log('Database >> Redis >> [ERROR] >> Connection Lost ... Redconnect Attempt ...');
         return await redisConnect(client);
     }
 };
@@ -30,10 +29,10 @@ async function checkRedisConnection(client) {
 async function redisConnect(client) {
     try {
         await client.redis_connection.connect();
-        console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.green('Connected to Redis'));
+        console.log('Database >> Redis >> Connected');
         return true;
     } catch (err) {
-        console.log(chalk.blue(chalk.bold('Database')), chalk.white('>>'), chalk.red('[ERROR]'), chalk.white('>>'), chalk.red('Failed connection to Redis'), err);
+        console.log('Database >> Redis >> [ERROR] >> Connection Error:', err);
         return false;
     }
 };
