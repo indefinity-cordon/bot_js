@@ -1,7 +1,6 @@
 const mysql = require('mysql');
 
 module.exports = async (load_complex_things) => {
-    if (load_complex_things) require('./_entities_framework/index.js');
     global.mysqlCreate = async function (connection_params) {
         const connection = mysql.createConnection(connection_params);
         connection.on('error', err => console.log('Database >> MySQL >> [ERROR] >>', err));
@@ -16,7 +15,7 @@ module.exports = async (load_complex_things) => {
                 }, 60000);
                 resolve(true);
             } catch (err) {
-                reject(err);
+                resolve(false);
             }
         });
         return connection;
@@ -24,16 +23,9 @@ module.exports = async (load_complex_things) => {
 
     if (!global.database) {
         console.log('Database >> MySQL >> Connecting ...');
-        global.database = await global.mysqlCreate({
-            host: process.env.DB_HOST,
-            port: process.env.DB_PORT,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME
-        });
+        global.database = await global.mysqlCreate(process.env.DB_CONNECTION_STRING_BOT);
     }
-
-    global.mysqlRequest = async function (database, query, params) {
+    global.mysqlRequest = async function (database, query, params = []) {
         if (!database) {
             console.log('Database >> MySQL >> [WARNING] >> Wrong DB at request');
             return;
@@ -48,6 +40,7 @@ module.exports = async (load_complex_things) => {
             });
         });
     };
+    if (load_complex_things) require('./_entities_framework/index.js')();
 };
 
 

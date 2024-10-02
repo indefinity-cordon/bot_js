@@ -1,4 +1,4 @@
-const Entity = require('./Entity');
+const Entity = require('./../entity');
 
 class ServerChannels extends Entity {
     constructor(db, id, meta) {
@@ -6,7 +6,10 @@ class ServerChannels extends Entity {
     }
 }
 
-global.entity_construct.push({'ServerChannels': ServerChannels})
+module.exports = async () => {
+    global.entity_construct['ServerChannels'] = ServerChannels;
+    global.entity_meta['ServerChannels'] = ServerChannelsMeta;
+};
 
 const ServerChannelsMeta = {
     table: 'server_channels',
@@ -19,5 +22,3 @@ const ServerChannelsMeta = {
         message_id: 'varchar',
     }
 };
-
-global.entity_meta.push({'ServerChannels': ServerChannelsMeta})

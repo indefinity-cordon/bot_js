@@ -1,4 +1,4 @@
-const Entity = require('./Entity');
+const Entity = require('./../entity');
 
 class ServerSettings extends Entity {
     constructor(db, id, meta) {
@@ -23,7 +23,10 @@ class ServerSettings extends Entity {
     }
 }
 
-global.entity_construct.push({'ServerSettings': ServerSettings})
+module.exports = async () => {
+    global.entity_construct['ServerSettings'] = ServerSettings;
+    global.entity_meta['ServerSettings'] = ServerSettingsMeta;
+};
 
 const ServerSettingsMeta = {
     table: 'server_settings',
@@ -35,8 +38,6 @@ const ServerSettingsMeta = {
         setting: 'varchar',
     }
 };
-
-global.entity_meta.push({'ServerSettings': ServerSettingsMeta})
 
 function isJsonString(str) {
     try {

@@ -1,27 +1,27 @@
 const fs = require('fs');
 
 module.exports = async () => {
-    global.entity_meta = [];
+    global.entity_meta = {};
     global.entity_construct = {};
 
-    fs.readdirSync('./entities').forEach(file => {
+    fs.readdirSync('./database/_entities_framework/entities').forEach(file => {
         require(`./entities/${file}`)();
     });
 
     //Make here finding out already loaded and sync new added/removed in entity to remove it then too
     global.gather_data = async function(db, table, query, params) {
-        const meta = entityMeta[table];
+        const meta = global.entity_meta[table];
         if (!meta) {
             throw console.log(`Database >> MySQL (AUTO) >> [ERROR] >> Meta for table ${table} not found`);
         }
         query = query.replace('##TABLE##', meta.table);
-        const rows = await global.mysqlRequest(query, params);
+        const rows = await global.mysqlRequest(db, query, params);
         if (!rows.length) {
             return [];
         }
         const entities = rows.map(row => {
             const parsedRow = meta.parse ? meta.parse(row) : row;
-            return new meta.class(parsedRow.id, parsedRow);
+            return new meta.class(db, parsedRow.id, meta);
         });
         return entities;
     };

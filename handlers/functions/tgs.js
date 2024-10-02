@@ -18,12 +18,11 @@ module.exports = async (client) => {
         return { 'Authorization': `Basic ${authHeader}` };
     };
 
-    client.tgs_auth = async function () {
+    client.tgs_auth = async function (tgs_address) {
         const authHeader = await client.tgs_makeToken(process.env.TGS_LOGIN, process.env.TGS_PASS);
         const headers = { ...defaultHeaders, ...authHeader };
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
         try {
-            const response = await axios.post(`${tgs_address[0].param}/api`, null, { headers });
+            const response = await axios.post(`${tgs_address}/api`, null, { headers });
             bearer = { Authorization: `Bearer ${response.data.bearer}` };
             const now_date = new Date();
             bearerValidUntil = new Date(now_date.getTime() - now_date.getTimezoneOffset() * 60000);
@@ -32,18 +31,17 @@ module.exports = async (client) => {
         }
     };
 
-    client.tgs_checkAuth = async function () {
+    client.tgs_checkAuth = async function (tgs_address) {
         const now_date = new Date();
         if (new Date(now_date.getTime() - now_date.getTimezoneOffset() * 60000) >= bearerValidUntil) {
-            await client.tgs_auth();
+            await client.tgs_auth(tgs_address);
         }
     };
 
-    client.tgs_getInstances = async function () {
-        await client.tgs_checkAuth();
+    client.tgs_getInstances = async function (tgs_address) {
+        await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer };
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
-        const response = await axios.get(`${tgs_address[0].param}/api/Instance/List`, { headers });
+        const response = await axios.get(`${tgs_address}/api/Instance/List`, { headers });
         const instances = response.data.content.map(instance => ({
             id: instance.id,
             name: instance.name,
@@ -52,24 +50,22 @@ module.exports = async (client) => {
         return instances;
     };
 
-    client.tgs_getInstance = async function (instId) {
-        await client.tgs_checkAuth();
+    client.tgs_getInstance = async function (tgs_address, instId) {
+        await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer };
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
-        const response = await axios.get(`${tgs_address[0].param}/api/Instance/${instId}`, { headers });
+        const response = await axios.get(`${tgs_address}/api/Instance/${instId}`, { headers });
         return response.data;
     };
 
-    client.tgs_getActiveJobs = async function () {
-        await client.tgs_checkAuth();
+    client.tgs_getActiveJobs = async function (tgs_address) {
+        await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer };
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
-        const response = await axios.get(`${tgs_address[0].param}/api/Job`, { headers });
+        const response = await axios.get(`${tgs_address}/api/Job`, { headers });
         return response.data;
     };
 
-    client.tgs_gitPullRepoForInst = async function (instId, ...commitSha) {
-        await client.tgs_checkAuth();
+    client.tgs_gitPullRepoForInst = async function (tgs_address, instId, ...commitSha) {
+        await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer };
         let params = { accessUser: process.env.GITHUB_USER, accessToken: process.env.GITHUB_PAT };
         if (commitSha.length) {
@@ -77,16 +73,14 @@ module.exports = async (client) => {
         } else {
             params = { ...params, updateFromOrigin: 'true' };
         }
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
-        const response = await axios.post(`${tgs_address[0].param}/api/Repository/${instId}`, null, { headers, params });
+        const response = await axios.post(`${tgs_address}/api/Repository/${instId}`, null, { headers, params });
         return response.data;
     };
 
-    client.tgs_start = async function (interaction, instanceId) {
-        await client.tgs_checkAuth();
+    client.tgs_start = async function (tgs_address, instanceId, interaction) {
+        await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
-        const response = await axios.put(`${tgs_address[0].param}/api/DreamDaemon`, null, { headers });
+        const response = await axios.put(`${tgs_address}/api/DreamDaemon`, null, { headers });
         if(!interaction) return;
         await client.ephemeralEmbed({
             title: 'Action',
@@ -95,11 +89,10 @@ module.exports = async (client) => {
         }, interaction);
     };
 
-    client.tgs_stop = async function (interaction, instanceId) {
-        await client.tgs_checkAuth();
+    client.tgs_stop = async function (tgs_address, instanceId, interaction) {
+        await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
-        const response = await axios.delete(`${tgs_address[0].param}/api/DreamDaemon`, { headers });
+        const response = await axios.delete(`${tgs_address}/api/DreamDaemon`, { headers });
         if(!interaction) return;
         await client.ephemeralEmbed({
             title: 'Action',
@@ -108,11 +101,10 @@ module.exports = async (client) => {
         }, interaction);
     };
 
-    client.tgs_deploy = async function (interaction, instanceId) {
-        await client.tgs_checkAuth();
+    client.tgs_deploy = async function (tgs_address, instanceId, interaction) {
+        await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
-        const tgs_address = await global.mysqlSettingsRequest('tgs_address');
-        const response = await axios.put(`${tgs_address[0].param}/api/DreamMaker`, null, { headers });
+        const response = await axios.put(`${tgs_address}/api/DreamMaker`, null, { headers });
         if(!interaction) return;
         await client.ephemeralEmbed({
             title: 'Action',

@@ -3,6 +3,11 @@ const { Routes } = require('discord.js');
 const fs = require('fs');
 
 module.exports = async (client) => {
+    if (!client.commands) {
+        console.log(`System >> [ERROR] >> No commmands module for client ${client.shard.ids[0]}`);
+        return;
+    }
+
     const commands = [];
 
     if (client.shard.ids[0] === 0) console.log('System >> Loading commands ...');

@@ -4,6 +4,7 @@ require('dotenv').config('.env');
 
 const manager = new Discord.ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
+    totalShards: 1,
     respawn: true,
 });
 
@@ -58,63 +59,38 @@ process.on('warning', error => {
 //LOGS END
 
 
-async function fetchAllGuilds() {
-    const _TEMPclient = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds] });
-    await _TEMPclient.login(process.env.DISCORD_TOKEN);
-    await _TEMPclient.guilds.fetch();
-    const guilds = _TEMPclient.guilds.cache.map(guild => guild.id);
-    await _TEMPclient.destroy();
-    return guilds;
-}
-
-async function fetchGuildShardConfigs() {
-    const handling_guild_servers = await global.mysqlRequest(global.database, "SELECT id, guild_id FROM guilds", []);
-    const guilded = [];
-    for (const guild of handling_guild_servers) {
-        guilded.push({ guild_Id: guild.guild_id, shard_Id: guild.id - 1 });
-    }
-    return guilded;
-}
-
 async function getShardMappings() {
-    const all_guilds = await fetchAllGuilds();
-    const guild_configs = await fetchGuildShardConfigs();
+    const handling_guild_servers = await global.mysqlRequest(global.database, "SELECT id, guild_id FROM guilds");
+    const guild_configs = handling_guild_servers.map(guild => ({ guild_Id: guild.guild_id, shard_Id: guild.id }));
 
     const shard_map = new Map();
-    const free_guilds = [];
 
-    all_guilds.forEach(guild_Id => {
-        const config = guild_configs.find(match => match.guild_Id === guild_Id);
-        if (config) {
-            shard_map.set(config.shard_Id, guild_Id);
-        } else {
-            free_guilds.push(guild_Id);
-        }
+    guild_configs.forEach(guild => {
+        shard_map.set(guild.shard_Id, guild.guild_Id);
     });
 
-    return { shard_map, free_guilds };
+    return shard_map;
 }
 
 async function spawnCustomShards() {
-    const { shard_map, free_guilds } = await getShardMappings();
+    const shard_map = await getShardMappings();
+
+    console.log('System >> Starting Free Shard');
+    manager.spawn();
 
     for (const [shard_Id, guild] of shard_map.entries()) {
-        console.log(`System >> Starting Shard #${shard_Id} for Guild: ${guild}`);
+        console.log(`System >> Starting Shard #${shard_Id + 1} for Guild: ${guild}`);
+        manager.totalShards++
         const shard = manager.createShard(shard_Id);
         shard.guilds = [guild];
         await shard.spawn();
-    }
-
-    if (free_guilds.length > 0) {
-        console.log(`System >> Starting Free Shard for Guilds: ${free_guilds.join(', ')}`);
-        manager.spawn('auto');
     }
 }
 
 runGitStartUp()
 
 async function runGitStartUp() {
-    require('./database/MySQL')(false);
+    await require('./database/MySQL')(false);
     if (process.env.GITHUB_PAT) {
         manager.git = simpleGit(process.cwd());
         require('./~GitHub.js')(manager);
@@ -122,7 +98,6 @@ async function runGitStartUp() {
         console.log('GitHub >> Current commit:', manager.git_commit);
         global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Start', value: `Commit SHA: ${manager.git_commit}` }]);
     }
-    await global.database
     spawnCustomShards().catch(console.error);
 };
 

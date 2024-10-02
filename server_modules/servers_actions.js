@@ -1,7 +1,6 @@
 module.exports = async (client) => {
     await client.guilds.fetch();
-    const actual_guild = await global.mysqlRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE guild_id = ?", [client.guilds.cache[0].id]);
-    const servers = await global.gather_data(global.database, 'Server', "SELECT * FROM ##TABLE## WHERE guild = ?", [actual_guild[0].id]);
+    const servers = await global.gather_data(global.database, 'Server', "SELECT * FROM ##TABLE## WHERE guild = ?", [global.discord_server.data.id]);
     if (!servers.length) {
         console.log('Failed to find servers. Aborting.');
     } else {

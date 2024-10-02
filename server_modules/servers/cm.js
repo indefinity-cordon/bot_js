@@ -67,14 +67,14 @@ module.exports = async (client, game_server) => {
 
     game_server.updateAdminsMessage = async function (type) {
         try {
-            const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins", []);
+            const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins");
             const player_ids = db_request_admin.map(admin => admin.player_id);
-            const db_request_profiles = await global.mysqlRequest(game_server.game_connection, `SELECT id, ckey, last_login FROM players WHERE id IN (${player_ids.join(',')})`, []);
+            const db_request_profiles = await global.mysqlRequest(game_server.game_connection, `SELECT id, ckey, last_login FROM players WHERE id IN (${player_ids.join(',')})`);
             const profileMap = new Map();
             db_request_profiles.forEach(profile => {
                 profileMap.set(profile.id, profile);
             });
-            const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
+            const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks");
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
@@ -139,7 +139,7 @@ module.exports = async (client, game_server) => {
 
     game_server.updateRanksMessage = async function (type) {
         try {
-            const db_request = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
+            const db_request = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks");
             const embeds = [];
             let description = '';
             for (const db_rank of db_request) {
@@ -171,7 +171,7 @@ module.exports = async (client, game_server) => {
 
     game_server.updateWhitelistsMessage = async function (type) {
         try {
-            const db_request = await global.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != ''", []);
+            const db_request = await global.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != ''");
             const acting_wls = {
                 'Commander': ['WHITELIST_COMMANDER', 'WHITELIST_COMMANDER_COUNCIL', 'WHITELIST_COMMANDER_COUNCIL_LEGACY', 'WHITELIST_COMMANDER_COLONEL', 'WHITELIST_COMMANDER_LEADER'],
                 'Synthetic': ['WHITELIST_SYNTHETIC', 'WHITELIST_SYNTHETIC_COUNCIL', 'WHITELIST_SYNTHETIC_COUNCIL_LEGACY', 'WHITELIST_SYNTHETIC_LEADER', 'WHITELIST_JOE'],
@@ -274,7 +274,7 @@ module.exports = async (client, game_server) => {
         }
         const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", [db_player_profile[0].id]);
         if (db_request_admin[0]) {
-            const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
+            const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks");
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
@@ -702,7 +702,7 @@ module.exports = async (client, game_server) => {
     game_server.tgsActions = async function (interaction) {
         const collected = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', client.handling_tgs, 'Please select action to perform:');
         if (collected) {
-            await await client.handling_tgs_actions[collected](interaction, game_server.data.tgs_id);
+            await await client.handling_tgs_actions[collected](global.discord_server.settings_data.tgs_address, game_server.data.tgs_id, interaction);
         }
     };
 
@@ -764,7 +764,7 @@ module.exports = async (client, game_server) => {
                 if (data && data.players < game_server.player_low_autoshutdown) {
                     game_server.handle_status(false);
                     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
-                    if (instance) client.tgs_stop(null, game_server.data.tgs_id);
+                    if (instance) client.tgs_stop(global.discord_server.settings_data.tgs_address, game_server.data.tgs_id);
                     return;
                 }
             }
@@ -979,7 +979,7 @@ module.exports = async (client, game_server) => {
 
 
 async function getAdminOptions(client, database_connection) {
-    const admins = await global.mysqlRequest(database_connection, "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id", []);
+    const admins = await global.mysqlRequest(database_connection, "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id");
 
     return admins.map(admin => ({
         label: admin.ckey,
@@ -988,7 +988,7 @@ async function getAdminOptions(client, database_connection) {
 };
 
 async function getRankOptions(client, database_connection) {
-    const ranks = await global.mysqlRequest(database_connection, "SELECT id, rank_name FROM admin_ranks", []);
+    const ranks = await global.mysqlRequest(database_connection, "SELECT id, rank_name FROM admin_ranks");
 
     return ranks.map(rank => ({
         label: rank.rank_name,
@@ -1046,7 +1046,7 @@ async function autoStartServer(client, game_server) {
     if(game_server.server_status) return;
     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
     if(!instance) return;
-    client.tgs_start(null, game_server.data.tgs_id)
+    client.tgs_start(global.discord_server.settings_data.tgs_address, game_server.data.tgs_id)
 };
 
 
