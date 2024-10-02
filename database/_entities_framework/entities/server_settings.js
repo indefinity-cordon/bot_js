@@ -8,8 +8,8 @@ class ServerSettings extends Entity {
     map(row) {
         super.map(row);
 
-        if (isJsonString(this.data.param)) {
-            this.data.param = JSON.parse(this.data.settings);
+        if (row['setting'] && isJsonString(this.data.setting)) {
+            this.data.param = JSON.parse(this.data.setting);
         }
     }
 
@@ -17,7 +17,7 @@ class ServerSettings extends Entity {
         const row = super.unmap();
 
         if (isJsonStringifable(this.data.param)) {
-            row.param = JSON.stringify(this.data.settings);
+            row.setting = JSON.stringify(this.data.param);
         }
         return row;
     }
@@ -32,7 +32,7 @@ const ServerSettingsMeta = {
         id: 'bigint',
         server: 'bigint',
         name: 'varchar',
-        param: 'varchar',
+        setting: 'varchar',
     }
 };
 

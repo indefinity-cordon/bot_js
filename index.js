@@ -76,7 +76,6 @@ async function fetchGuildShardConfigs() {
     return guilded;
 }
 
-// Функция для маппинга гильдий на шарды
 async function getShardMappings() {
     const all_guilds = await fetchAllGuilds();
     const guild_configs = await fetchGuildShardConfigs();
@@ -87,10 +86,7 @@ async function getShardMappings() {
     all_guilds.forEach(guild_Id => {
         const config = guild_configs.find(match => match.guild_Id === guild_Id);
         if (config) {
-            if (!shard_map.has(config.shard_Id)) {
-                shard_map.set(config.shard_Id, []);
-            }
-            shard_map.get(config.shard_Id).push(guild_Id);
+            shard_map.set(config.shard_Id, guild_Id);
         } else {
             free_guilds.push(guild_Id);
         }
@@ -115,21 +111,28 @@ async function spawnCustomShards() {
     }
 }
 
-spawnCustomShards().catch(console.error);
+runGitStartUp()
+
+async function runGitStartUp() {
+    require('./database/MySQL')(false);
+    if (process.env.GITHUB_PAT) {
+        manager.git = simpleGit(process.cwd());
+        require('./~GitHub.js')(manager);
+        manager.git_commit = await manager.getLastLocalCommit();
+        console.log('GitHub >> Current commit:', manager.git_commit);
+        global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Start', value: `Commit SHA: ${manager.git_commit}` }]);
+    }
+    await global.database
+    spawnCustomShards().catch(console.error);
+};
+
+
 
 manager.restartApp = async function (reason) {
     console.log('System >> App ... Restarting process ...');
     await global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
     manager.broadcastEval('this.process.exit(1)');
 };
-
-if (process.env.GITHUB_PAT) {
-    manager.git = simpleGit(process.cwd());
-    require('./~GitHub.js')(manager);
-    manager.git_commit = await manager.getLastLocalCommit();
-    console.log('GitHub >> Current commit:', manager.git_commit);
-    global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Start', value: `Commit SHA: ${manager.git_commit}` }]);
-}
 
 
 

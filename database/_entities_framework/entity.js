@@ -9,35 +9,41 @@ class Entity {
     }
 
     destroy() {
-        data
+        this.db = null;
+        this.meta = null;
+        this.data = null;
+        this.sync_data = null;
+        clearInterval(this.auto_sync_interval);
     }
 
-    map(row) {
+    async map(row) {
         for (const key in row) {
             this.data[key] = row[key];
         }
     }
 
-    unmap() {
+    async unmap() {
         return { ...this.data };
     }
 
     async save() {
         const rows = await this.db.query(`SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]);
+        const to_map = []
         if (rows.length > 0) {
-            const dbData = rows[0];
-            delete dbData['id'];
-            for (const key in dbData) {
-                if (!this.lastSyncedData) {
-                    this.map({key: dbData[key]})
-                } else if (this.data[key] !== this.lastSyncedData[key]) {
+            const db_data = rows[0];
+            delete db_data['id'];
+            for (const key in db_data) {
+                if (!this.sync_data) {
+                    to_map.push({key: db_data[key]})
+                } else if (this.data[key] !== this.sync_data[key]) {
                     continue;
-                } else if (dbData[key] !== this.lastSyncedData[key]) {
-                    this.map({key: dbData[key]})
+                } else if (db_data[key] !== this.sync_data[key]) {
+                    to_map.push({key: db_data[key]})
                 }
             }
         }
-        const rowToSave = this.unmap();
+        if (to_map.length) await this.map(to_map)
+        const rowToSave = await this.unmap();
         const columns = Object.keys(rowToSave).join(', ');
         const values = Object.values(rowToSave);
         const placeholders = values.map(() => '?').join(', ');

@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 module.exports = async (client, game_server) => {
     game_server.updateStatusMessage = async function (type) {
         try {
-            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.port, address: game_server.ip});
+            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
             if (!server_response) throw 'Returned no response';
             const response = JSON.parse(server_response);
             const data = response.data;
@@ -23,7 +23,7 @@ module.exports = async (client, game_server) => {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
-                    content: `${game_server.server_name} Status`,
+                    content: `${game_server.data.server_name} Status`,
                     components: [],
                     type: 'edit'
                 }, message);
@@ -33,7 +33,7 @@ module.exports = async (client, game_server) => {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
-                    content: `${game_server.server_name} Status`,
+                    content: `${game_server.data.server_name} Status`,
                     components: [],
                     type: 'edit'
                 }, message);
@@ -49,7 +49,7 @@ module.exports = async (client, game_server) => {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(server_schedule_data).setColor('#669917').setTimestamp()],
-                    content: `${game_server.server_name} start schedule`,
+                    content: `${game_server.data.server_name} start schedule`,
                     components: [],
                     type: 'edit'
                 }, message);
@@ -58,7 +58,7 @@ module.exports = async (client, game_server) => {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('something went wrong').setColor('#a00f0f').setTimestamp()],
-                    content: `${game_server.server_name} start schedule`,
+                    content: `${game_server.data.server_name} start schedule`,
                     components: [],
                     type: 'edit'
                 }, message);
@@ -120,7 +120,7 @@ module.exports = async (client, game_server) => {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
-                    content: `${game_server.server_name} Actual Admins`,
+                    content: `${game_server.data.server_name} Actual Admins`,
                     components: [],
                     type: 'edit'
                 }, message);
@@ -128,7 +128,7 @@ module.exports = async (client, game_server) => {
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
-                    content: `${game_server.server_name} Actual Admins`,
+                    content: `${game_server.data.server_name} Actual Admins`,
                     title: '',
                     desc: '# ERROR',
                     color: '#a00f0f',
@@ -152,7 +152,7 @@ module.exports = async (client, game_server) => {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
-                    content: `${game_server.server_name} Actual Ranks`,
+                    content: `${game_server.data.server_name} Actual Ranks`,
                     components: [],
                     type: 'edit'
                 }, message);
@@ -160,7 +160,7 @@ module.exports = async (client, game_server) => {
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
-                    content: `${game_server.server_name} Actual Ranks`,
+                    content: `${game_server.data.server_name} Actual Ranks`,
                     title: '',
                     desc: '# ERROR',
                     color: '#a00f0f',
@@ -206,7 +206,7 @@ module.exports = async (client, game_server) => {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
-                    content: `${game_server.server_name} Actual Whitelists`,
+                    content: `${game_server.data.server_name} Actual Whitelists`,
                     components: [],
                     type: 'edit'
                 }, message);
@@ -214,7 +214,7 @@ module.exports = async (client, game_server) => {
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.embed({
-                    content: `${game_server.server_name} Actual Whitelists`,
+                    content: `${game_server.data.server_name} Actual Whitelists`,
                     title: '',
                     desc: '# ERROR',
                     color: '#a00f0f',
@@ -678,9 +678,9 @@ module.exports = async (client, game_server) => {
         await game_server.pull_data_update();
         if (!game_server.auto_start_config || !isJsonString(game_server.auto_start_config)) {
             if (game_server.auto_start_config) {
-                await global.mysqlRequest(global.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name, 'auto_start_config']);
+                await global.mysqlRequest(global.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.data.server_name, 'auto_start_config']);
             }
-            await global.mysqlRequest(global.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [game_server.server_name, 'auto_start_config', "{}"]);
+            await global.mysqlRequest(global.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [game_server.data.server_name, 'auto_start_config', "{}"]);
             await game_server.pull_data_update();
         }
         const server_schedule_data = JSON.parse(game_server.auto_start_config);
@@ -707,7 +707,7 @@ module.exports = async (client, game_server) => {
     game_server.tgsActions = async function (interaction) {
         const collected = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', client.handling_tgs, 'Please select action to perform:');
         if (collected) {
-            await await client.handling_tgs_actions[collected](interaction, game_server.tgs_id);
+            await await client.handling_tgs_actions[collected](interaction, game_server.data.tgs_id);
         }
     };
 
@@ -762,14 +762,14 @@ module.exports = async (client, game_server) => {
     async function handleRoundStart(channel) {
         if (await game_server.handle_status(true)) return;
         if (game_server.player_low_autoshutdown && game_server.server_status == true) {
-            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.port, address: game_server.ip});
+            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
             if (server_response && isJsonString(server_response)) {
                 const response = JSON.parse(server_response);
                 const data = response.data;
                 if (data && data.players < game_server.player_low_autoshutdown) {
                     game_server.handle_status(false);
-                    const instance = await client.tgs_getInstance(game_server.tgs_id);
-                    if (instance) client.tgs_stop(null, game_server.tgs_id);
+                    const instance = await client.tgs_getInstance(game_server.data.tgs_id);
+                    if (instance) client.tgs_stop(null, game_server.data.tgs_id);
                     return;
                 }
             }
@@ -940,7 +940,7 @@ module.exports = async (client, game_server) => {
                         embed = await handleAsay(null, data, true);
                     } break;
                     default: {
-                        console.log(`CM >> [ERROR] >> Something went wrong, not found: ${data.state}, for server: ${game_server.server_name}`);
+                        console.log(`CM >> [ERROR] >> Something went wrong, not found: ${data.state}, for server: ${game_server.data.server_name}`);
                     } break;
                 }
                 if (messagesToSend.length < 5 && embed) {
@@ -962,9 +962,9 @@ module.exports = async (client, game_server) => {
     game_server.handle_status = async function (new_status) {
         if (game_server.server_status == new_status) return false;
         game_server.server_status = new_status;
-        global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.server_name]);
+        global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.data.server_name]);
         if (game_server.server_status) {
-            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.data.server_name]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
                 const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
@@ -973,7 +973,7 @@ module.exports = async (client, game_server) => {
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 30 * 60000)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
             }
         } else {
-            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.data.server_name]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
@@ -1018,7 +1018,7 @@ async function updateServerCustomOperators(client, game_server) {
     const now_utc_string = now_utc.toISOString().split('T')[0];
     if (server_schedule_data.specific_days) {
         server_schedule_data.specific_days = server_schedule_data.specific_days.filter(date => date >= now_utc_string);
-        await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+        await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
         await game_server.pull_data_update();
     }
     if (server_schedule_data.mode === 'daily') {
@@ -1052,9 +1052,9 @@ async function updateServerCustomOperators(client, game_server) {
 
 async function autoStartServer(client, game_server) {
     if(game_server.server_status) return;
-    const instance = await client.tgs_getInstance(game_server.tgs_id);
+    const instance = await client.tgs_getInstance(game_server.data.tgs_id);
     if(!instance) return;
-    client.tgs_start(null, game_server.tgs_id)
+    client.tgs_start(null, game_server.data.tgs_id)
 };
 
 
@@ -1113,11 +1113,11 @@ async function setMode(interaction, client, game_server, server_schedule_data) {
     ];
     const selectedMode = await client.sendInteractionSelectMenu(interaction, 'select-mode', 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
     server_schedule_data.mode = selectedMode;
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
-        desc: `Mode set to ${selectedMode} for server ${game_server.server_name}`,
+        desc: `Mode set to ${selectedMode} for server ${game_server.data.server_name}`,
         color: '#669917'
     }, interaction);
 };
@@ -1146,11 +1146,11 @@ async function setDailyTimes(interaction, client, game_server, server_schedule_d
     }
     server_schedule_data.daily = server_schedule_data.daily || {};
     server_schedule_data.daily[selectedDay] = timeInput;
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
-        desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.server_name}`,
+        desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.data.server_name}`,
         color: '#669917'
     }, interaction);
 };
@@ -1159,7 +1159,7 @@ async function removeDailyTimes(interaction, client, game_server, server_schedul
     if (!server_schedule_data.daily || Object.keys(server_schedule_data.daily).length === 0) {
         await client.ephemeralEmbed({
             title: 'Request',
-            desc: `No daily start times are set for server ${game_server.server_name}`,
+            desc: `No daily start times are set for server ${game_server.data.server_name}`,
             color: '#c70058'
         }, interaction);
         return;
@@ -1171,18 +1171,18 @@ async function removeDailyTimes(interaction, client, game_server, server_schedul
     if (!dayOptions.length) {
         await client.ephemeralEmbed({
             title: 'Request',
-            desc: `No days are available for removal from daily start schedule for server ${game_server.server_name}`,
+            desc: `No days are available for removal from daily start schedule for server ${game_server.data.server_name}`,
             color: '#c70058'
         }, interaction);
         return;
     }
     const selectedDay = await client.sendInteractionSelectMenu(interaction, 'select-day', 'Select a day to remove from daily start schedule', dayOptions, 'Choose a day to remove:');
     delete server_schedule_data.daily[selectedDay];
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
-        desc: `Removed daily start time for ${selectedDay} on server ${game_server.server_name}`,
+        desc: `Removed daily start time for ${selectedDay} on server ${game_server.data.server_name}`,
         color: '#669917'
     }, interaction);
 };
@@ -1223,11 +1223,11 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
     Object.keys(specificTimes).forEach(date => {
         server_schedule_data.spec[date] = specificTimes[date];
     });
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
-        desc: `Specific start days set for server ${game_server.server_name}`,
+        desc: `Specific start days set for server ${game_server.data.server_name}`,
         color: '#669917'
     }, interaction);
 };
@@ -1237,7 +1237,7 @@ async function removeSpecificDays(interaction, client, game_server, server_sched
     if (!server_schedule_data.spec || Object.keys(server_schedule_data.spec).length === 0) {
         await client.ephemeralEmbed({
             title: 'Request',
-            desc: `No specific dates are set for server ${game_server.server_name}`,
+            desc: `No specific dates are set for server ${game_server.data.server_name}`,
             color: '#c70058'
         }, interaction);
         return;
@@ -1248,7 +1248,7 @@ async function removeSpecificDays(interaction, client, game_server, server_sched
     if (!specificDayOptions.length) {
         await client.ephemeralEmbed({
             title: 'Request',
-            desc: `All specific dates have passed for server ${game_server.server_name}`,
+            desc: `All specific dates have passed for server ${game_server.data.server_name}`,
             color: '#c70058'
         }, interaction);
         return;
@@ -1257,11 +1257,11 @@ async function removeSpecificDays(interaction, client, game_server, server_sched
     selectedDates.forEach(selectedDate => {
         delete server_schedule_data.spec[selectedDate];
     });
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
-        desc: `Removed specific start dates for server ${game_server.server_name}`,
+        desc: `Removed specific start dates for server ${game_server.data.server_name}`,
         color: '#669917'
     }, interaction);
 };

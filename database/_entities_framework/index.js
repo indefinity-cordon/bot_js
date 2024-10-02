@@ -8,6 +8,7 @@ module.exports = async () => {
         require(`./entities/${file}`)();
     });
 
+    //Make here finding out already loaded and sync new added/removed in entity to remove it then too
     global.gather_data = async function(db, table, query, params) {
         const meta = entityMeta[table];
         if (!meta) {
