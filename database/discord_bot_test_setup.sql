@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS `guild_settings` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `guild` bigint DEFAULT NULL,
   `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `param` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `setting` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `guild_id` (`guild`),
   CONSTRAINT `FK_guilds_settings` FOREIGN KEY (`guild`) REFERENCES `guilds` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Дамп данных таблицы discord_bot.guild_settings: ~5 rows (приблизительно)
-INSERT INTO `guild_settings` (`id`, `guild`, `name`, `param`) VALUES
+INSERT INTO `guild_settings` (`id`, `guild`, `name`, `setting`) VALUES
 	(1, 1, 'tgs_address', 'http://localhost:5000'),
 	(2, 1, 'verified_role', '1260279361593147392'),
 	(3, 1, 'anti_verified_role', '1260279307788488796'),
@@ -96,14 +96,14 @@ CREATE TABLE IF NOT EXISTS `server_settings` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `server` bigint DEFAULT NULL,
   `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `param` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `setting` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `server_id` (`server`),
   CONSTRAINT `FK_servers_settings` FOREIGN KEY (`server`) REFERENCES `servers` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Дамп данных таблицы discord_bot.server_settings: ~3 rows (приблизительно)
-INSERT INTO `server_settings` (`id`, `server`, `name`, `param`) VALUES
+INSERT INTO `server_settings` (`id`, `server`, `name`, `setting`) VALUES
 	(1, 1, 'auto_start_config', '{"mode":"daily","daily":{"monday":"13:00","tuesday":"13:00","wednesday":"13:00","thursday":"13:00","friday":"13:00","saturday":"11:00","sunday":"11:00"}}'),
 	(2, 1, 'server_status', '1'),
 	(3, 1, 'player_low_autoshutdown', '8');
@@ -112,7 +112,7 @@ INSERT INTO `server_settings` (`id`, `server`, `name`, `param`) VALUES
 CREATE TABLE IF NOT EXISTS `settings` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `param` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `setting` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

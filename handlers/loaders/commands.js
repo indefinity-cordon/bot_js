@@ -25,9 +25,7 @@ module.exports = async (client) => {
     try {
         console.log('System >> Started refreshing application (/) commands');
         const data = await rest.put(Routes.applicationCommands(process.env.DISCORD_ID), {body: commands});
-        const bot_settings = await global.mysqlSettingsRequest('main_server');
-        const dataf = await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_ID, global.servers_link[bot_settings[0].param].guild), {body: []}); // commands
-        console.log(`System >> Successfully reloaded ${data.length} application (/) commands and forced reload in ${global.servers_link[bot_settings[0].param].guild} guild for ${dataf.length} application (/) commands`);
+        console.log(`System >> Successfully reloaded ${data.length} application (/) commands`);
     } catch (error) {
         console.log(error);
     }

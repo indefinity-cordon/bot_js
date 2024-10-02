@@ -48,22 +48,6 @@ module.exports = async (load_complex_things) => {
             });
         });
     };
-
-    global.mysqlSettingsRequest = async function (query) {
-        if (!global.database) {
-            console.log('Database >> MySQL >> [WARNING] >> No DB at request');
-            return;
-        }
-        return await new Promise((resolve, reject) => {
-            global.database.query("SELECT param FROM settings WHERE name = ?", [query], (err, result) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-    };
 };
 
 

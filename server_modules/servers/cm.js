@@ -43,7 +43,6 @@ module.exports = async (client, game_server) => {
 
     game_server.updateScheduleMessage = async function (type) {
         try {
-            await game_server.pull_data_update();
             if (!game_server.auto_start_config || !isJsonString(game_server.auto_start_config)) throw 'Setup schedule';
             const server_schedule_data = await getSchedule(JSON.parse(game_server.auto_start_config));
             for (const message of game_server.updater_messages[type]) {
@@ -675,15 +674,11 @@ module.exports = async (client, game_server) => {
     };
 
     game_server.configureAutoStartMenu = async function (interaction) {
-        await game_server.pull_data_update();
-        if (!game_server.auto_start_config || !isJsonString(game_server.auto_start_config)) {
-            if (game_server.auto_start_config) {
-                await global.mysqlRequest(global.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.data.server_name, 'auto_start_config']);
-            }
-            await global.mysqlRequest(global.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [game_server.data.server_name, 'auto_start_config', "{}"]);
-            await game_server.pull_data_update();
+        if (!game_server.settings_data.auto_start_config) {
+            game_server.settings_data.auto_start_config = new global.entity_construct['ServerSettings'](global.database, null, global.entity_meta['ServerSettings'])
+            game_server.settings_data.auto_start_config.save()
+            game_server.settings_data.auto_start_config.sync()
         }
-        const server_schedule_data = JSON.parse(game_server.auto_start_config);
         const actionOptions = [
             { label: 'View Schedule', value: 'view' },
             { label: 'Set Mode', value: 'set_mode' },
@@ -701,7 +696,7 @@ module.exports = async (client, game_server) => {
             'set_specific_days': setSpecificDays,
             'remove_specific_days': removeSpecificDays
         };
-        await handlingOptions[selectedAction](interaction, client, game_server, server_schedule_data);
+        await handlingOptions[selectedAction](interaction, client, game_server, game_server.settings_data.auto_start_config.param);
     };
 
     game_server.tgsActions = async function (interaction) {
@@ -961,8 +956,7 @@ module.exports = async (client, game_server) => {
 
     game_server.handle_status = async function (new_status) {
         if (game_server.server_status == new_status) return false;
-        game_server.server_status = new_status;
-        global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.data.server_name]);
+        game_server.settings_data.server_status.param = new_status;
         if (game_server.server_status) {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.data.server_name]);
             const channel = await client.channels.fetch(status[0].channel_id);
@@ -1004,11 +998,11 @@ async function getRankOptions(client, database_connection) {
 
 
 async function updateServerCustomOperators(client, game_server) {
-    if (!game_server.auto_start_config) {
+    if (!game_server.settings_data.auto_start_config) {
         return;
     }
 
-    const server_schedule_data = JSON.parse(game_server.auto_start_config);
+    const server_schedule_data = game_server.settings_data.auto_start_config.param;
     if (game_server.update_custom_operators_data['intervals']['autostart']) {
         clearTimeout(game_server.update_custom_operators_data['intervals']['autostart']);
     }
@@ -1018,8 +1012,6 @@ async function updateServerCustomOperators(client, game_server) {
     const now_utc_string = now_utc.toISOString().split('T')[0];
     if (server_schedule_data.specific_days) {
         server_schedule_data.specific_days = server_schedule_data.specific_days.filter(date => date >= now_utc_string);
-        await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
-        await game_server.pull_data_update();
     }
     if (server_schedule_data.mode === 'daily') {
         const kill_numbers = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -1113,8 +1105,6 @@ async function setMode(interaction, client, game_server, server_schedule_data) {
     ];
     const selectedMode = await client.sendInteractionSelectMenu(interaction, 'select-mode', 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
     server_schedule_data.mode = selectedMode;
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
-    await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
         desc: `Mode set to ${selectedMode} for server ${game_server.data.server_name}`,
@@ -1145,9 +1135,7 @@ async function setDailyTimes(interaction, client, game_server, server_schedule_d
         return;
     }
     server_schedule_data.daily = server_schedule_data.daily || {};
-    server_schedule_data.daily[selectedDay] = timeInput;
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
-    await game_server.pull_data_update();
+    server_schedule_data.daily[selectedDay] = timeInpu
     await client.ephemeralEmbed({
         title: 'Request',
         desc: `Time set to ${timeInput} for ${selectedDay} on server ${game_server.data.server_name}`,
@@ -1178,8 +1166,6 @@ async function removeDailyTimes(interaction, client, game_server, server_schedul
     }
     const selectedDay = await client.sendInteractionSelectMenu(interaction, 'select-day', 'Select a day to remove from daily start schedule', dayOptions, 'Choose a day to remove:');
     delete server_schedule_data.daily[selectedDay];
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
-    await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
         desc: `Removed daily start time for ${selectedDay} on server ${game_server.data.server_name}`,
@@ -1223,8 +1209,6 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
     Object.keys(specificTimes).forEach(date => {
         server_schedule_data.spec[date] = specificTimes[date];
     });
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
-    await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
         desc: `Specific start days set for server ${game_server.data.server_name}`,
@@ -1257,8 +1241,6 @@ async function removeSpecificDays(interaction, client, game_server, server_sched
     selectedDates.forEach(selectedDate => {
         delete server_schedule_data.spec[selectedDate];
     });
-    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.data.server_name]);
-    await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
         desc: `Removed specific start dates for server ${game_server.data.server_name}`,

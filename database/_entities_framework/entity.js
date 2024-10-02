@@ -27,34 +27,41 @@ class Entity {
     }
 
     async save() {
-        const rows = await this.db.query(`SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]);
-        const to_map = []
+        const rows = this.id ? await this.db.query(`SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]) : [];
+        const to_map = [];
+        let local_update = false;
         if (rows.length > 0) {
             const db_data = rows[0];
             delete db_data['id'];
             for (const key in db_data) {
                 if (!this.sync_data) {
-                    to_map.push({key: db_data[key]})
+                    to_map.push({key: db_data[key]});
                 } else if (this.data[key] !== this.sync_data[key]) {
-                    continue;
+                    local_update = true
                 } else if (db_data[key] !== this.sync_data[key]) {
-                    to_map.push({key: db_data[key]})
+                    to_map.push({key: db_data[key]});
                 }
             }
+        } else {
+            local_update = true;
         }
-        if (to_map.length) await this.map(to_map)
-        const rowToSave = await this.unmap();
-        const columns = Object.keys(rowToSave).join(', ');
-        const values = Object.values(rowToSave);
-        const placeholders = values.map(() => '?').join(', ');
-        await db.query(
-            `INSERT INTO ${meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`,
-            values
-        );
-        this.sync_data = { ...rowToSave };
+        if (to_map.length) {
+            await this.map(to_map);
+        }
+        const row_to_save = await this.unmap();
+        if (local_update) {
+            const columns = Object.keys(row_to_save).join(', ');
+            const values = Object.values(row_to_save);
+            const placeholders = values.map(() => '?').join(', ');
+            await db.query(
+                `INSERT INTO ${meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`,
+                values
+            );
+        }
+        this.sync_data = { ...row_to_save };
     }
 
-    sync(interval = 30000) {
+    sync(interval = 10000) {
         auto_sync_interval = setInterval(async () => {
             try {
                 await this.save();
