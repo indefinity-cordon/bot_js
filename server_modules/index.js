@@ -85,7 +85,7 @@ module.exports = class Server {
         this.update_roles_interval = null;
         this.update_custom_operatos_interval = null;
         this.pull_data_update = async function () {
-            const server_settings = await client.mysqlRequest(client.database, "SELECT name, param FROM server_settings WHERE server_name = ?", [this.server_name]);
+            const server_settings = await global.mysqlRequest(global.database, "SELECT name, param FROM server_settings WHERE server_name = ?", [this.server_name]);
             for (const setting of server_settings) {
                 this[setting.name] = setting.param;
             }

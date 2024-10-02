@@ -11,7 +11,7 @@ module.exports = async (client) => {
 };
 
 async function updateUpdatersMessages(client, game_server) {
-    const db_request = await client.mysqlRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id NOT LIKE '-%'", [game_server.server_name]);
+    const db_request = await global.mysqlRequest(global.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id NOT LIKE '-%'", [game_server.server_name]);
     if (!db_request.length) {
         console.log(`Failed to find server related feed channels. Aborting, for ${game_server.server_name}`);
         return;
@@ -39,7 +39,7 @@ async function updateUpdatersMessages(client, game_server) {
                 desc: 'preparing...'
             }, channel).then((message) => {
                 found_message = message;
-                client.mysqlRequest(client.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, game_server.server_name, updater.type, updater.channel_id]);
+                global.mysqlRequest(global.database, "UPDATE server_channels SET message_id = ? WHERE server_name = ? AND type = ? AND channel_id = ?", [message.id, game_server.server_name, updater.type, updater.channel_id]);
             });
         }
         if (!game_server.updater_messages[updater.type]) game_server.updater_messages[updater.type] = []

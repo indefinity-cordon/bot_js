@@ -1,34 +1,34 @@
 const redis = require('redis');
 
-module.exports = async (client) => {
-    if (!client.redis_connection) {
-        client.redis_connection = redis.createClient(process.env.REDIS_STRING);
-        client.redis_connection.on('error', err => console.log('Database >> Redis >> [ERROR] >>', err));
+module.exports = async () => {
+    if (!global.redis_connection) {
+        global.redis_connection = redis.createClient(process.env.REDIS_STRING);
+        global.redis_connection.on('error', err => console.log('Database >> Redis >> [ERROR] >>', err));
         console.log('Database >> Redis >> Connecting ...');
-        redisConnect(client);
+        redisConnect();
     }
 
-    client.INT_modules += setInterval(async () => {
-        const redisActive = await checkRedisConnection(client);
+    setInterval(async () => {
+        const redisActive = await checkRedisConnection();
         if (!redisActive) {
             console.log('Database >> Redis >> [ERROR] >> Failed to Restore Connection');
         }
     }, 60000);
 };
 
-async function checkRedisConnection(client) {
+async function checkRedisConnection() {
     try {
-        const result = await client.redis_connection.ping();
+        const result = await global.redis_connection.ping();
         if (result === 'PONG') return true;
     } catch (err) {
         console.log('Database >> Redis >> [ERROR] >> Connection Lost ... Redconnect Attempt ...');
-        return await redisConnect(client);
+        return await redisConnect();
     }
 };
 
-async function redisConnect(client) {
+async function redisConnect() {
     try {
-        await client.redis_connection.connect();
+        await global.redis_connection.connect();
         console.log('Database >> Redis >> Connected');
         return true;
     } catch (err) {

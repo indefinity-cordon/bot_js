@@ -6,7 +6,7 @@ let collectors = [];
 module.exports = async (client) => {
     client.on(Discord.Events.ClientReady, async () => {
         startListining(client);
-        client.INT_modules += setInterval(
+        setInterval(
             startListining,
             20 * 60000, // Каждые N минут (первое число),
             client
@@ -15,10 +15,10 @@ module.exports = async (client) => {
 };
 
 async function startListining(client) {
-    if (!client.redis_connection) return;
+    if (!global.redis_connection) return;
 
     if (subscriber) subscriber.disconnect();
-    subscriber = client.redis_connection.duplicate();
+    subscriber = global.redis_connection.duplicate();
     await subscriber.connect();
     subscriber.pSubscribe('byond.*', async (data) => {
         if (!isJsonString(data)) {
@@ -31,8 +31,8 @@ async function startListining(client) {
     for (const old_collector of collectors) {
         old_collector.stop();
     }
-    for (const server_name in client.servers_link) {
-        const db_request = await client.mysqlRequest(client.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id = '-2'", [client.servers_link[server_name].server_name]);
+    for (const server_name in global.servers_link) {
+        const db_request = await global.mysqlRequest(global.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id = '-2'", [global.servers_link[server_name].server_name]);
         for (const message_collector of db_request) {
             const channel = await client.channels.fetch(message_collector.channel_id);
             if (!channel) return;
@@ -61,5 +61,5 @@ function sendToRedis(message, client, redis_channel) {
         author: message.member.displayName,
         message: message.content
     };
-    client.redis_connection.publish(redis_channel, JSON.stringify(redisMessage));
+    global.redis_connection.publish(redis_channel, JSON.stringify(redisMessage));
 }

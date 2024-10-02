@@ -1,7 +1,7 @@
 module.exports = (client) => {
     client.redisCallback = async function (data) {
         if (!data) {
-            console.log(`Database >> Redis >> [WARNING] Malformed Redis message, without data.`);
+            console.log('Database >> Redis >> [WARNING] Malformed Redis message, without data');
             return;
         }
         if (data.source == 'DISCORD')
@@ -13,8 +13,8 @@ module.exports = (client) => {
             return;
         }
         let responded_game_server;
-        for (const server_name in client.servers_link) {
-            let game_server = client.servers_link[server_name];
+        for (const server_name in global.servers_link) {
+            let game_server = global.servers_link[server_name];
             if (game_server.tgs_id == responded_instance.id) {
                 responded_game_server = game_server;
                 break;
@@ -24,7 +24,7 @@ module.exports = (client) => {
             console.log(`Database >> Redis >> [WARNING] Failed to find server object. Aborting. data: ${data.source}, instance id: ${responded_instance.id}`);
             return;
         }
-        const status = await client.mysqlRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = ?", [responded_game_server.server_name, data.type]);
+        const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = ?", [responded_game_server.server_name, data.type]);
         if (!status.length) {
             console.log(`Database >> MySQL >> Failed to find server related feed channels. Aborting. server: ${responded_game_server.server_name}, channel: ${data.type}`);
             return;

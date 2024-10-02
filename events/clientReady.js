@@ -5,7 +5,7 @@ module.exports = async (client) => {
     console.log(`System >> Shard #${client.shard.ids[0] + 1} is ready!`);
     console.log(`Bot >> Started on ${client.guilds.cache.size} servers!`);
     updateStatus(client)
-    client.INT_modules += setInterval(() => { updateStatus(client) }, 3600000); 
+    setInterval(() => { updateStatus(client) }, 3600000); 
 }
 
 async function updateStatus(client) {

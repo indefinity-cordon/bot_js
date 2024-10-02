@@ -1,13 +1,14 @@
 const mysql = require('mysql');
 
-module.exports = async (client) => {
-    client.mysqlCreate = async function (connection_params) {
+module.exports = async (load_complex_things) => {
+    if (load_complex_things) require('./_entities_framework/index.js');
+    global.mysqlCreate = async function (connection_params) {
         const connection = mysql.createConnection(connection_params);
         connection.on('error', err => console.log('Database >> MySQL >> [ERROR] >>', err));
         await new Promise(async (resolve, reject) => {
             try {
                 await mysqlConnect(connection);
-                client.INT_modules += setInterval(async () => {
+                setInterval(async () => {
                     const mysql_active = await checkMySQLConnection(connection);
                     if (!mysql_active) {
                         console.log('Database >> MySQL >> [ERROR] >> Failed to Restore Connection');
@@ -18,16 +19,21 @@ module.exports = async (client) => {
                 reject(err);
             }
         });
-        return connection
+        return connection;
     };
 
-    if (!client.database) {
+    if (!global.database) {
         console.log('Database >> MySQL >> Connecting ...');
-        client.database = await client.mysqlCreate({host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME})
-    };
+        global.database = await global.mysqlCreate({
+            host: process.env.DB_HOST,
+            port: process.env.DB_PORT,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME
+        });
+    }
 
-
-    client.mysqlRequest = async function (database, query, params) {
+    global.mysqlRequest = async function (database, query, params) {
         if (!database) {
             console.log('Database >> MySQL >> [WARNING] >> Wrong DB at request');
             return;
@@ -43,13 +49,13 @@ module.exports = async (client) => {
         });
     };
 
-    client.mysqlSettingsRequest = async function (query) {
-        if (!client.database) {
+    global.mysqlSettingsRequest = async function (query) {
+        if (!global.database) {
             console.log('Database >> MySQL >> [WARNING] >> No DB at request');
             return;
         }
         return await new Promise((resolve, reject) => {
-            client.database.query("SELECT param FROM settings WHERE name = ?", [query], (err, result) => {
+            global.database.query("SELECT param FROM settings WHERE name = ?", [query], (err, result) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -59,6 +65,7 @@ module.exports = async (client) => {
         });
     };
 };
+
 
 async function checkMySQLConnection(connection) {
     return new Promise((resolve) => {

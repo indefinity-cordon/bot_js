@@ -68,14 +68,14 @@ module.exports = async (client, game_server) => {
 
     game_server.updateAdminsMessage = async function (type) {
         try {
-            const db_request_admin = await client.mysqlRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins", []);
+            const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT player_id, rank_id, extra_titles_encoded FROM admins", []);
             const player_ids = db_request_admin.map(admin => admin.player_id);
-            const db_request_profiles = await client.mysqlRequest(game_server.game_connection, `SELECT id, ckey, last_login FROM players WHERE id IN (${player_ids.join(',')})`, []);
+            const db_request_profiles = await global.mysqlRequest(game_server.game_connection, `SELECT id, ckey, last_login FROM players WHERE id IN (${player_ids.join(',')})`, []);
             const profileMap = new Map();
             db_request_profiles.forEach(profile => {
                 profileMap.set(profile.id, profile);
             });
-            const db_request_ranks = await client.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
+            const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
@@ -140,7 +140,7 @@ module.exports = async (client, game_server) => {
 
     game_server.updateRanksMessage = async function (type) {
         try {
-            const db_request = await client.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
+            const db_request = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const embeds = [];
             let description = '';
             for (const db_rank of db_request) {
@@ -172,7 +172,7 @@ module.exports = async (client, game_server) => {
 
     game_server.updateWhitelistsMessage = async function (type) {
         try {
-            const db_request = await client.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != ''", []);
+            const db_request = await global.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE whitelist_status != ''", []);
             const acting_wls = {
                 'Commander': ['WHITELIST_COMMANDER', 'WHITELIST_COMMANDER_COUNCIL', 'WHITELIST_COMMANDER_COUNCIL_LEGACY', 'WHITELIST_COMMANDER_COLONEL', 'WHITELIST_COMMANDER_LEADER'],
                 'Synthetic': ['WHITELIST_SYNTHETIC', 'WHITELIST_SYNTHETIC_COUNCIL', 'WHITELIST_SYNTHETIC_COUNCIL_LEGACY', 'WHITELIST_SYNTHETIC_LEADER', 'WHITELIST_JOE'],
@@ -239,10 +239,10 @@ module.exports = async (client, game_server) => {
     }, interaction) {
         let rank_info = '';
         if (request[0].role_rank) {
-            const db_role = await client.mysqlRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].role_rank]);
+            const db_role = await global.mysqlRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].role_rank]);
             let db_stable_role;
             if (request[0].stable_rank != request[0].role_rank) {
-                db_stable_role = await client.mysqlRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].stable_rank]);
+                db_stable_role = await global.mysqlRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].stable_rank]);
             }
             if(request[0].stable_rank && !db_stable_role) {
                 rank_info += `[SPECIAL] Supported Rank: ${db_role[0].rank_name}\n`;
@@ -253,7 +253,7 @@ module.exports = async (client, game_server) => {
                 rank_info = `Supported Rank: ${db_role[0].rank_name}\n`;
             }
         }
-        const db_player_profile = await client.mysqlRequest(game_server.game_connection, "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", [request[0].player_id]);
+        const db_player_profile = await global.mysqlRequest(game_server.game_connection, "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", [request[0].player_id]);
         if (!db_player_profile[0]) {
             client.ephemeralEmbed({
                 title: 'Request',
@@ -268,14 +268,14 @@ module.exports = async (client, game_server) => {
         } else if (db_player_profile[0].is_time_banned) {
             player_info += `## **Banned**\n**Reason:** ${db_player_profile[0].time_ban_reason}, **Exp:** ${db_player_profile[0].time_ban_expiration}, **Date:** ${db_player_profile[0].time_ban_date}\n`;
         }
-        const db_player_playtime = await client.mysqlRequest(game_server.game_connection, "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id]);
+        const db_player_playtime = await global.mysqlRequest(game_server.game_connection, "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id]);
         let player_playtime = 0;
         for (const playtime of db_player_playtime) {
             player_playtime += playtime.total_minutes;
         }
-        const db_request_admin = await client.mysqlRequest(game_server.game_connection, "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", [db_player_profile[0].id]);
+        const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", [db_player_profile[0].id]);
         if (db_request_admin[0]) {
-            const db_request_ranks = await client.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
+            const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks", []);
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
@@ -341,7 +341,7 @@ module.exports = async (client, game_server) => {
                     await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to add as admin', ephemeral: true });
                     const ckey = await client.collectUserInput(interaction);
                     if (!ckey) return;
-                    const playerData = await client.mysqlRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                    const playerData = await global.mysqlRequest(game_server.game_connection, "SELECT id, ckey FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                     if (!playerData.length) {
                         await client.ephemeralEmbed({
                             title: 'Request',
@@ -359,14 +359,14 @@ module.exports = async (client, game_server) => {
                         const rankOptions = await getRankOptions(client, game_server.game_connection);
                         const selectedRankId = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', rankOptions, 'Select the rank to assign:');
                         if (selectedRankId) {
-                            await client.mysqlRequest(game_server.game_connection, "INSERT INTO admins (player_id, rank_id) VALUES (?, ?)", [selectedPlayerId, selectedRankId]);
+                            await global.mysqlRequest(game_server.game_connection, "INSERT INTO admins (player_id, rank_id) VALUES (?, ?)", [selectedPlayerId, selectedRankId]);
                             const titlesOptions = [{ label: 'Set Up', value: 'set' }, { label: 'Skip', value: 'skip' }]
                             const seelectTitles = await client.sendInteractionSelectMenu(interaction, 'select-titles', 'Set Titles', titlesOptions, 'Would you like to assign extra titles to this admin?');
                             if (seelectTitles === 'set') {
                                 const extraRankOptions = await getRankOptions(client, game_server.game_connection);
                                 const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', extraRankOptions, 'Select extra titles to assign:', true);
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
-                                    await client.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(selectedExtraRanks), selectedPlayerId]);
+                                    await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(selectedExtraRanks), selectedPlayerId]);
                                 }
                             }
                             await client.ephemeralEmbed({
@@ -390,7 +390,7 @@ module.exports = async (client, game_server) => {
                     }
                     const selectedAdminId = await client.sendInteractionSelectMenu(interaction, 'select-admin', 'Select Admin', adminList, 'Select the admin to remove:');
                     if (selectedAdminId) {
-                        await client.mysqlRequest(game_server.game_connection, "DELETE FROM admins WHERE player_id = ?", [selectedAdminId]);
+                        await global.mysqlRequest(game_server.game_connection, "DELETE FROM admins WHERE player_id = ?", [selectedAdminId]);
                         await client.ephemeralEmbed({
                             title: 'Request',
                             desc: 'Admin removed successfully!',
@@ -417,26 +417,26 @@ module.exports = async (client, game_server) => {
                             const rankOptions = await getRankOptions(client, game_server.game_connection);
                             const selectedRankId = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', rankOptions, 'Select the new rank to assign:');
                             if (selectedRankId) {
-                                await client.mysqlRequest(game_server.game_connection, "UPDATE admins SET rank_id = ? WHERE player_id = ?", [selectedRankId, selectedAdminId]);
+                                await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET rank_id = ? WHERE player_id = ?", [selectedRankId, selectedAdminId]);
                             }
                         }
                         const titlesOptions = [{ label: 'Update', value: 'update' }, { label: 'Remove', value: 'remove' }, { label: 'Skip', value: 'skip' }]
                         const seelectTitles = await client.sendInteractionSelectMenu(interaction, 'select-titles', 'Update Titles', titlesOptions, 'Would you like to update extra titles to this admin?');
                         switch (seelectTitles) {
                             case 'update': {
-                                const currentPlayer = await client.mysqlRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedAdminId]);
+                                const currentPlayer = await global.mysqlRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedAdminId]);
                                 let extraTitles = currentPlayer[0].extra_titles_encoded ? JSON.parse(currentPlayer[0].extra_titles_encoded) : [];
                                 const extraRankOptions = await getRankOptions(client, game_server.game_connection);
                                 const availableOptions = extraRankOptions.filter(option => !extraTitles.includes(option.value));
                                 const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', availableOptions, 'Select extra titles to assign:', true);
                                 if (selectedExtraRanks && selectedExtraRanks.length > 0) {
                                     extraTitles = [...new Set([...extraTitles, ...selectedExtraRanks])];
-                                    await client.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
+                                    await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
                                 }
                             } break;
                         
                             case 'remove': {
-                                const currentPlayer = await client.mysqlRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedAdminId]);
+                                const currentPlayer = await global.mysqlRequest(game_server.game_connection, "SELECT extra_titles_encoded FROM admins WHERE player_id = ?", [selectedAdminId]);
                                 if (currentPlayer[0].extra_titles_encoded) {
                                     let extraTitles = JSON.parse(currentPlayer[0].extra_titles_encoded);
                                     const extraRankOptions = await getRankOptions(client, game_server.game_connection);
@@ -444,7 +444,7 @@ module.exports = async (client, game_server) => {
                                     const selectedExtraRanks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', assignedOptions, 'Select extra titles to remove:', true);
                                     if (selectedExtraRanks && selectedExtraRanks.length > 0) {
                                         extraTitles = extraTitles.filter(title => !selectedExtraRanks.includes(title));
-                                        await client.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
+                                        await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extraTitles), selectedAdminId]);
                                     }
                                 }
                             } break;
@@ -475,7 +475,7 @@ module.exports = async (client, game_server) => {
                 await interaction.followUp({ content: 'Enter the text rights for this rank', ephemeral: true });
                 const textRights = await client.collectUserInput(interaction);
                 if (!textRights) return;
-                await client.mysqlRequest(game_server.game_connection, "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)", [rankName, textRights]);
+                await global.mysqlRequest(game_server.game_connection, "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)", [rankName, textRights]);
                 await client.ephemeralEmbed({
                     title: 'Request',
                     desc: 'Rank ${rankName} added successfully!',
@@ -495,13 +495,13 @@ module.exports = async (client, game_server) => {
                 }
                 const selectedRankId = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', rankList, 'Select the rank to remove:');
                 if (selectedRankId) {
-                    await client.mysqlRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
-                    const playersWithExtraTitles = await client.mysqlRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
+                    await global.mysqlRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selectedRankId]);
+                    const playersWithExtraTitles = await global.mysqlRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selectedRankId}%`]);
                     for (const admin of playersWithExtraTitles) {
                         let extraTitles = JSON.parse(admin.extra_titles_encoded);
                         extraTitles = extraTitles.filter(id => id !== selectedRankId);
                         const updatedExtraTitles = extraTitles.length > 0 ? JSON.stringify(extraTitles) : null;
-                        await client.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [updatedExtraTitles, admin.player_id]);
+                        await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [updatedExtraTitles, admin.player_id]);
                     }
                     await client.ephemeralEmbed({
                         title: 'Request',
@@ -529,12 +529,12 @@ module.exports = async (client, game_server) => {
                         await interaction.followUp({ content: 'Enter the new name for the rank', ephemeral: true });
                         const newRankName = await client.collectUserInput(interaction);
                         if (!newRankName) return;
-                        await client.mysqlRequest(game_server.game_connection, "UPDATE admin_ranks SET rank_name = ? WHERE id = ?", [newRankName, selectedRankId]);
+                        await global.mysqlRequest(game_server.game_connection, "UPDATE admin_ranks SET rank_name = ? WHERE id = ?", [newRankName, selectedRankId]);
                     }
                     await interaction.followUp({ content: 'Enter the text rights for this rank', ephemeral: true });
                     const newTextRights = await client.collectUserInput(interaction);
                     if (!newTextRights) return;
-                    await client.mysqlRequest(game_server.game_connection, "UPDATE admin_ranks SET text_rights = ? WHERE id = ?", [newTextRights, selectedRankId]);
+                    await global.mysqlRequest(game_server.game_connection, "UPDATE admin_ranks SET text_rights = ? WHERE id = ?", [newTextRights, selectedRankId]);
                     await client.ephemeralEmbed({
                         title: 'Request',
                         desc: 'Rank updated successfully!',
@@ -573,7 +573,7 @@ module.exports = async (client, game_server) => {
                 await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to modify whitelist', ephemeral: true });
                 const ckey = await client.collectUserInput(interaction);
                 if (!ckey) return;
-                const playerData = await client.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                const playerData = await global.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                 if (!playerData.length) {
                     await client.ephemeralEmbed({
                         title: 'Request',
@@ -605,7 +605,7 @@ module.exports = async (client, game_server) => {
                 const selectedRoles = await client.sendInteractionSelectMenu(interaction, 'select-roles', 'Select Roles', availableRoles, 'Select the roles to add:', true);
                 if (!selectedRoles) return;
                 currentRoles = [...new Set([...currentRoles, ...selectedRoles])];
-                await client.mysqlRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+                await global.mysqlRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
                 await client.ephemeralEmbed({
                     title: 'Request',
                     desc: 'Roles added successfully!',
@@ -617,7 +617,7 @@ module.exports = async (client, game_server) => {
                 await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to remove whitelists from', ephemeral: true });
                 const ckey = await client.collectUserInput(interaction);
                 if (!ckey) return;
-                const playerData = await client.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
+                const playerData = await global.mysqlRequest(game_server.game_connection, "SELECT id, ckey, whitelist_status FROM players WHERE ckey LIKE ?", [`%${ckey}%`]);
                 if (!playerData.length) {
                     await client.ephemeralEmbed({
                         title: 'Request',
@@ -654,7 +654,7 @@ module.exports = async (client, game_server) => {
                         currentRoles.splice(index, 1);
                     }
                 });
-                await client.mysqlRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
+                await global.mysqlRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [currentRoles.join('|'), selectedPlayerId]);
                 await client.ephemeralEmbed({
                     title: 'Request',
                     desc: 'Roles removed successfully!',
@@ -678,9 +678,9 @@ module.exports = async (client, game_server) => {
         await game_server.pull_data_update();
         if (!game_server.auto_start_config || !isJsonString(game_server.auto_start_config)) {
             if (game_server.auto_start_config) {
-                await client.mysqlRequest(client.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name, 'auto_start_config']);
+                await global.mysqlRequest(global.database, "DELETE FROM server_settings WHERE server_name = ? AND name = 'auto_start_config'", [game_server.server_name, 'auto_start_config']);
             }
-            await client.mysqlRequest(client.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [game_server.server_name, 'auto_start_config', "{}"]);
+            await global.mysqlRequest(global.database, "INSERT INTO server_settings (server_name, name, param) VALUES (?, ?, ?)", [game_server.server_name, 'auto_start_config', "{}"]);
             await game_server.pull_data_update();
         }
         const server_schedule_data = JSON.parse(game_server.auto_start_config);
@@ -704,11 +704,19 @@ module.exports = async (client, game_server) => {
         await handlingOptions[selectedAction](interaction, client, game_server, server_schedule_data);
     };
 
+    game_server.tgsActions = async function (interaction) {
+        const collected = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', client.handling_tgs, 'Please select action to perform:');
+        if (collected) {
+            await await client.handling_tgs_actions[collected](interaction, game_server.tgs_id);
+        }
+    };
+
     game_server.handling_actions = {
         'manage_admins': game_server.manageAdmins,
         'manage_ranks': game_server.manageRanks,
         'manage_whitelists': game_server.manageWhitelists,
         'manage_autostart': game_server.configureAutoStartMenu,
+        'manage_tgs': game_server.tgsActions,
 //        'manage_battlepass_player': game_server.manageBattlepassPlayers,
 //        'manage_battlepass_reward': game_server.manageBattlepassReward,
 //        'manage_battlepass_server': game_server.manageBattlepassServer,
@@ -719,7 +727,8 @@ module.exports = async (client, game_server) => {
         { label: 'Manage Admins', value: 'manage_admins' },
         { label: 'Manage Ranks', value: 'manage_ranks' },
         { label: 'Manage Whitelists', value: 'manage_whitelists' },
-        { label: 'Manage Auto Start', value: 'manage_autostart' }
+        { label: 'Manage Auto Start', value: 'manage_autostart' },
+        { label: 'Manage TGS', value: 'manage_tgs' }
     ];
 
     const messageQueue = {};
@@ -871,12 +880,12 @@ module.exports = async (client, game_server) => {
     };
 
     async function fetchPlayerById(playerId, database) {
-        const players = await client.mysqlRequest(database, "SELECT * FROM players WHERE id = ?", [playerId]);
+        const players = await global.mysqlRequest(database, "SELECT * FROM players WHERE id = ?", [playerId]);
         return players.length ? players[0] : null;
     };
 
     async function fetchJobBanByPlayerId(playerId, database) {
-        const jobBans = await client.mysqlRequest(database, "SELECT * FROM player_job_bans WHERE player_id = ?", [playerId]);
+        const jobBans = await global.mysqlRequest(database, "SELECT * FROM player_job_bans WHERE player_id = ?", [playerId]);
         return jobBans.length ? jobBans[0] : null;
     };
 
@@ -916,7 +925,7 @@ module.exports = async (client, game_server) => {
         }
     };
 
-    client.INT_modules += setInterval(async () => {
+    setInterval(async () => {
         for (const channelId in messageQueue) {
             const messages = messageQueue[channelId];
             const messagesToSend = [];
@@ -953,9 +962,9 @@ module.exports = async (client, game_server) => {
     game_server.handle_status = async function (new_status) {
         if (game_server.server_status == new_status) return false;
         game_server.server_status = new_status;
-        client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.server_name]);
+        global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'server_status'", [new_status, game_server.server_name]);
         if (game_server.server_status) {
-            const status = await client.mysqlRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
                 const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
@@ -964,7 +973,7 @@ module.exports = async (client, game_server) => {
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 30 * 60000)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
             }
         } else {
-            const status = await client.mysqlRequest(client.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
+            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.server_name]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
@@ -976,7 +985,7 @@ module.exports = async (client, game_server) => {
 
 
 async function getAdminOptions(client, database_connection) {
-    const admins = await client.mysqlRequest(database_connection, "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id", []);
+    const admins = await global.mysqlRequest(database_connection, "SELECT a.player_id, p.ckey FROM admins a JOIN players p ON a.player_id = p.id", []);
 
     return admins.map(admin => ({
         label: admin.ckey,
@@ -985,7 +994,7 @@ async function getAdminOptions(client, database_connection) {
 };
 
 async function getRankOptions(client, database_connection) {
-    const ranks = await client.mysqlRequest(database_connection, "SELECT id, rank_name FROM admin_ranks", []);
+    const ranks = await global.mysqlRequest(database_connection, "SELECT id, rank_name FROM admin_ranks", []);
 
     return ranks.map(rank => ({
         label: rank.rank_name,
@@ -1009,7 +1018,7 @@ async function updateServerCustomOperators(client, game_server) {
     const now_utc_string = now_utc.toISOString().split('T')[0];
     if (server_schedule_data.specific_days) {
         server_schedule_data.specific_days = server_schedule_data.specific_days.filter(date => date >= now_utc_string);
-        await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+        await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
         await game_server.pull_data_update();
     }
     if (server_schedule_data.mode === 'daily') {
@@ -1104,7 +1113,7 @@ async function setMode(interaction, client, game_server, server_schedule_data) {
     ];
     const selectedMode = await client.sendInteractionSelectMenu(interaction, 'select-mode', 'Select mode', modeOptions, 'Choose a mode for server auto-start:');
     server_schedule_data.mode = selectedMode;
-    await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
@@ -1137,7 +1146,7 @@ async function setDailyTimes(interaction, client, game_server, server_schedule_d
     }
     server_schedule_data.daily = server_schedule_data.daily || {};
     server_schedule_data.daily[selectedDay] = timeInput;
-    await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
@@ -1169,7 +1178,7 @@ async function removeDailyTimes(interaction, client, game_server, server_schedul
     }
     const selectedDay = await client.sendInteractionSelectMenu(interaction, 'select-day', 'Select a day to remove from daily start schedule', dayOptions, 'Choose a day to remove:');
     delete server_schedule_data.daily[selectedDay];
-    await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'autostart_schedule'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
@@ -1214,7 +1223,7 @@ async function setSpecificDays(interaction, client, game_server, server_schedule
     Object.keys(specificTimes).forEach(date => {
         server_schedule_data.spec[date] = specificTimes[date];
     });
-    await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',
@@ -1248,7 +1257,7 @@ async function removeSpecificDays(interaction, client, game_server, server_sched
     selectedDates.forEach(selectedDate => {
         delete server_schedule_data.spec[selectedDate];
     });
-    await client.mysqlRequest(client.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
+    await global.mysqlRequest(global.database, "UPDATE server_settings SET param = ? WHERE server_name = ? AND name = 'auto_start_config'", [JSON.stringify(server_schedule_data), game_server.server_name]);
     await game_server.pull_data_update();
     await client.ephemeralEmbed({
         title: 'Request',

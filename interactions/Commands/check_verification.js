@@ -18,13 +18,13 @@ module.exports = {
             title: 'Verification',
             desc: 'In progress...'
         }, interaction);
-        const bot_settings = await client.mysqlSettingsRequest('main_server');
-        const db_response = await client.mysqlRequest(client.servers_link[bot_settings[0].param].game_connection, "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id]);
+        const bot_settings = await global.mysqlSettingsRequest('main_server');
+        const db_response = await global.mysqlRequest(global.servers_link[bot_settings[0].param].game_connection, "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id]);
         if (db_response[0] && db_response[0].discord_id) {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id);
-            let bot_settings = await client.mysqlSettingsRequest('verified_role');
+            let bot_settings = await global.mysqlSettingsRequest('verified_role');
             interactionUser.roles.add(bot_settings[0].param);
-            bot_settings = await client.mysqlSettingsRequest('anti_verified_role');
+            bot_settings = await global.mysqlSettingsRequest('anti_verified_role');
             interactionUser.roles.remove(bot_settings[0].param);
             client.ephemeralEmbed({
                 title: 'Verification',
