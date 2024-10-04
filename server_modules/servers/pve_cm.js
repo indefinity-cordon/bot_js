@@ -13,4 +13,7 @@ module.exports = async (client, game_server) => {
     game_server.handling_commands = [
         { label: 'Manage TGS', value: 'manage_tgs' }
     ];
+
+    game_server.serverCustomOperators = async function () {
+    };
 };

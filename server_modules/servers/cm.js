@@ -676,8 +676,7 @@ module.exports = async (client, game_server) => {
     game_server.configureAutoStartMenu = async function (interaction) {
         if (!game_server.settings_data.auto_start_config) {
             game_server.settings_data.auto_start_config = new global.entity_construct['ServerSettings'](global.database, null, global.entity_meta['ServerSettings'])
-            game_server.settings_data.auto_start_config.save()
-            game_server.settings_data.auto_start_config.sync()
+            await game_server.settings_data.auto_start_config.sync()
         }
         const actionOptions = [
             { label: 'View Schedule', value: 'view' },
@@ -958,7 +957,7 @@ module.exports = async (client, game_server) => {
         if (game_server.server_status == new_status) return false;
         game_server.settings_data.server_status.param = new_status;
         if (game_server.server_status) {
-            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.data.server_name]);
+            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
                 const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
@@ -967,7 +966,7 @@ module.exports = async (client, game_server) => {
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 30 * 60000)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
             }
         } else {
-            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server_name = ? AND type = 'round'", [game_server.data.server_name]);
+            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
                 await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);

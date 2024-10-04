@@ -10,9 +10,10 @@ class Server extends Entity {
         this.update_status_messages_interval = null;
         this.update_roles_interval = null;
         this.update_custom_operatos_interval = null;
-        this.settings_data = []
-        load_config()
+        this.settings_data = {};
+        this.load_config();
     }
+
     destroy() {
         super.destroy();
         clearInterval(this.update_status_messages_interval);
@@ -32,16 +33,16 @@ class Server extends Entity {
     async load_config() {
         const server_settings = await global.gather_data(global.database, 'ServerSettings', "SELECT * FROM ##TABLE## WHERE server = ?", [this.id]);
         for (const setting of server_settings) {
-            setting.sync()
+            setting.sync();
             this.settings_data[setting.name] = setting;
         }
     }
-
+ 
     async map(row) {
         super.map(row);
 
         if (row['guild']) {
-            const guild_link = await global.mysqlRequest(global.database, "SELECT guild_id FROM guilds WHERE id = ?", [guild]);
+            const guild_link = await global.mysqlRequest(global.database, "SELECT guild_id FROM guilds WHERE id = ?", [row['guild']]);
             this.data.guild_id = guild_link[0].guild_id;
         }
     }
@@ -49,8 +50,8 @@ class Server extends Entity {
     async unmap() {
         const row = super.unmap();
 
-        if (guild_id) {
-            const guild_link = await global.mysqlRequest(global.database, "SELECT id FROM guilds WHERE guild_id = ?", [guild_id]);
+        if (this.data.guild_id) {
+            const guild_link = await global.mysqlRequest(global.database, "SELECT id FROM guilds WHERE guild_id = ?", [this.data.guild_id]);
             row['guild'] = guild_link[0].id;
         }
         return row;
@@ -69,7 +70,7 @@ const ServerMeta = {
         id: 'bigint',
         guild: 'bigint',
         server_name: 'varchar',
-        db_name: 'varchar',
+        db_connection_string: 'varchar',
         file_name: 'varchar',
         ip: 'varchar',
         port: 'int',

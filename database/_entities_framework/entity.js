@@ -1,6 +1,6 @@
 class Entity {
     constructor(db, id, meta) {
-        this.db = db;
+        this.db = db;// Ссылка на объект соединения с ДБ
         this.id = id;
         this.meta = meta;
         this.data = {};
@@ -27,25 +27,25 @@ class Entity {
     }
 
     async save() {
-        const rows = this.id ? await this.db.query(`SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]) : [];
-        const to_map = [];
+        const rows = this.id ? await global.mysqlRequest(this.db, `SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]) : [];
+        const to_map = {};
         let local_update = false;
         if (rows.length > 0) {
             const db_data = rows[0];
             delete db_data['id'];
             for (const key in db_data) {
-                if (!this.sync_data) {
-                    to_map.push({key: db_data[key]});
+                if (!this.sync_data.length || !(key in this.sync_data)) {
+                    to_map[key] = db_data[key];
                 } else if (this.data[key] !== this.sync_data[key]) {
-                    local_update = true
+                    local_update = true;
                 } else if (db_data[key] !== this.sync_data[key]) {
-                    to_map.push({key: db_data[key]});
+                    to_map[key] = db_data[key];
                 }
             }
         } else {
             local_update = true;
         }
-        if (to_map.length) {
+        if (Object.entries(to_map).length) {
             await this.map(to_map);
         }
         const row_to_save = await this.unmap();
@@ -53,16 +53,14 @@ class Entity {
             const columns = Object.keys(row_to_save).join(', ');
             const values = Object.values(row_to_save);
             const placeholders = values.map(() => '?').join(', ');
-            await db.query(
-                `INSERT INTO ${meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`,
-                values
-            );
+            await global.mysqlRequest(this.db, `INSERT INTO ${meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`, values);
         }
         this.sync_data = { ...row_to_save };
     }
 
-    sync(interval = 10000) {
-        auto_sync_interval = setInterval(async () => {
+    async sync(interval = 10000) {
+        await this.save();
+        this.auto_sync_interval = setInterval(async () => {
             try {
                 await this.save();
             } catch (error) {

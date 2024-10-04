@@ -32,7 +32,7 @@ async function startListining(client) {
         old_collector.stop();
     }
     for (const server_name in global.servers_link) {
-        const db_request = await global.mysqlRequest(global.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server_name = ? AND message_id = '-2'", [global.servers_link[server_name].server_name]);
+        const db_request = await global.mysqlRequest(global.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server = ? AND message_id = '-2'", [global.servers_link[server_name].id]);
         for (const message_collector of db_request) {
             const channel = await client.channels.fetch(message_collector.channel_id);
             if (!channel) return;

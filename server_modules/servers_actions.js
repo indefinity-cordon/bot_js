@@ -1,6 +1,6 @@
 module.exports = async (client) => {
-    await client.guilds.fetch();
-    const servers = await global.gather_data(global.database, 'Server', "SELECT * FROM ##TABLE## WHERE guild = ?", [global.discord_server.data.id]);
+    if (!global.discord_server) return;
+    const servers = await global.gather_data(global.database, 'Server', "SELECT * FROM ##TABLE## WHERE guild = ?", [global.discord_server.id]);
     if (!servers.length) {
         console.log('Failed to find servers. Aborting.');
     } else {
@@ -18,26 +18,20 @@ module.exports = async (client) => {
                     });
                 });
             } else {
-                await game_server.sync();
-                game_server.game_connection = await global.mysqlCreate({
-                    host: process.env.DB_HOST, 
-                    port: process.env.DB_PORT, 
-                    user: process.env.DB_USER, 
-                    password: process.env.DB_PASSWORD, 
-                    database: server.data.db_name
-                });
-                await require(`./servers/${game_server.data.file_name}`)(client, game_server);
+                await server.sync();
+                server.game_connection = await global.mysqlCreate(server.data.db_connection_string);
+                await require(`./servers/${server.data.file_name}`)(client, server);
             }
-            updated_servers[`${game_server.data.server_name}`] = game_server;
-            if (!game_server.message_updater_intervals) {
-                game_server.message_updater_intervals = {};
-                client.serverMessageUpdator(game_server);
+            updated_servers[`${server.data.server_name}`] = server;
+            if (!server.message_updater_intervals) {
+                server.message_updater_intervals = {};
+                client.serverMessageUpdator(server);
             }
-            if (game_server.data.guild && !game_server.update_roles_interval) {
-                client.serverRoles(game_server);
+            if (server.data.guild && !server.update_roles_interval) {
+                client.serverRoles(server);
             }
-            if (!game_server.update_custom_operatos_interval) {
-                game_server.serverCustomOperators();
+            if (!server.update_custom_operatos_interval) {
+                server.serverCustomOperators();
             }
         }
         global.servers_link = updated_servers;

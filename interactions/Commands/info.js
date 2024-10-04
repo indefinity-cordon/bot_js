@@ -21,8 +21,12 @@ module.exports = {
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
         await interaction.deferReply({ ephemeral: true });
+        const servers_options = glob.handling_game_servers.map(server => ({
+            label: server.data.server_name,
+            value: server.data.server_name
+        }));
         const target_user = interaction.options.getUser('user');
-        const collected = await client.sendInteractionSelectMenu(interaction, 'select-server', 'Select a game server', client.servers_options, 'Please select a game server:');
+        const collected = await client.sendInteractionSelectMenu(interaction, 'select-server', 'Select a game server', servers_options, 'Please select a game server:');
         if (collected) {
             const db_discord_link = await global.mysqlRequest(global.servers_link[collected].game_connection, "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [target_user.id]);
             if (!db_discord_link[0] || !db_discord_link[0].discord_id) {
@@ -42,4 +46,4 @@ module.exports = {
             await global.servers_link[collected].infoRequest({ request: db_discord_link }, interaction);
         }
     }
-}
+};

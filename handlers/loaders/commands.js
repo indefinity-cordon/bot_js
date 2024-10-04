@@ -3,11 +3,6 @@ const { Routes } = require('discord.js');
 const fs = require('fs');
 
 module.exports = async (client) => {
-    if (!client.commands) {
-        console.log(`System >> [ERROR] >> No commmands module for client ${client.shard.ids[0]}`);
-        return;
-    }
-
     const commands = [];
 
     if (client.shard.ids[0] === 0) console.log('System >> Loading commands ...');
@@ -28,9 +23,9 @@ module.exports = async (client) => {
     const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
     try {
-        console.log('System >> Started refreshing application (/) commands');
+        if (client.shard.ids[0] === 0) console.log('System >> Started refreshing application (/) commands');
         const data = await rest.put(Routes.applicationCommands(process.env.DISCORD_ID), {body: commands});
-        console.log(`System >> Successfully reloaded ${data.length} application (/) commands`);
+        if (client.shard.ids[0] === 0) console.log(`System >> Successfully reloaded ${data.length} application (/) commands`);
     } catch (error) {
         console.log(error);
     }

@@ -13,31 +13,33 @@ module.exports = {
      */
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
+        if (!global.discord_server) {
+            return interaction.reply({ content: 'You don\'t have permission to use any admin commands.', ephemeral: true });
+        }
         const member = interaction.member;
-        const roleCache = new Map();
-        const availableCommands = [];
-        for (const command of client.handling_commands) {
+        const role_сache = new Map();
+        const available_сommands = [];
+        for (const command of global.handling_commands) {
             if (command.role_req) {
-                let roleId = roleCache.get(command.role_req);
+                let roleId = role_сache.get(command.role_req);
                 if (!roleId) {
-                    const roleResult = await global.mysqlSettingsRequest(command.role_req);
-                    roleId = roleResult[0]?.param;
-                    roleCache.set(command.role_req, roleId);
+                    roleId = global.discord_server.settings_data[command.role_req];
+                    role_сache.set(command.role_req, roleId);
                 }
                 if (roleId && member.roles.cache.has(roleId)) {
-                    availableCommands.push(command);
+                    available_сommands.push(command);
                 }
             } else {
-                availableCommands.push(command);
+                available_сommands.push(command);
             }
         }
-        if (availableCommands.length === 0) {
+        if (available_сommands.length === 0) {
             return interaction.reply({ content: 'You don\'t have permission to use any admin commands.', ephemeral: true });
         }
         await interaction.deferReply({ ephemeral: true });
-        const collected = await client.sendInteractionSelectMenu(interaction, 'select-command', 'Select command', availableCommands, 'Please select command:');
+        const collected = await client.sendInteractionSelectMenu(interaction, 'select-command', 'Select command', available_сommands, 'Please select command:');
         if (collected) {
-            await client.handling_commands_actions[collected](interaction, member, roleCache);
+            await global.handling_commands_actions[collected](interaction, member, role_сache);
         }
     }
 }

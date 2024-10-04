@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `servers` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `guild` bigint DEFAULT NULL,
   `server_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `db_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `db_connection_string` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `file_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `port` int DEFAULT NULL,
@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS `servers` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Дамп данных таблицы discord_bot.servers: ~2 rows (приблизительно)
-INSERT INTO `servers` (`id`, `guild`, `server_name`, `db_name`, `file_name`, `ip`, `port`, `tgs_id`) VALUES
-	(1, 1, 'CM', 'cm13', 'cm.js', 'play.colonialmarines.ru', 4737, 1),
-	(2, 2, 'PVE CM', '', 'pve_cm.js', 'play.colonialmarines.ru', 4739, 5);
+INSERT INTO `servers` (`id`, `guild`, `server_name`, `db_connection_string`, `file_name`, `ip`, `port`, `tgs_id`) VALUES
+	(1, 1, 'CM', 'mysql://administrator:4A6edA5IrehIC2r13azIdAP6HEzaS5@192.168.101.10:8001/ru_cm_ru', 'cm.js', 'play.colonialmarines.ru', 4737, 1),
+	(2, 2, 'PVE CM', 'mysql://administrator:4A6edA5IrehIC2r13azIdAP6HEzaS5@192.168.101.10:8001/ru_cm_ru', 'pve_cm.js', 'play.colonialmarines.ru', 4739, 5);
 
 -- Дамп структуры для таблица discord_bot.server_channels
 CREATE TABLE IF NOT EXISTS `server_channels` (

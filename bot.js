@@ -13,6 +13,8 @@ const client = new Discord.Client({
     restTimeOffset: 0
 });
 
+client.commands = new Discord.Collection();
+
 
 //LOGS
 const LogsHandlerClass = require('./~LogsHandler.js');
@@ -51,34 +53,31 @@ async function initializeBot() {
     require('./database/MySQL')(true);
     if (process.env.REDIS_STRING) require('./database/Redis')();
 
-    await client.login(process.env.DISCORD_TOKEN);
     await global.database;
 
-    await client.guilds.fetch();
-    const guild = client.guilds.cache.first()
-    if (!guild) return;
-    const discord_guild = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE## WHERE guild_id = ?", [guild.id]);
-    if (!discord_guild[0]) return;
+    global.handling_commands_actions = {};
+    global.handling_commands = [];
 
-    client.handling_commands_actions = {};
-    client.handling_commands = [];
-
-    global.discord_server = discord_guild[0]
     fs.readdirSync('./handlers').forEach((dir) => {
         fs.readdirSync(`./handlers/${dir}`).forEach((handler) => {
             require(`./handlers/${dir}/${handler}`)(client);
         });
     });
 
-    const handling_game_servers = await global.mysqlRequest(global.database, "SELECT server_name, db_name FROM servers");
-    client.servers_options = handling_game_servers.map(server => ({
-        label: server.server_name,
-        value: server.server_name
-    }));
+    await client.login(process.env.DISCORD_TOKEN);
+    await client.guilds.fetch();
+    const guild = client.guilds.cache.first()
+    if (guild) {
+        const discord_guild = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE## WHERE guild_id = ?", [guild.id]);
+        if (discord_guild[0]) global.discord_server = discord_guild[0];
+    }
 
+    global.handling_game_servers = await global.gather_data(global.database, 'Server', "SELECT * FROM servers");
     global.servers_link = {};
-    require('./server_modules/servers_actions.js')(client);
-    setInterval(async () => require('./server_modules/servers_actions.js')(client), 120 * 60000);
+    if (global.discord_server) {
+        require('./server_modules/servers_actions.js')(client);
+        setInterval(async () => require('./server_modules/servers_actions.js')(client), 120 * 60000);
+    }
 }
 
 initializeBot();

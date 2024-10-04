@@ -19,21 +19,21 @@ module.exports = {
             title: 'Verification',
             desc: 'In progress...'
         }, interaction);
-        let bot_settings = await global.mysqlSettingsRequest('main_server');
-        const game_database = global.servers_link[bot_settings[0].param].game_connection;
+        if (!global.discord_server) return client.ephemeralEmbed({ title: 'Verification', desc: 'No verification for this server', color: '#c70058' }, interaction);
         const identifier = await interaction.options.getString('identifier');
-        let db_response = await global.mysqlRequest(game_database, "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [interaction.user.id]);
-        if (db_response[0] && db_response[0].discord_id) {
+        let db_response;
+        for (const server_name in global.servers_link) {
+            if (global.servers_link[server_name].data.guild !== global.discord_server.id) return;
+            db_response = await global.mysqlRequest(global.servers_link[server_name].game_connection, "SELECT * FROM discord_links WHERE discord_id = ?", [interaction.user.id]);
+        }
+        if (db_response && db_response[0] && db_response[0].discord_id) {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
-            bot_settings = await global.mysqlSettingsRequest('verified_role');
-            interactionUser.roles.add(bot_settings[0].param)
-            bot_settings = await global.mysqlSettingsRequest('anti_verified_role');
-            interactionUser.roles.remove(bot_settings[0].param)
-            client.ephemeralEmbed({
+            interactionUser.roles.add(global.discord_server.settings_data.verified_role)
+            interactionUser.roles.remove(global.discord_server.settings_data.anti_verified_role)
+            return client.ephemeralEmbed({
                 title: 'Verification',
                 desc: 'You already verified'
             }, interaction);
-            return;
         }
         let player_id = 0;
         if (identifier === 0) {
@@ -72,10 +72,8 @@ module.exports = {
             }
             await global.mysqlRequest(game_database, "UPDATE discord_identifiers SET used = 1 WHERE identifier = ?", [identifier]);
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id);
-            bot_settings = await global.mysqlSettingsRequest('verified_role');
-            interactionUser.roles.add(bot_settings[0].param);
-            bot_settings = await global.mysqlSettingsRequest('anti_verified_role');
-            interactionUser.roles.remove(bot_settings[0].param);
+            interactionUser.roles.add(global.discord_server.settings_data.verified_role)
+            interactionUser.roles.remove(global.discord_server.settings_data.anti_verified_role)
             client.ephemeralEmbed({
                 title: 'Verification',
                 desc: 'You successfully verified'
