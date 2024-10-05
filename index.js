@@ -82,6 +82,7 @@ async function spawnCustomShards() {
                     if (client.shard.ids[0] === shardId - 1) {
                         process.env.GUILD_ID = guildId;
                         console.log(`Shard #${shardId} assigned to Guild ID: ${guildId}`);
+                        global.initializeBotContinue();
                     }
                 },
                 { context: { shardId: mapping.shardId, guildId: mapping.guildId } }

@@ -72,12 +72,13 @@ async function initializeBot() {
     });
 
     await client.login(process.env.DISCORD_TOKEN);
-    const guildId = process.env.GUILD_ID;
-    if (!guildId) return;
+}
+
+global.initializeBotContinue = async function () {
     await client.guilds.fetch();
-    const guild = client.guilds.cache.get(guildId);
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
     if (!guild) {
-        console.error(`Guild with ID ${guildId} not found`);
+        console.error(`Guild with ID ${process.env.GUILD_ID} not found`);
         return;
     }
 
