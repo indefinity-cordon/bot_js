@@ -51,7 +51,7 @@ client.on(Discord.ShardEvents.Error, error => {
 
 
 if (process.env.GITHUB_PAT) {
-    require('./~GitHub.js')(manager);
+    require('./~GitHub.js')();
 }
 
 global.restartApp = async function (reason) {

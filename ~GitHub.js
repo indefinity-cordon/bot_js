@@ -1,7 +1,7 @@
 const axios = require('axios');
 const simpleGit = require('simple-git');
 
-module.exports = async (manager) => {
+module.exports = async () => {
     const git = simpleGit(process.cwd());
 
     async function getLastCommit() {
@@ -51,7 +51,7 @@ module.exports = async (manager) => {
             console.log('GitHub >> New commit found, checking changes...');
 
             await pullChanges();
-            manager.restartApp('Pulled new changes from GIT');
+            global.restartApp('Pulled new changes from GIT');
         }
     };
 
