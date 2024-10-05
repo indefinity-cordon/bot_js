@@ -19,7 +19,9 @@ module.exports = async (client) => {
                 });
             } else {
                 await server.sync();
-                server.game_connection = await global.mysqlCreate(server.data.db_connection_string);
+                if (server.data.db_connection_string) {
+                    server.game_connection = await global.mysqlCreate(server.data.db_connection_string);
+                }
                 await require(`./servers/${server.data.file_name}`)(client, server);
             }
             updated_servers[`${server.data.server_name}`] = server;
