@@ -43,7 +43,7 @@ module.exports = async (client, game_server) => {
 
     game_server.updateScheduleMessage = async function (type) {
         try {
-            if (!game_server.game_server.settings_data.auto_start_config) throw 'Setup schedule';
+            if (!game_server.settings_data.auto_start_config) throw 'Setup schedule';
             const server_schedule_data = await getSchedule(game_server.settings_data.auto_start_config.param);
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
