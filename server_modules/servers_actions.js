@@ -6,7 +6,7 @@ module.exports = async (client) => {
         let updated_guilds = {};
         for (const guild of guilds) {
             guild.sync();
-            updated_servers[`${guild.data.guild_id}`] = guild;
+            updated_guilds[`${guild.data.guild_id}`] = guild;
         }
         global.guilds_link = updated_guilds;
     }
