@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 
 module.exports = async (client, game_server) => {
-    const failed_times = 0;
+    var failed_times = 0;
 
     game_server.updateStatusMessage = async function (type) {
         try {
