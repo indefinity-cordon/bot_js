@@ -78,10 +78,10 @@ async function spawnCustomShards() {
         guild_mappings.forEach((mapping) => {
             console.log(`System >> Assigning Shard #${mapping.shardId} to Guild ID: ${mapping.guildId}`);
             manager.broadcastEval(
-                (context) => {
-                    if (global.discord_client.shard.ids[0] === context.shardId) {
-                        process.env.GUILD_ID = context.guildId;
-                        console.log(`Shard #${context.shardId + 1} assigned to Guild ID: ${context.guildId}`);
+                (client, { shardId, guildId }) => {
+                    if (client.shard.ids[0] === shardId - 1) {
+                        process.env.GUILD_ID = guildId;
+                        console.log(`Shard #${shardId} assigned to Guild ID: ${guildId}`);
                     }
                 },
                 { shardId: mapping.shardId, guildId: mapping.guildId }
