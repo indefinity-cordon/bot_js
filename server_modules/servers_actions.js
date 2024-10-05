@@ -19,17 +19,7 @@ module.exports = async (client) => {
         let updated_servers = {};
 
         for (const server of servers) {
-            if (server.data.server_name in global.servers_link) {
-                await new Promise((resolve, reject) => {
-                    server.game_connection.changeUser({database: server.data.db_name}, (err, result) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-                });
-            } else {
+            if (!(server.data.server_name in global.servers_link)) {
                 await server.sync();
                 for (const guild_id in global.guilds_link) {
                     if (global.guilds_link[guild_id].id !== server.data.guild) continue;
