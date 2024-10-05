@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-const simpleGit = require('simple-git');
 require('dotenv').config('.env');
 
 const manager = new Discord.ShardingManager('./bot.js', {
@@ -29,7 +28,6 @@ if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
 }
 
 if (process.env.GITHUB_PAT) {
-    manager.git = simpleGit(process.cwd());
     require('./~GitHub.js')(manager);
 }
 

@@ -1,6 +1,9 @@
 const axios = require('axios');
+const simpleGit = require('simple-git');
 
 module.exports = async (manager) => {
+    manager.git = await simpleGit(process.cwd());
+
     manager.getLastCommit = async function (manager) {
         try {
             await manager.git.addConfig('credential.helper', 'store');
