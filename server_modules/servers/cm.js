@@ -954,6 +954,7 @@ module.exports = async (client, game_server) => {
     }, 2000);
 
     game_server.handle_status = async function (new_status) {
+        console.log(game_server.settings_data.server_status.data.setting, new_status)
         if (game_server.settings_data.server_status.data.setting  == new_status) return false;
         game_server.settings_data.server_status.data.setting = new_status;
         if (game_server.settings_data.server_status.data.setting) {
