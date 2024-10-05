@@ -22,7 +22,7 @@ module.exports = async (load_complex_things) => {
     };
 
     if (!global.database) {
-        console.log(`Database >> MySQL >> Connecting ... to ${process.env.DB_CONNECTION_STRING_BOT} ...`);
+        console.log(`Database >> MySQL >> Connecting ...`);
         global.database = await global.mysqlCreate(process.env.DB_CONNECTION_STRING_BOT);
     }
     global.mysqlRequest = async function (database, query, params = []) {
