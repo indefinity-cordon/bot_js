@@ -16,7 +16,7 @@ async function updateRoles(client, game_server) {
         try {
             db_roles = await global.mysqlRequest(game_server.game_connection, "SELECT role_id, rank_id FROM discord_ranks");
             if (!db_roles.length) throw 'No discord ranks';
-            guild = await client.guilds.cache.get(game_server.data.guild_id);
+            guild = await client.guilds.cache.get(game_server.discord_server.data.guild_id);
             if (!guild) throw 'No guild';
             db_links = await global.mysqlRequest(game_server.game_connection, "SELECT discord_id, stable_rank FROM discord_links");
             if (!db_links.length) throw 'No discord links';

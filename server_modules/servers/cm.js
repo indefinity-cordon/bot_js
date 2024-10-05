@@ -1,6 +1,8 @@
 const Discord = require('discord.js');
 
 module.exports = async (client, game_server) => {
+    const failed_times = 0;
+
     game_server.updateStatusMessage = async function (type) {
         try {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
@@ -20,6 +22,7 @@ module.exports = async (client, game_server) => {
             fields.push({ name: '**Gamemode**', value: `${data.mode}`, inline: true});
             fields.push({ name: '**Round Time**', value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0'), inline: true});
             if (data.round_end_state) fields.push({ name: '**Rouned End State**', value: `${data.round_end_state} `, inline: true});
+            failed_times = 0;
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
@@ -29,7 +32,8 @@ module.exports = async (client, game_server) => {
                 }, message);
             }
         } catch (error) {
-            game_server.handle_status(false);
+            if (failed_times > 5) game_server.handle_status(false);
+            else failed_times++;
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
@@ -955,7 +959,7 @@ module.exports = async (client, game_server) => {
 
     game_server.handle_status = async function (new_status) {
         console.log(game_server.settings_data.server_status.data.setting, new_status)
-        if (game_server.settings_data.server_status.data.setting  == new_status) return false;
+        if (!!game_server.settings_data.server_status.data.setting == new_status) return false;
         game_server.settings_data.server_status.data.setting = new_status;
         if (game_server.settings_data.server_status.data.setting) {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
