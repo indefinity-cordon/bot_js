@@ -9,7 +9,7 @@ class ServerSettings extends Entity {
         super.map(row);
 
         if (row['setting'] && isJsonString(this.data.setting)) {
-            this.data.param = JSON.parse(this.data.setting);
+            this.param = JSON.parse(this.data.setting);
         }
     }
 

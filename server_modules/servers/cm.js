@@ -1002,7 +1002,6 @@ async function updateServerCustomOperators(client, game_server) {
     }
 
     const server_schedule_data = game_server.settings_data.auto_start_config.param;
-    console.log(game_server.settings_data.auto_start_config)
     if (game_server.update_custom_operators_data['intervals']['autostart']) {
         clearTimeout(game_server.update_custom_operators_data['intervals']['autostart']);
     }
