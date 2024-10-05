@@ -84,7 +84,7 @@ async function spawnCustomShards() {
                         console.log(`Shard #${shardId} assigned to Guild ID: ${guildId}`);
                     }
                 },
-                { shardId: mapping.shardId, guildId: mapping.guildId }
+                { context: { shardId: mapping.shardId, guildId: mapping.guildId } }
             ).catch(console.error);
         });
     }).catch(console.error);
