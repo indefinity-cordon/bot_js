@@ -12,7 +12,7 @@ module.exports = (client) => {
             break;
         }
         if (!responded_game_server) {
-            console.log(`Database >> Redis >> [WARNING] Failed to find server object. Aborting. data: ${data.source}, instance id: ${responded_instance.id}`);
+            console.log(`Database >> Redis >> [WARNING] Failed to find server object. Aborting. data: ${data.source}`);
             return;
         }
         const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = ?", [responded_game_server.id, data.type]);
