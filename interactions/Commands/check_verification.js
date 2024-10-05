@@ -27,8 +27,8 @@ module.exports = {
         }
         if (db_response && db_response[0] && db_response[0].discord_id) {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id);
-            interactionUser.roles.add(discord_server.settings_data.verified_role);
-            interactionUser.roles.remove(discord_server.settings_data.anti_verified_role);
+            interactionUser.roles.add(discord_server.settings_data.verified_role.data.setting);
+            interactionUser.roles.remove(discord_server.settings_data.anti_verified_role.data.setting);
             return client.ephemeralEmbed({
                 title: 'Verification',
                 desc: 'You already verified'

@@ -35,9 +35,8 @@ module.exports = async (client) => {
                     if (global.guilds_link[guild_id].id !== server.data.guild) continue;
                     server.discord_server = global.guilds_link[guild_id]
                 }
-                console.log(server.discord_server.settings_data.tgs_address, server.discord_server, server.data.tgs_id)
                 if (server.discord_server.settings_data.tgs_address) {
-                    const data = await client.tgs_getInstance(server.discord_server.settings_data.tgs_address, server.data.tgs_id);
+                    const data = await client.tgs_getInstance(server.discord_server.settings_data.tgs_address.data.setting, server.data.tgs_id);
                     server.instance_name = data.content.name;
                 }
                 if (server.data.db_connection_string) {

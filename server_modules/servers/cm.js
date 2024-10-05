@@ -43,8 +43,8 @@ module.exports = async (client, game_server) => {
 
     game_server.updateScheduleMessage = async function (type) {
         try {
-            if (!game_server.auto_start_config || !isJsonString(game_server.auto_start_config)) throw 'Setup schedule';
-            const server_schedule_data = await getSchedule(JSON.parse(game_server.auto_start_config));
+            if (!game_server.game_server.settings_data.auto_start_config) throw 'Setup schedule';
+            const server_schedule_data = await getSchedule(game_server.settings_data.auto_start_config.param);
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(server_schedule_data).setColor('#669917').setTimestamp()],
@@ -701,7 +701,7 @@ module.exports = async (client, game_server) => {
     game_server.tgsActions = async function (interaction) {
         const collected = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', client.handling_tgs, 'Please select action to perform:');
         if (collected) {
-            await await client.handling_tgs_actions[collected](game_server.discord_server.settings_data.tgs_address, game_server.data.tgs_id, interaction);
+            await await client.handling_tgs_actions[collected](game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id, interaction);
         }
     };
 
@@ -763,7 +763,7 @@ module.exports = async (client, game_server) => {
                 if (data && data.players < game_server.player_low_autoshutdown) {
                     game_server.handle_status(false);
                     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
-                    if (instance) client.tgs_stop(game_server.discord_server.settings_data.tgs_address, game_server.data.tgs_id);
+                    if (instance) client.tgs_stop(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
                     return;
                 }
             }
@@ -1045,7 +1045,7 @@ async function autoStartServer(client, game_server) {
     if(game_server.server_status) return;
     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
     if(!instance) return;
-    client.tgs_start(game_server.discord_server.settings_data.tgs_address, game_server.data.tgs_id)
+    client.tgs_start(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id)
 };
 
 

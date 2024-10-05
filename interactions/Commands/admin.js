@@ -22,7 +22,7 @@ module.exports = {
             if (command.role_req) {
                 let roleId = role_сache.get(command.role_req);
                 if (!roleId) {
-                    roleId = discord_server.settings_data[command.role_req];
+                    roleId = discord_server.settings_data[command.role_req].data.setting;
                     role_сache.set(command.role_req, roleId);
                 }
                 if (roleId && member.roles.cache.has(roleId)) {
