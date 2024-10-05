@@ -33,9 +33,9 @@ module.exports = async (client) => {
                 server.sync();
                 for (const guild_id in global.guilds_link) {
                     if (global.guilds_link[guild_id].id !== server.data.guild) continue;
-                    game_server.discord_server = global.guilds_link[guild_id]
+                    server.discord_server = global.guilds_link[guild_id]
                 }
-                const data = await client.tgs_getInstance(game_server.discord_server.settings_data.tgs_address);
+                const data = await client.tgs_getInstance(server.discord_server.settings_data.tgs_address);
                 server.instance_name = data.content.name;
                 if (server.data.db_connection_string) {
                     server.game_connection = await global.mysqlCreate(server.data.db_connection_string);
