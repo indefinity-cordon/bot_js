@@ -1,10 +1,10 @@
 const Discord = require('discord.js');
 require('dotenv').config('.env');
 
-const manager = new Discord.ShardingManager('./bot.js', {
+const manager = new ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
-    totalShards: 1,
     respawn: true,
+    totalShards: 'auto'  // Позволяем Discord.js управлять количеством шардов
 });
 
 
@@ -73,7 +73,6 @@ async function getShardMappings() {
     const guild_configs = handling_guild_servers.map(guild => ({ guild_Id: guild.guild_id, shard_Id: guild.id }));
 
     const shard_map = new Map();
-
     guild_configs.forEach(guild => {
         shard_map.set(guild.shard_Id, guild.guild_Id);
     });
@@ -84,14 +83,9 @@ async function getShardMappings() {
 async function spawnCustomShards() {
     const shard_map = await getShardMappings();
 
-    console.log('System >> Starting Free Shard');
-    manager.spawn();
-
     for (const [shard_Id, guild] of shard_map.entries()) {
-        console.log(`System >> Starting Shard #${shard_Id + 1} for Guild: ${guild}`);
-        manager.totalShards++
-        const shard = manager.createShard(shard_Id);
-        shard.guilds = [guild];
+        console.log(`System >> Starting Shard #${shard_Id} for Guild: ${guild}`);
+        const shard = manager.createShard(shard_Id, { env: { GUILD_ID: guild } });
         await shard.spawn();
     }
 }

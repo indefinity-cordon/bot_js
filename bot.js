@@ -65,14 +65,17 @@ async function initializeBot() {
     });
 
     await client.login(process.env.DISCORD_TOKEN);
+    const guildId = process.env.GUILD_ID;
+    if (!guildId) return;
     await client.guilds.fetch();
-    const guild = client.guilds.cache.first()
-    if (guild) {
-        const discord_guild = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE## WHERE guild_id = ?", [guild.id]);
-        if (discord_guild[0]) global.discord_server = discord_guild[0];
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) {
+        console.error(`Guild with ID ${guildId} not found`);
+        return;
     }
 
-    global.handling_game_servers = await global.gather_data(global.database, 'Server', "SELECT * FROM servers");
+    const discord_guild = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE## WHERE guild_id = ?", [guild.id]);
+    if (discord_guild[0]) global.discord_server = discord_guild[0];
     global.servers_link = {};
     if (global.discord_server) {
         require('./server_modules/servers_actions.js')(client);

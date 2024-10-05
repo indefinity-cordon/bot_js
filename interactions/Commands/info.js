@@ -19,11 +19,11 @@ module.exports = {
      */
 
     run: async (client, interaction, args) => {
-        if (interaction.type !== InteractionType.ApplicationCommand) return;
+        if (interaction.type !== InteractionType.ApplicationCommand || !Object.entries(global.servers_link).length) return;
         await interaction.deferReply({ ephemeral: true });
-        const servers_options = glob.handling_game_servers.map(server => ({
-            label: server.data.server_name,
-            value: server.data.server_name
+        const servers_options = Object.entries(global.servers_link).map(server => ({
+            label: server,
+            value: server
         }));
         const target_user = interaction.options.getUser('user');
         const collected = await client.sendInteractionSelectMenu(interaction, 'select-server', 'Select a game server', servers_options, 'Please select a game server:');
