@@ -11,7 +11,7 @@ class Guild extends Entity {
         const guild_settings = await global.gather_data(global.database, 'GuildSettings', "SELECT * FROM ##TABLE## WHERE guild = ?", [this.id]);
         for (const setting of guild_settings) {
             setting.sync();
-            this.settings_data[setting.name] = setting;
+            this.settings_data[setting.data.name] = setting;
         }
     }
 }

@@ -32,14 +32,12 @@ module.exports = async (client) => {
             } else {
                 await server.sync();
                 for (const guild_id in global.guilds_link) {
-                    console.log('rofls0', server.data.guild, global.guilds_link[guild_id], global.guilds_link[guild_id].id)
                     if (global.guilds_link[guild_id].id !== server.data.guild) continue;
-                    server.discord_server = global.guilds_link[guild_id]
+                    server.discord_server = global.guilds_link[guild_id];
+                    break;
                 }
-                console.log('rofls1', server.discord_server, server.discord_server.settings_data.tgs_address)
                 if (server.discord_server.settings_data.tgs_address) {
                     const data = await client.tgs_getInstance(server.discord_server.settings_data.tgs_address.data.setting, server.data.tgs_id);
-                    console.log('rofls2', data, data.content)
                     server.instance_name = data.content.name;
                 }
                 if (server.data.db_connection_string) {

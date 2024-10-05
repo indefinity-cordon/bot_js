@@ -34,7 +34,7 @@ class Server extends Entity {
         const server_settings = await global.gather_data(global.database, 'ServerSettings', "SELECT * FROM ##TABLE## WHERE server = ?", [this.id]);
         for (const setting of server_settings) {
             setting.sync();
-            this.settings_data[setting.name] = setting;
+            this.settings_data[setting.data.name] = setting;
         }
     }
 
