@@ -4,7 +4,7 @@ module.exports = (client) => {
             console.log('Database >> Redis >> [WARNING] Malformed Redis message, without data');
             return;
         }
-        if (data.source == 'DISCORD' || !global.discord_server?.settings_data.tgs_address)
+        if (data.source == 'DISCORD' || !global.discord_server || !global.discord_server.settings_data.tgs_address)
             return;
         const instances = await client.tgs_getInstances(global.discord_server.settings_data.tgs_address);
         const responded_instance = instances.find(instance => instance.name === data.source);

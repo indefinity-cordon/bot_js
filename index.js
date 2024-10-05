@@ -3,8 +3,7 @@ require('dotenv').config('.env');
 
 const manager = new ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
-    respawn: true,
-    totalShards: 1,
+    respawn: true
 });
 
 
@@ -68,41 +67,39 @@ process.on('warning', error => {
 //LOGS END
 
 
-async function getShardMappings() {
-    const handling_guild_servers = await global.mysqlRequest(global.database, "SELECT id, guild_id FROM guilds");
-    const guild_configs = handling_guild_servers.map(guild => ({ guild_Id: guild.guild_id, shard_Id: guild.id }));
-
-    const shard_map = new Map();
-    guild_configs.forEach(guild => {
-        shard_map.set(guild.shard_Id, guild.guild_Id);
-    });
-
-    return shard_map;
-}
-
 async function spawnCustomShards() {
-    const shard_map = await getShardMappings();
+    const guilds = await global.mysqlRequest(global.database, "SELECT * FROM guilds");
+    const guild_mappings = guilds.map(guild => ({ guildId: guild.guild_id, shardId: guild.id }));
+    const total_shards = guild_mappings.length;
 
-    for (const [shard_Id, guild] of shard_map.entries()) {
-        console.log(`System >> Starting Shard #${shard_Id} for Guild: ${guild}`);
-        const shard = manager.createShard(shard_Id - 1, { env: { GUILD_ID: guild } });
-        await shard.spawn();
-        manager.totalShards++;
-    }
-    const shard = manager.createShard();
-    await shard.spawn();
+    console.log(`System >> Total Shards to spawn: ${total_shards}`);
+
+    manager.spawn(total_shards, 0, true).then(() => {
+        guild_mappings.forEach((mapping) => {
+            console.log(`System >> Assigning Shard #${mapping.shardId} to Guild ID: ${mapping.guildId}`);
+            manager.broadcastEval(
+                (context) => {
+                    if (global.discord_client.shard.ids[0] === context.shardId) {
+                        process.env.GUILD_ID = context.guildId;
+                        console.log(`Shard #${context.shardId + 1} assigned to Guild ID: ${context.guildId}`);
+                    }
+                },
+                { shardId: mapping.shardId, guildId: mapping.guildId }
+            ).catch(console.error);
+        });
+    }).catch(console.error);
 }
-
-runStartUp()
 
 async function runStartUp() {
     await require('./database/MySQL')(false);
-    spawnCustomShards().catch(console.error);
+    await spawnCustomShards();
+
+    console.log('\u001b[0m');
+    console.log('\u001b[0m');
+    console.log('System >> Loaded Version', require(`${process.cwd()}/package.json`).version);
+    console.log('\u001b[0m');
 };
 
-
-
-console.log('\u001b[0m');
-console.log('\u001b[0m');
-console.log('System >> Loaded Version', require(`${process.cwd()}/package.json`).version);
-console.log('\u001b[0m');
+runStartUp().catch(error => {
+    console.error('Failed to start shards:', error);
+});

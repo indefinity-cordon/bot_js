@@ -15,6 +15,7 @@ const client = new Discord.Client({
 
 client.commands = new Discord.Collection();
 
+global.discord_client = client
 
 //LOGS
 const LogsHandlerClass = require('./~LogsHandler.js');
@@ -47,6 +48,12 @@ client.on(Discord.ShardEvents.Error, error => {
     global._LogsHandler.error(error, 'A websocket connection encountered an error', 'error');
 });
 //LOGS END
+
+client.assign_shard = function (shardId, guildId) {
+    if (this.shard.ids[0] === shardId) {
+        process.env.GUILD_ID = guildId;
+    }
+};
 
 
 async function initializeBot() {
