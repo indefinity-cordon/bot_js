@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS `servers` (
 
 -- Дамп данных таблицы discord_bot.servers: ~2 rows (приблизительно)
 INSERT INTO `servers` (`id`, `guild`, `server_name`, `db_connection_string`, `file_name`, `ip`, `port`, `tgs_id`) VALUES
-	(1, 1, 'CM', 'mysql://cm13:cm13@127.0.0.1:3306/cm13', 'cm.js', 'play.colonialmarines.ru', 4737, 1),
-	(2, 2, 'PVE CM', '', 'pve_cm.js', 'play.colonialmarines.ru', 4739, 5);
+	(1, 1, 'CM', 'mysql://cm13:cm13@127.0.0.1:3306/cm13', 'cm.js', '127.0.0.1', 4737, 1),
+	(2, 2, 'PVE CM', '', 'pve_cm.js', '127.0.0.1', 4739, 5);
 
 -- Дамп структуры для таблица discord_bot.server_channels
 CREATE TABLE IF NOT EXISTS `server_channels` (
