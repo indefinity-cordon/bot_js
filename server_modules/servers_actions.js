@@ -30,7 +30,7 @@ module.exports = async (client) => {
                     });
                 });
             } else {
-                server.sync();
+                await server.sync();
                 for (const guild_id in global.guilds_link) {
                     if (global.guilds_link[guild_id].id !== server.data.guild) continue;
                     server.discord_server = global.guilds_link[guild_id]
