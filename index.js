@@ -4,7 +4,7 @@ require('dotenv').config('.env');
 const manager = new Discord.ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
     respawn: true,
-    totalShards: 'auto'  // Позволяем Discord.js управлять количеством шардов
+    totalShards: 'auto'
 });
 
 
