@@ -34,7 +34,7 @@ if (process.env.GITHUB_PAT) {
 manager.restartApp = async function (reason) {
     console.log('System >> App ... Restarting process ...');
     await global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
-    manager.broadcastEval('this.process.exit(1)');
+    process.exit(1);
 };
 
 manager.on('shardCreate', shard => {
