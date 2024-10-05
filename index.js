@@ -1,10 +1,10 @@
-const Discord = require('discord.js');
+const { ShardingManager, WebhookClient } = require('discord.js');
 require('dotenv').config('.env');
 
-const manager = new Discord.ShardingManager('./bot.js', {
+const manager = new ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
     respawn: true,
-    totalShards: 'auto'
+    totalShards: 1,
 });
 
 
@@ -21,7 +21,7 @@ const LogsHandlerClass = require('./~LogsHandler.js');
 global._LogsHandler = new LogsHandlerClass();
 
 if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
-    global._LogsHandler.botLogs = new Discord.WebhookClient({
+    global._LogsHandler.botLogs = new WebhookClient({
         id: process.env.WEBHOOK_ID,
         token: process.env.WEBHOOK_TOKEN,
     });
@@ -85,9 +85,12 @@ async function spawnCustomShards() {
 
     for (const [shard_Id, guild] of shard_map.entries()) {
         console.log(`System >> Starting Shard #${shard_Id} for Guild: ${guild}`);
-        const shard = manager.createShard(shard_Id, { env: { GUILD_ID: guild } });
+        const shard = manager.createShard(shard_Id - 1, { env: { GUILD_ID: guild } });
         await shard.spawn();
+        manager.totalShards++;
     }
+    const shard = manager.createShard();
+    await shard.spawn();
 }
 
 runStartUp()
