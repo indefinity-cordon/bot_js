@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 require('dotenv').config('.env');
 
-const manager = new ShardingManager('./bot.js', {
+const manager = new Discord.ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
     respawn: true,
     totalShards: 'auto'  // Позволяем Discord.js управлять количеством шардов
