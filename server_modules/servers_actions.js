@@ -1,5 +1,5 @@
 module.exports = async (client) => {
-    const guilds = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE##", [guild.id]);
+    const guilds = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE##");
     if (!guilds.length) {
         console.log('Failed to find guilds. Aborting.');
     } else {
