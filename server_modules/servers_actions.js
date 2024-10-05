@@ -37,6 +37,7 @@ module.exports = async (client) => {
                 }
                 if (server.discord_server.settings_data.tgs_address) {
                     const data = await client.tgs_getInstance(server.discord_server.settings_data.tgs_address.data.setting, server.data.tgs_id);
+                    console.log(data, data.content)
                     server.instance_name = data.content.name;
                 }
                 if (server.data.db_connection_string) {
