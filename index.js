@@ -33,6 +33,12 @@ if (process.env.GITHUB_PAT) {
     require('./~GitHub.js')(manager);
 }
 
+manager.restartApp = async function (reason) {
+    console.log('System >> App ... Restarting process ...');
+    await global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
+    manager.broadcastEval('this.process.exit(1)');
+};
+
 manager.on('shardCreate', shard => {
     console.log(`System >> Starting Shard #${shard.id + 1} ...`);
 
@@ -97,14 +103,6 @@ runStartUp()
 async function runStartUp() {
     await require('./database/MySQL')(false);
     spawnCustomShards().catch(console.error);
-};
-
-
-
-manager.restartApp = async function (reason) {
-    console.log('System >> App ... Restarting process ...');
-    await global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
-    manager.broadcastEval('this.process.exit(1)');
 };
 
 
