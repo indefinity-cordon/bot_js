@@ -49,12 +49,16 @@ client.on(Discord.ShardEvents.Error, error => {
 });
 //LOGS END
 
-client.assign_shard = function (shardId, guildId) {
-    if (this.shard.ids[0] === shardId) {
-        process.env.GUILD_ID = guildId;
-    }
-};
 
+if (process.env.GITHUB_PAT) {
+    require('./~GitHub.js')(manager);
+}
+
+global.restartApp = async function (reason) {
+    console.log('System >> App ... Restarting process ...');
+    await global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
+    process.exit(1);
+};
 
 async function initializeBot() {
     require('./database/MySQL')(true);

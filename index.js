@@ -4,7 +4,7 @@ require('dotenv').config('.env');
 const manager = new ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
     respawn: true,
-    totalShards: 'auto'
+    totalShards: 1
 });
 
 
@@ -26,16 +26,6 @@ if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
         token: process.env.WEBHOOK_TOKEN,
     });
 }
-
-if (process.env.GITHUB_PAT) {
-    require('./~GitHub.js')(manager);
-}
-
-manager.restartApp = async function (reason) {
-    console.log('System >> App ... Restarting process ...');
-    await global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
-    process.exit(1);
-};
 
 manager.on('shardCreate', shard => {
     console.log(`System >> Starting Shard #${shard.id + 1} ...`);
