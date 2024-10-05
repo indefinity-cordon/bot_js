@@ -21,7 +21,10 @@ module.exports = async () => {
         }
         const entities = rows.map(row => {
             const parsedRow = meta.parse ? meta.parse(row) : row;
-            return new meta.class(db, parsedRow.id, meta);
+            const entity = new meta.class(db, parsedRow.id, meta);
+            delete parsedRow['id'];
+            entity.map(parsedRow);
+            return entity;
         });
         return entities;
     };

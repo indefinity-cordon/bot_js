@@ -1,6 +1,18 @@
 module.exports = async (client) => {
-    if (!global.discord_server) return;
-    const servers = await global.gather_data(global.database, 'Server', "SELECT * FROM ##TABLE## WHERE guild = ?", [global.discord_server.id]);
+    const guilds = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE##", [guild.id]);
+    if (!guilds.length) {
+        console.log('Failed to find guilds. Aborting.');
+    } else {
+        let updated_guilds = {};
+        for (const guild of guilds) {
+            guild.sync();
+            updated_servers[`${guild.data.guild_id}`] = guild;
+        }
+        global.guilds_link = updated_guilds;
+    }
+
+
+    const servers = await global.gather_data(global.database, 'Server', "SELECT * FROM ##TABLE##");
     if (!servers.length) {
         console.log('Failed to find servers. Aborting.');
     } else {
@@ -18,7 +30,13 @@ module.exports = async (client) => {
                     });
                 });
             } else {
-                await server.sync();
+                server.sync();
+                const data = await client.tgs_getInstance();
+                server.instance_name = data.content.name;
+                for (const guild_id in global.guilds_link) {
+                    if (global.guilds_link[guild_id].id !== server.data.guild) continue;
+                    game_server.discord_server = global.guilds_link[guild_id]
+                }
                 if (server.data.db_connection_string) {
                     server.game_connection = await global.mysqlCreate(server.data.db_connection_string);
                 }

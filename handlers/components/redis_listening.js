@@ -35,7 +35,7 @@ async function startListining(client) {
         const db_request = await global.mysqlRequest(global.database, "SELECT type, channel_id, message_id FROM server_channels WHERE server = ? AND message_id = '-2'", [global.servers_link[server_name].id]);
         for (const message_collector of db_request) {
             const channel = await client.channels.fetch(message_collector.channel_id);
-            if (!channel) return;
+            if (!channel) continue;
             const collector = channel.createMessageCollector()
             collector.on('collect', message => {
                 if (message.author.id !== process.env.DISCORD_ID) sendToRedis(message, client, message_collector.type);

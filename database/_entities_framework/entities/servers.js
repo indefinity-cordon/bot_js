@@ -37,7 +37,7 @@ class Server extends Entity {
             this.settings_data[setting.name] = setting;
         }
     }
- 
+
     async map(row) {
         super.map(row);
 

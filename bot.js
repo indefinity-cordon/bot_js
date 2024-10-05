@@ -72,23 +72,11 @@ async function initializeBot() {
     });
 
     await client.login(process.env.DISCORD_TOKEN);
-}
 
-global.initializeBotContinue = async function () {
-    await client.guilds.fetch();
-    const guild = client.guilds.cache.get(process.env.GUILD_ID);
-    if (!guild) {
-        console.error(`Guild with ID ${process.env.GUILD_ID} not found`);
-        return;
-    }
-
-    const discord_guild = await global.gather_data(global.database, 'Guild', "SELECT * FROM ##TABLE## WHERE guild_id = ?", [guild.id]);
-    if (discord_guild[0]) global.discord_server = discord_guild[0];
+    global.guilds_link = {};
     global.servers_link = {};
-    if (global.discord_server) {
-        require('./server_modules/servers_actions.js')(client);
-        setInterval(async () => require('./server_modules/servers_actions.js')(client), 120 * 60000);
-    }
+    require('./server_modules/servers_actions.js')(client);
+    setInterval(async () => require('./server_modules/servers_actions.js')(client), 120 * 60000);
 }
 
 initializeBot();

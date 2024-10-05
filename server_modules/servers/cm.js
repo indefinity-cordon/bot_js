@@ -701,7 +701,7 @@ module.exports = async (client, game_server) => {
     game_server.tgsActions = async function (interaction) {
         const collected = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', client.handling_tgs, 'Please select action to perform:');
         if (collected) {
-            await await client.handling_tgs_actions[collected](global.discord_server.settings_data.tgs_address, game_server.data.tgs_id, interaction);
+            await await client.handling_tgs_actions[collected](game_server.discord_server.settings_data.tgs_address, game_server.data.tgs_id, interaction);
         }
     };
 
@@ -763,7 +763,7 @@ module.exports = async (client, game_server) => {
                 if (data && data.players < game_server.player_low_autoshutdown) {
                     game_server.handle_status(false);
                     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
-                    if (instance) client.tgs_stop(global.discord_server.settings_data.tgs_address, game_server.data.tgs_id);
+                    if (instance) client.tgs_stop(game_server.discord_server.settings_data.tgs_address, game_server.data.tgs_id);
                     return;
                 }
             }
@@ -1045,7 +1045,7 @@ async function autoStartServer(client, game_server) {
     if(game_server.server_status) return;
     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
     if(!instance) return;
-    client.tgs_start(global.discord_server.settings_data.tgs_address, game_server.data.tgs_id)
+    client.tgs_start(game_server.discord_server.settings_data.tgs_address, game_server.data.tgs_id)
 };
 
 

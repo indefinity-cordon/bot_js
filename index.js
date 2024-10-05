@@ -3,7 +3,8 @@ require('dotenv').config('.env');
 
 const manager = new ShardingManager('./bot.js', {
     token: process.env.DISCORD_TOKEN,
-    respawn: true
+    respawn: true,
+    totalShards: 'auto'
 });
 
 
@@ -66,34 +67,8 @@ process.on('warning', error => {
 });
 //LOGS END
 
-
-async function spawnCustomShards() {
-    const guilds = await global.mysqlRequest(global.database, "SELECT * FROM guilds");
-    const guild_mappings = guilds.map(guild => ({ guildId: guild.guild_id, shardId: guild.id }));
-    const total_shards = guild_mappings.length;
-
-    console.log(`System >> Total Shards to spawn: ${total_shards}`);
-
-    manager.spawn(total_shards, 0, true).then(() => {
-        guild_mappings.forEach((mapping) => {
-            console.log(`System >> Assigning Shard #${mapping.shardId} to Guild ID: ${mapping.guildId}`);
-            manager.broadcastEval(
-                (client, { shardId, guildId }) => {
-                    if (client.shard.ids[0] === shardId - 1) {
-                        process.env.GUILD_ID = guildId;
-                        console.log(`Shard #${shardId} assigned to Guild ID: ${guildId}`);
-                        global.initializeBotContinue();
-                    }
-                },
-                { context: { shardId: mapping.shardId, guildId: mapping.guildId } }
-            ).catch(console.error);
-        });
-    }).catch(console.error);
-}
-
 async function runStartUp() {
-    await require('./database/MySQL')(false);
-    await spawnCustomShards();
+    manager.spawn();
 
     console.log('\u001b[0m');
     console.log('\u001b[0m');
