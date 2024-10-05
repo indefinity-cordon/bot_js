@@ -755,7 +755,7 @@ module.exports = async (client, game_server) => {
 
     async function handleRoundStart(channel) {
         if (await game_server.handle_status(true)) return;
-        if (game_server.player_low_autoshutdown && game_server.server_status == true) {
+        if (game_server.player_low_autoshutdown && game_server.settings_data.server_status.data.setting) {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
             if (server_response && isJsonString(server_response)) {
                 const response = JSON.parse(server_response);
@@ -954,9 +954,9 @@ module.exports = async (client, game_server) => {
     }, 2000);
 
     game_server.handle_status = async function (new_status) {
-        if (game_server.server_status == new_status) return false;
-        game_server.settings_data.server_status.param = new_status;
-        if (game_server.server_status) {
+        if (game_server.settings_data.server_status.data.setting  == new_status) return false;
+        game_server.settings_data.server_status.data.setting = new_status;
+        if (game_server.settings_data.server_status.data.setting) {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
@@ -1042,7 +1042,7 @@ async function updateServerCustomOperators(client, game_server) {
 
 
 async function autoStartServer(client, game_server) {
-    if(game_server.server_status) return;
+    if(game_server.settings_data.server_status.data.setting) return;
     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
     if(!instance) return;
     client.tgs_start(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id)
