@@ -1,5 +1,5 @@
 -- --------------------------------------------------------
--- Хост:                         127.0.0.1
+-- Хост:                         192.168.101.10
 -- Версия сервера:               8.0.39-0ubuntu0.22.04.1 - (Ubuntu)
 -- Операционная система:         Linux
 -- HeidiSQL Версия:              12.7.0.6850
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS `guilds` (
 
 -- Дамп данных таблицы discord_bot.guilds: ~2 rows (приблизительно)
 INSERT INTO `guilds` (`id`, `guild_id`) VALUES
-	(1, '1030833617879978004'),
-	(2, '1268689852585476116');
+	(1, '1112098911658721402'),
+	(2, '941653796583538718');
 
 -- Дамп структуры для таблица discord_bot.guild_settings
 CREATE TABLE IF NOT EXISTS `guild_settings` (
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `servers` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `guild` bigint DEFAULT NULL,
   `server_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `db_connection_string` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `db_connection_string` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `file_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `port` int DEFAULT NULL,
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS `servers` (
 
 -- Дамп данных таблицы discord_bot.servers: ~2 rows (приблизительно)
 INSERT INTO `servers` (`id`, `guild`, `server_name`, `db_connection_string`, `file_name`, `ip`, `port`, `tgs_id`) VALUES
-	(1, 1, 'CM', 'mysql://administrator:4A6edA5IrehIC2r13azIdAP6HEzaS5@192.168.101.10:8001/ru_cm_ru', 'cm.js', 'play.colonialmarines.ru', 4737, 1),
-	(2, 2, 'PVE CM', 'mysql://administrator:4A6edA5IrehIC2r13azIdAP6HEzaS5@192.168.101.10:8001/ru_cm_ru', 'pve_cm.js', 'play.colonialmarines.ru', 4739, 5);
+	(1, 1, 'CM', 'mysql://cm13:cm13@127.0.0.1:3306/cm13', 'cm.js', 'play.colonialmarines.ru', 4737, 1),
+	(2, 2, 'PVE CM', '', 'pve_cm.js', 'play.colonialmarines.ru', 4739, 5);
 
 -- Дамп структуры для таблица discord_bot.server_channels
 CREATE TABLE IF NOT EXISTS `server_channels` (
