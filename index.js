@@ -28,6 +28,14 @@ if (process.env.WEBHOOK_ID && process.env.WEBHOOK_TOKEN) {
     });
 }
 
+if (process.env.GITHUB_PAT) {
+    manager.git = simpleGit(process.cwd());
+    require('./~GitHub.js')(manager);
+    manager.git_commit = await manager.getLastLocalCommit();
+    console.log('GitHub >> Current commit:', manager.git_commit);
+    global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Start', value: `Commit SHA: ${manager.git_commit}` }]);
+}
+
 manager.on('shardCreate', shard => {
     console.log(`System >> Starting Shard #${shard.id + 1} ...`);
 
@@ -87,17 +95,10 @@ async function spawnCustomShards() {
     }
 }
 
-runGitStartUp()
+runStartUp()
 
-async function runGitStartUp() {
+async function runStartUp() {
     await require('./database/MySQL')(false);
-    if (process.env.GITHUB_PAT) {
-        manager.git = simpleGit(process.cwd());
-        require('./~GitHub.js')(manager);
-        manager.git_commit = await manager.getLastLocalCommit();
-        console.log('GitHub >> Current commit:', manager.git_commit);
-        global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Start', value: `Commit SHA: ${manager.git_commit}` }]);
-    }
     spawnCustomShards().catch(console.error);
 };
 
