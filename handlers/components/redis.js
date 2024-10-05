@@ -7,6 +7,7 @@ module.exports = (client) => {
         if (data.source == 'DISCORD') return;
         let responded_game_server;
         for (const server_name in global.servers_link) {
+            console.log(global.servers_link[server_name].instance_name)
             if (global.servers_link[server_name].instance_name !== data.source) continue;
             responded_game_server = global.servers_link[server_name];
             break;
