@@ -4,7 +4,7 @@ class Entity {
         this.id = id;
         this.meta = meta;
         this.data = {};
-        this.sync_data = {};
+        this.sync_data = null;
         this.auto_sync_interval = null;
     }
 
@@ -48,7 +48,6 @@ class Entity {
         } else {
             to_map_outgoing = await this.unmap();
         }
-        console.log('Sync data', this.sync_data)
         if (to_map_incoming && Object.entries(to_map_incoming).length) {
             await this.map(to_map_incoming);
         }
