@@ -286,7 +286,6 @@ module.exports = async (client, game_server) => {
             });
 
             player_info += `**Rank:** ${roleMap.get(db_request_admin[0].rank_id)}\n`;
-            console.log(db_request_admin)
             let extra_ranks = [];
             if (db_request_admin[0].extra_titles_encoded) {
                 extra_ranks = JSON.parse(db_request_admin[0].extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
