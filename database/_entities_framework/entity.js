@@ -38,7 +38,6 @@ class Entity {
                 if (!Object.entries(this.sync_data).length || !(key in this.sync_data)) {
                     to_map_incoming[key] = db_data[key];
                 } else if (this.data[key] !== this.sync_data[key]) {
-                    console.log('Found mismatch', this.data[key], this.sync_data[key])
                     to_map_outgoing[key] = this.data[key];
                 } else if (db_data[key] !== this.sync_data[key]) {
                     to_map_incoming[key] = db_data[key];
