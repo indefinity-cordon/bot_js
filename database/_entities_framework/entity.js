@@ -28,34 +28,37 @@ class Entity {
 
     async save() {
         const rows = this.id ? await global.mysqlRequest(this.db, `SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]) : [];
-        const to_map = {};
-        let local_update = false;
+        const to_map_incoming = {};
+        const to_map_outgoing = {};
         if (rows.length > 0) {
             const db_data = rows[0];
             delete db_data['id'];
             for (const key in db_data) {
-                if (!this.sync_data.length || !(key in this.sync_data)) {
-                    to_map[key] = db_data[key];
+                if (!Object.entries(this.sync_data).length || !(key in this.sync_data)) {
+                    to_map_incoming[key] = db_data[key];
                 } else if (this.data[key] !== this.sync_data[key]) {
-                    local_update = true;
+                    to_map_outgoing[key] = this.data[key];
                 } else if (db_data[key] !== this.sync_data[key]) {
-                    to_map[key] = db_data[key];
+                    to_map_incoming[key] = db_data[key];
                 }
             }
         } else {
-            local_update = true;
+            for (const key in this.data) {
+                to_map_outgoing[key] = this.data[key];
+            }
         }
-        if (Object.entries(to_map).length) {
-            await this.map(to_map);
+        if (Object.entries(to_map_incoming).length) {
+            await this.map(to_map_incoming);
         }
-        const row_to_save = await this.unmap();
-        if (local_update) {
+        if (Object.entries(to_map_outgoing).length) {
             console.log('local changes updating to external', this)
-            const columns = Object.keys(row_to_save).join(', ');
-            const values = Object.values(row_to_save);
+            await this.map(to_map_outgoing);
+            const columns = Object.keys(to_map_outgoing).join(', ');
+            const values = Object.values(to_map_outgoing);
             const placeholders = values.map(() => '?').join(', ');
             await global.mysqlRequest(this.db, `INSERT INTO ${meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`, values);
         }
+        const row_to_save = await this.unmap();
         this.sync_data = { ...row_to_save };
     }
 
