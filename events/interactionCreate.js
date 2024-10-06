@@ -9,6 +9,7 @@ module.exports = async (client, interaction) => {
         }
     }
 
+    //Currently not used, because I lazy, sometimme later
     if (interaction.isButton()) {
         var buttonID = interaction.customId.split("-");
         //TODO: Fun here
