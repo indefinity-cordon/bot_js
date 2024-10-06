@@ -1,5 +1,5 @@
 module.exports = async (client) => {
-    global.handling_commands_actions['manage_server'] = handleServerManagement;
+    global.handling_commands_actions['manage_servers'] = handleServerManagement;
     global.handling_commands.push({ label: 'Manage Servers', value: 'manage_servers', role_req: 'admin_role_id' });
 
     async function handleServerManagement(interaction) {
