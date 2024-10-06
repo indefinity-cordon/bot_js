@@ -21,7 +21,6 @@ client.on('messageCreate', async (message) => {
 
 
     if (message.author.id == '155734640705929216') {
-        // Если автор совпадает, отправляем ответное сообщение
         message.channel.send('https://tenor.com/view/blocked-message-gif-24291794');
     }
 });
