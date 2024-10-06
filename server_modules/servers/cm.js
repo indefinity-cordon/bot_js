@@ -104,7 +104,7 @@ module.exports = async (client, game_server) => {
                 }
                 description += `**Ckey:** ${profile.ckey} [Last Login ${profile.last_login}]\n**Rank:** ${roleMap.get(db_admin.rank_id)}`;
                 if (extra_ranks.length) {
-                    description += ` [Extra Ranks ${extra_ranks.join(` & `)}]`;
+                    description += ` [Extra Ranks ${extra_ranks.join(' & ')}]`;
                 }
                 description += '\n\n';
                 if (embed_description && description.length > 824) {
@@ -291,10 +291,8 @@ module.exports = async (client, game_server) => {
             if (db_request_admin[0].extra_titles_encoded) {
                 extra_ranks = JSON.parse(db_request_admin[0].extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
             }
-            console.log('waypoint5.4')
-            if (extra_ranks.length) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
+            if (extra_ranks.length) player_info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
         }
-        console.log('waypoint6')
         await client.ephemeralEmbed({ title: `**${request[0].role_rank ? 'HIDDEN' : db_player_profile[0].ckey}** player info`, desc: `\n${player_info}\n${rank_info}\n**Total playtime:** ${Math.round(player_playtime / 6) / 10} Hours`, color: '#c70058' }, interaction);
     };
 
