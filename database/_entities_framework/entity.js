@@ -29,8 +29,9 @@ class Entity {
     async save() {
         const rows = this.id ? await global.mysqlRequest(this.db, `SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]) : [];
         const to_map_incoming = {};
-        var to_map_outgoing = {};
+        var to_map_outgoing = null;
         if (rows.length > 0) {
+            to_map_outgoing = {}
             const db_data = rows[0];
             delete db_data['id'];
             for (const key in db_data) {
@@ -58,8 +59,7 @@ class Entity {
             const placeholders = values.map(() => '?').join(', ');
             //await global.mysqlRequest(this.db, `INSERT INTO ${this.meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`, values);
         }
-        const row_to_save = await this.unmap();
-        this.sync_data = { ...row_to_save };
+        this.sync_data = await this.unmap();
     }
 
     async sync(interval = 10000) {
