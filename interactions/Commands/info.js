@@ -21,7 +21,7 @@ module.exports = {
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand || !Object.entries(global.servers_link).length) return;
         await interaction.deferReply({ ephemeral: true });
-        const servers_options = Object.entries(global.servers_link).map(server => ({
+        const servers_options = Object.keys(global.servers_link).map(server => ({
             label: server,
             value: server
         }));

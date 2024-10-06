@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS `guild_settings` (
 -- Дамп данных таблицы discord_bot.guild_settings: ~5 rows (приблизительно)
 INSERT INTO `guild_settings` (`id`, `guild`, `name`, `setting`) VALUES
 	(1, 1, 'tgs_address', 'http://localhost:5000'),
-	(2, 1, 'verified_role', '1260279361593147392'),
-	(3, 1, 'anti_verified_role', '1260279307788488796'),
+	(2, 1, 'verified_role', '1252317492609810595'),
+	(3, 1, 'anti_verified_role', '746716442946306088'),
 	(4, 1, 'admin_role_id', '1237738433427013756'),
 	(5, 2, 'admin_role_id', '1268836266745794602');
 
