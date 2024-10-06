@@ -14,13 +14,14 @@ module.exports = {
      */
 
     run: async (client, interaction, args) => {
-        await interaction.deferReply({ ephemeral: true });
-        await client.ephemeralEmbed({
-            title: 'Verification',
-            desc: 'In progress...'
-        }, interaction);
-        const discord_server = global.guilds_link[`${interaction.guildId}`];
+        if (interaction.type !== InteractionType.ApplicationCommand) return;
+
+        let discord_server
+        if (interaction.guildId) discord_server = global.guilds_link[`${interaction.guildId}`];
         if (!discord_server) return client.ephemeralEmbed({ title: 'Verification', desc: 'No verification for this server', color: '#c70058' }, interaction);
+
+        await interaction.deferReply({ ephemeral: true });
+        await client.ephemeralEmbed({ title: 'Verification', desc: 'In progress...' }, interaction);
 
         const identifier = await interaction.options.getString('identifier');
         let db_response;

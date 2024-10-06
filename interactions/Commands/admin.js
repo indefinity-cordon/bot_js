@@ -13,8 +13,9 @@ module.exports = {
      */
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
-        console.log('niggas')
-        const discord_server = global.guilds_link[`${interaction.guildId}`];
+
+        let discord_server
+        if (interaction.guildId) discord_server = global.guilds_link[`${interaction.guildId}`];
         if (!discord_server) return interaction.reply({ content: 'No support for admin commands in this guild, try in another.', ephemeral: true });
 
         const member = interaction.member;

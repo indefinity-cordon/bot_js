@@ -20,6 +20,9 @@ module.exports = {
 
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand || !Object.entries(global.servers_link).length) return;
+
+        if (!interaction.guildId) return client.ephemeralEmbed({ title: 'Request', desc: 'This application don\'t have access to critical information, please try again without global command (you need invite bot to server)', color: '#c70058' }, interaction);
+
         await interaction.deferReply({ ephemeral: true });
         const servers_options = Object.keys(global.servers_link).map(server => ({
             label: server,
