@@ -32,7 +32,7 @@ module.exports = async (client, game_server) => {
                 }, message);
             }
         } catch (error) {
-            if (failed_times > 5) game_server.handle_status(false);
+            if (failed_times > 5) game_server.handle_status(0);
             else failed_times++;
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
@@ -758,14 +758,14 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleRoundStart(channel) {
-        if (await game_server.handle_status(true)) return;
+        if (await game_server.handle_status(1)) return;
         if (game_server.player_low_autoshutdown && game_server.settings_data.server_status.data.setting) {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
             if (server_response && isJsonString(server_response)) {
                 const response = JSON.parse(server_response);
                 const data = response.data;
                 if (data && data.players < game_server.player_low_autoshutdown) {
-                    game_server.handle_status(false);
+                    game_server.handle_status(0);
                     const instance = await client.tgs_getInstance(game_server.data.tgs_id);
                     if (instance) client.tgs_stop(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
                     return;
@@ -959,8 +959,8 @@ module.exports = async (client, game_server) => {
 
     game_server.handle_status = async function (new_status) {
         console.log(game_server.settings_data.server_status.data.setting, new_status)
-        if (!!game_server.settings_data.server_status.data.setting == new_status) return false;
-        game_server.settings_data.server_status.data.setting = Number(new_status);
+        if (game_server.settings_data.server_status.data.setting == new_status) return false;
+        game_server.settings_data.server_status.data.setting = new_status;
         console.log('current changed state', game_server.settings_data.server_status.data.setting)
         if (game_server.settings_data.server_status.data.setting) {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
