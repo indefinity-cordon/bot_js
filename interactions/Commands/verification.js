@@ -21,6 +21,7 @@ module.exports = {
         }, interaction);
         const discord_server = global.guilds_link[`${interaction.guildId}`];
         if (!discord_server) return client.ephemeralEmbed({ title: 'Verification', desc: 'No verification for this server', color: '#c70058' }, interaction);
+
         const identifier = await interaction.options.getString('identifier');
         let db_response;
         for (const server_name in global.servers_link) {
@@ -31,41 +32,21 @@ module.exports = {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id)
             interactionUser.roles.add(discord_server.settings_data.verified_role.data.setting)
             interactionUser.roles.remove(discord_server.settings_data.anti_verified_role.data.setting)
-            return client.ephemeralEmbed({
-                title: 'Verification',
-                desc: 'You already verified'
-            }, interaction);
+            return client.ephemeralEmbed({ title: 'Verification', desc: 'You already verified' }, interaction);
         }
+
         let player_id = 0;
-        if (identifier === 0) {
-            client.ephemeralEmbed({
-                title: 'Verification',
-                desc: 'Wrong identifier'
-            }, interaction);
-            return;
-        }
+        if (!identifier) return client.ephemeralEmbed({ title: 'Verification', desc: 'Wrong identifier' }, interaction);
+
         db_response = await global.mysqlRequest(game_database, "SELECT playerid, realtime, used FROM discord_identifiers WHERE identifier = ?", [identifier]);
-        if (!db_response[0] || db_response[0].used) {
-            client.ephemeralEmbed({
-                title: 'Verification',
-                desc: 'Wrong identifier'
-            }, interaction);
-            return;
-        } else if (db_response[0].realtime + 240 * 60000 < new Date().toLocaleTimeString()) {
-            client.ephemeralEmbed({
-                title: 'Verification',
-                desc: 'Time out, order new in game'
-            }, interaction);
-            return;
-        }
+
+        if (!db_response[0] || db_response[0].used) return client.ephemeralEmbed({ title: 'Verification', desc: 'Wrong identifier' }, interaction);
+        else if (db_response[0].realtime + 240 * 60000 < new Date().toLocaleTimeString()) return client.ephemeralEmbed({ title: 'Verification', desc: 'Time out, order new in game' }, interaction);
+
         player_id = db_response[0].playerid;
         db_response = await global.mysqlRequest(game_database, "SELECT player_id, discord_id FROM discord_links WHERE player_id = ?", [player_id]);
-        if (db_response[0] && db_response[0].discord_id) {
-            client.ephemeralEmbed({
-                title: 'Verification',
-                desc: 'You already verified'
-            }, interaction);
-        } else {
+        if (db_response[0] && db_response[0].discord_id) client.ephemeralEmbed({ title: 'Verification', desc: 'You already verified' }, interaction);
+        else {
             if (db_response[0]) {
                 await global.mysqlRequest(game_database, "UPDATE discord_links SET discord_id = ? WHERE player_id = ?", [interaction.user.id, player_id]);
             } else {
@@ -75,10 +56,7 @@ module.exports = {
             const interactionUser = await interaction.guild.members.fetch(interaction.user.id);
             interactionUser.roles.add(discord_server.settings_data.verified_role.data.setting)
             interactionUser.roles.remove(discord_server.settings_data.anti_verified_role.data.setting)
-            client.ephemeralEmbed({
-                title: 'Verification',
-                desc: 'You successfully verified'
-            }, interaction);
+            client.ephemeralEmbed({ title: 'Verification', desc: 'You successfully verified' }, interaction);
         }
     },
 };
