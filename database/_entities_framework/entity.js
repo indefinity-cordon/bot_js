@@ -54,7 +54,7 @@ class Entity {
         if (Object.entries(to_map_outgoing).length) {
             const values = Object.values(to_map_outgoing);
             if (rows.length) {
-                const updates = Object.keys(to_map_outgoing).join(', ');
+                const updates = Object.keys(to_map_outgoing).map(col => `${col} = ?`).join(', ');
                 await global.mysqlRequest(this.db, `UPDATE ${this.meta.table} SET ${updates} WHERE id = ?`, [...values, this.id]);
             } else {
                 const columns = Object.keys(to_map_outgoing).join(', ');
