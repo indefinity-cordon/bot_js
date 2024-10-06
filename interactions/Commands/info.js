@@ -29,20 +29,9 @@ module.exports = {
         const collected = await client.sendInteractionSelectMenu(interaction, 'select-server', 'Select a game server', servers_options, 'Please select a game server:');
         if (collected) {
             const db_discord_link = await global.mysqlRequest(global.servers_link[collected].game_connection, "SELECT player_id, discord_id, role_rank, stable_rank FROM discord_links WHERE discord_id = ?", [target_user.id]);
-            if (!db_discord_link[0] || !db_discord_link[0].discord_id) {
-                await client.ephemeralEmbed({
-                    title: 'Request',
-                    desc: 'This user does not have a linked game profile',
-                    color: '#c70058'
-                }, interaction);
-                return;
-            }
+            if (!db_discord_link[0] || !db_discord_link[0].discord_id) return await client.ephemeralEmbed({ title: 'Request', desc: 'This user does not have a linked game profile', color: '#c70058' }, interaction);
 
-            await client.ephemeralEmbed({
-                title: 'Request',
-                desc: 'Retrieving data...',
-                color: '#c70058'
-            }, interaction);
+            await client.ephemeralEmbed({ title: 'Request', desc: 'Retrieving data...', color: '#c70058' }, interaction);
             await global.servers_link[collected].infoRequest(db_discord_link, interaction);
         }
     }

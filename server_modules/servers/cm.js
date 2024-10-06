@@ -245,7 +245,6 @@ module.exports = async (client, game_server) => {
 
 
     game_server.infoRequest = async function (request, interaction) {
-        console.log('waypoint1')
         let rank_info = '';
         if (request[0].role_rank) {
             const db_role = await global.mysqlRequest(game_server.game_connection, "SELECT rank_name FROM discord_ranks WHERE rank_id = ?", [request[0].role_rank]);
@@ -262,19 +261,16 @@ module.exports = async (client, game_server) => {
                 rank_info = `Supported Rank: ${db_role[0].rank_name}\n`;
             }
         }
-        console.log('waypoint2')
         const db_player_profile = await global.mysqlRequest(game_server.game_connection,
             "SELECT id, ckey, last_login, is_permabanned, permaban_reason, permaban_date, permaban_admin_id, is_time_banned, time_ban_reason, time_ban_expiration, time_ban_admin_id, time_ban_date FROM players WHERE id = ?", [request[0].player_id]);
         if (!db_player_profile[0]) return client.ephemeralEmbed({ title: 'Request', desc: 'This is user don\'t have CM profile', color: '#c70058' }, interaction);
 
-        console.log('waypoint3')
         let player_info = `**Last login:** ${db_player_profile[0].last_login}\n`;
         if (db_player_profile[0].is_permabanned) {
             player_info += `## **Permabanned**\n**Reason:** ${db_player_profile[0].permaban_reason}, **Date:** ${db_player_profile[0].permaban_date}\n`;
         } else if (db_player_profile[0].is_time_banned) {
             player_info += `## **Banned**\n**Reason:** ${db_player_profile[0].time_ban_reason}, **Exp:** ${db_player_profile[0].time_ban_expiration}, **Date:** ${db_player_profile[0].time_ban_date}\n`;
         }
-        console.log('waypoint4')
         const db_player_playtime = await global.mysqlRequest(game_server.game_connection, "SELECT role_id, total_minutes FROM player_playtime WHERE player_id = ?", [db_player_profile[0].id]);
         let player_playtime = 0;
         for (const playtime of db_player_playtime) {
@@ -282,8 +278,10 @@ module.exports = async (client, game_server) => {
         }
         console.log('waypoint5')
         const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", [db_player_profile[0].id]);
+        console.log('waypoint5.1')
         if (db_request_admin[0]) {
             const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks");
+            console.log('waypoint5.2')
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
