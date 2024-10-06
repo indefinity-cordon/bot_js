@@ -19,10 +19,10 @@ module.exports = async () => {
         if (!rows.length) {
             return [];
         }
-        const entities = await rows.map(async row => {
+        const entities = await rows.map(async (row) => {
             const entity = new meta.class(db, row.id, meta);
             delete row['id'];
-            entity.map(row);
+            await entity.map(row);
             entity.sync_data = await entity.unmap();
             return entity;
         });
