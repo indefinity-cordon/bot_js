@@ -39,7 +39,7 @@ module.exports = {
         await interaction.deferReply({ ephemeral: true });
         const collected = await client.sendInteractionSelectMenu(interaction, 'select-command', 'Select command', available_сommands, 'Please select command:');
         if (collected) {
-            await global.handling_commands_actions[collected](interaction, member, role_сache);
+            await global.handling_commands_actions[collected](interaction, discord_server);
         }
     }
 }
