@@ -5,18 +5,16 @@ class ServerSettings extends Entity {
         super(db, id, meta);
     }
 
-    map(row) {
-        console.log('map', row)
-        super.map(row);
+    async map(row) {
+        await super.map(row);
 
         if (row['setting'] && isJsonString(this.data.setting)) {
             this.param = JSON.parse(this.data.setting);
         }
     }
 
-    unmap() {
-        const row = super.unmap();
-        console.log('unmap', row)
+    async unmap() {
+        const row = await super.unmap();
 
         if (isJsonStringifable(this.data.param)) {
             row.setting = JSON.stringify(this.data.param);

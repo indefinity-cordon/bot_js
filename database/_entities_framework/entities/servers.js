@@ -39,7 +39,7 @@ class Server extends Entity {
     }
 
     async map(row) {
-        super.map(row);
+        await super.map(row);
 
         if (row['guild']) {
             const guild_link = await global.mysqlRequest(global.database, "SELECT guild_id FROM guilds WHERE id = ?", [row['guild']]);
@@ -48,7 +48,7 @@ class Server extends Entity {
     }
 
     async unmap() {
-        const row = super.unmap();
+        const row = await super.unmap();
 
         if (this.data.guild_id) {
             const guild_link = await global.mysqlRequest(global.database, "SELECT id FROM guilds WHERE guild_id = ?", [this.data.guild_id]);

@@ -50,6 +50,7 @@ class Entity {
         }
         const row_to_save = await this.unmap();
         if (local_update) {
+            console.log('local changes updating to external', this)
             const columns = Object.keys(row_to_save).join(', ');
             const values = Object.values(row_to_save);
             const placeholders = values.map(() => '?').join(', ');
