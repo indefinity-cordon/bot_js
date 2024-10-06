@@ -962,7 +962,6 @@ module.exports = async (client, game_server) => {
     game_server.handle_status = async function (new_status) {
         if (game_server.settings_data.server_status.data.setting == new_status) return false;
         game_server.settings_data.server_status.data.setting = new_status;
-        console.log('current changed state', game_server.settings_data.server_status.data.setting)
         if (game_server.settings_data.server_status.data.setting) {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
             const channel = await client.channels.fetch(status[0].channel_id);
