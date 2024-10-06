@@ -97,6 +97,7 @@ module.exports = async (client, game_server) => {
             for (const db_admin of db_request_admin) {
                 const profile = profileMap.get(db_admin.player_id);
                 if (!profile) continue;
+
                 let extra_ranks = [];
                 if (db_admin.extra_titles_encoded) {
                     extra_ranks = JSON.parse(db_admin.extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
@@ -276,23 +277,19 @@ module.exports = async (client, game_server) => {
         for (const playtime of db_player_playtime) {
             player_playtime += playtime.total_minutes;
         }
-        console.log('waypoint5')
         const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", [db_player_profile[0].id]);
         if (db_request_admin[0]) {
             const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks");
-            console.log('waypoint5.1')
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
             });
-            console.log('waypoint5.2')
+
             player_info += `**Rank:** ${roleMap.get(db_request_admin[0].rank_id)}\n`;
-            const extra_ranks = [];
-            console.log('waypoint5.3')
+            console.log(db_request_admin)
+            let extra_ranks = [];
             if (db_request_admin[0].extra_titles_encoded) {
-                for(const rank_id of JSON.parse(db_request_admin[0].extra_titles_encoded)) {
-                    extra_ranks += `${roleMap.get(rank_id)}`;
-                }
+                extra_ranks = JSON.parse(db_request_admin[0].extra_titles_encoded).map(rank_id => roleMap.get(parseInt(rank_id)));
             }
             console.log('waypoint5.4')
             if (extra_ranks.length) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
