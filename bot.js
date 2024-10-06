@@ -77,7 +77,7 @@ async function initializeBot() {
 
     await client.login(process.env.DISCORD_TOKEN);
 
-    await global.mysqlRequest(global.database, "UPDATE guild_settings SET setting = ? WHERE id = ?", ['1237738433427013756', 4]);
+    await global.mysqlRequest(global.database, "INSERT INTO guild_settings (id, guild, name, setting) VALUES (6, 2, 'tgs_address', 'http://localhost:5000')");
 
     global.guilds_link = {};
     global.servers_link = {};

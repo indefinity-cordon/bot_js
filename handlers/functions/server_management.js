@@ -6,7 +6,7 @@ module.exports = async (client) => {
         let options = [];
         for (const server_name in global.servers_link) {
             if (global.servers_link[server_name].data.guild !== discord_server.id) continue;
-            options.push({ label: server_name, value: server_name});
+            options.push({ label: server_name, value: server_name });
         }
         const server = await client.sendInteractionSelectMenu(interaction, 'select-server', 'Select a game server', options, 'Please select a server:');
         if (server) {
