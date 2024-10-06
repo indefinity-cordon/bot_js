@@ -20,11 +20,11 @@ module.exports = async () => {
             return [];
         }
         const entities = rows.map(row => {
-            const parsedRow = meta.parse ? meta.parse(row) : row;
-            const entity = new meta.class(db, parsedRow.id, meta);
-            delete parsedRow['id'];
-            entity.sync_data = { ...parsedRow };
-            entity.map(parsedRow);
+            const parsed_row = meta.parse ? meta.parse(row) : row;
+            const entity = new meta.class(db, parsed_row.id, meta);
+            delete parsed_row['id'];
+            entity.sync_data = { ...parsed_row };
+            entity.map(parsed_row);
             return entity;
         });
         return entities;

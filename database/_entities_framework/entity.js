@@ -37,6 +37,7 @@ class Entity {
                 if (!Object.entries(this.sync_data).length || !(key in this.sync_data)) {
                     to_map_incoming[key] = db_data[key];
                 } else if (this.data[key] !== this.sync_data[key]) {
+                    console.log('Found mismatch', this.data[key], this.sync_data[key])
                     to_map_outgoing[key] = this.data[key];
                 } else if (db_data[key] !== this.sync_data[key]) {
                     to_map_incoming[key] = db_data[key];
@@ -49,7 +50,7 @@ class Entity {
             await this.map(to_map_incoming);
         }
         if (Object.entries(to_map_outgoing).length) {
-            console.log('local changes updating to external', to_map_outgoing)
+            console.log('local changes updating to external', this.data, this.sync_data, to_map_outgoing)
             await this.map(to_map_outgoing);
             const columns = Object.keys(to_map_outgoing).join(', ');
             const values = Object.values(to_map_outgoing);
