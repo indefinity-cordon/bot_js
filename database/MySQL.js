@@ -21,10 +21,6 @@ module.exports = async (load_complex_things) => {
         return connection;
     };
 
-    if (!global.database) {
-        console.log(`Database >> MySQL >> Connecting ...`);
-        global.database = await global.mysqlCreate(process.env.DB_CONNECTION_STRING_BOT);
-    }
     global.mysqlRequest = async function (database, query, params = []) {
         if (!database) {
             console.log('Database >> MySQL >> [WARNING] >> Wrong DB at request');
@@ -40,6 +36,12 @@ module.exports = async (load_complex_things) => {
             });
         });
     };
+
+    if (!global.database) {
+        console.log(`Database >> MySQL >> Connecting ...`);
+        global.database = await global.mysqlCreate(process.env.DB_CONNECTION_STRING_BOT);
+    }
+
     if (load_complex_things) require('./_entities_framework/index.js')();
 };
 
