@@ -28,10 +28,11 @@ class Entity {
 
     async save() {
         const rows = this.id ? await global.mysqlRequest(this.db, `SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]) : [];
-        const to_map_incoming = {};
+        var to_map_incoming = null;
         var to_map_outgoing = null;
         if (rows.length > 0) {
-            to_map_outgoing = {}
+            to_map_incoming = {};
+            to_map_outgoing = {};
             const db_data = rows[0];
             delete db_data['id'];
             for (const key in db_data) {
@@ -48,10 +49,10 @@ class Entity {
             to_map_outgoing = await this.unmap();
         }
         console.log('Sync data', this.sync_data)
-        if (Object.entries(to_map_incoming).length) {
+        if (to_map_incoming && Object.entries(to_map_incoming).length) {
             await this.map(to_map_incoming);
         }
-        if (Object.entries(to_map_outgoing).length) {
+        if (to_map_outgoing && Object.entries(to_map_outgoing).length) {
             console.log('local changes updating to external', this.data, this.sync_data, to_map_outgoing)
             await this.map(to_map_outgoing);
             const columns = Object.keys(to_map_outgoing).join(', ');
