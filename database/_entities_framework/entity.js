@@ -52,12 +52,15 @@ class Entity {
             to_map_outgoing = await this.unmap();
         }
         if (Object.entries(to_map_outgoing).length) {
-            console.log('shit', to_map_outgoing)
-            await this.map(to_map_outgoing);
-            const columns = Object.keys(to_map_outgoing).join(', ');
             const values = Object.values(to_map_outgoing);
-            const placeholders = values.map(() => '?').join(', ');
-            await global.mysqlRequest(this.db, `INSERT INTO ${this.meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`, values);
+            if (rows.length) {
+                const updates = Object.keys(to_map_outgoing).join(', ');
+                await global.mysqlRequest(this.db, `UPDATE ${this.meta.table} SET ${updates} WHERE id = ?`, [...values, this.id]);
+            } else {
+                const columns = Object.keys(to_map_outgoing).join(', ');
+                const placeholders = values.map(() => '?').join(', ');
+                await global.mysqlRequest(this.db, `INSERT INTO ${this.meta.table} (${columns}) VALUES (${placeholders})`, values);
+            }
         }
     }
 
