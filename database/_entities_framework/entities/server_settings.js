@@ -15,8 +15,8 @@ class ServerSettings extends Entity {
     }
 
     unmap() {
-        console.log('unmap', row)
         const row = super.unmap();
+        console.log('unmap', row)
 
         if (isJsonStringifable(this.data.param)) {
             row.setting = JSON.stringify(this.data.param);
