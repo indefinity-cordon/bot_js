@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS `guilds` (
 
 -- Дамп данных таблицы discord_bot.guilds: ~2 rows (приблизительно)
 INSERT INTO `guilds` (`id`, `guild_id`) VALUES
-	(1, '1112098911658721402'),
-	(2, '941653796583538718');
+	(1, '614611020039585792'),
+	(2, '1268689852585476116');
 
 -- Дамп структуры для таблица discord_bot.guild_settings
 CREATE TABLE IF NOT EXISTS `guild_settings` (

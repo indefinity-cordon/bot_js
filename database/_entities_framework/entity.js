@@ -46,6 +46,9 @@ class Entity {
             await this.map(to_map_incoming);
             await this.map(to_map_outgoing);
             this.sync_data = await this.unmap();
+        } else if (this.id) {
+            destory();
+            return;
         } else {
             to_map_outgoing = await this.unmap();
         }
@@ -59,6 +62,7 @@ class Entity {
     }
 
     async sync(interval = 10000) {
+        clearInterval(this.auto_sync_interval)
         await this.save();
         this.auto_sync_interval = setInterval(async () => {
             try {
