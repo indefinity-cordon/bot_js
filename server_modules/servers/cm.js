@@ -278,21 +278,23 @@ module.exports = async (client, game_server) => {
         }
         console.log('waypoint5')
         const db_request_admin = await global.mysqlRequest(game_server.game_connection, "SELECT rank_id, extra_titles_encoded FROM admins WHERE player_id = ?", [db_player_profile[0].id]);
-        console.log('waypoint5.1')
         if (db_request_admin[0]) {
             const db_request_ranks = await global.mysqlRequest(game_server.game_connection, "SELECT id, rank_name, text_rights FROM admin_ranks");
-            console.log('waypoint5.2')
+            console.log('waypoint5.1')
             const roleMap = new Map();
             db_request_ranks.forEach(row => {
                 roleMap.set(row.id, row.rank_name);
             });
+            console.log('waypoint5.2')
             player_info += `**Rank:** ${roleMap.get(db_request_admin[0].rank_id)}\n`;
             const extra_ranks = [];
+            console.log('waypoint5.3')
             if (db_request_admin[0].extra_titles_encoded) {
                 for(const rank_id of JSON.parse(db_request_admin[0].extra_titles_encoded)) {
                     extra_ranks += `${roleMap.get(rank_id)}`;
                 }
             }
+            console.log('waypoint5.4')
             if (extra_ranks.length) info += `**Extra Ranks:** ${extra_ranks.join(' & ')}`;
         }
         console.log('waypoint6')
