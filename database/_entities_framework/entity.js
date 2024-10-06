@@ -49,12 +49,12 @@ class Entity {
             await this.map(to_map_incoming);
         }
         if (Object.entries(to_map_outgoing).length) {
-            console.log('local changes updating to external', this)
+            console.log('local changes updating to external', to_map_outgoing)
             await this.map(to_map_outgoing);
             const columns = Object.keys(to_map_outgoing).join(', ');
             const values = Object.values(to_map_outgoing);
             const placeholders = values.map(() => '?').join(', ');
-            await global.mysqlRequest(this.db, `INSERT INTO ${meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`, values);
+            //await global.mysqlRequest(this.db, `INSERT INTO ${this.meta.table} (${columns}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${columns.split(', ').map(col => `${col} = VALUES(${col})`).join(', ')}`, values);
         }
         const row_to_save = await this.unmap();
         this.sync_data = { ...row_to_save };
