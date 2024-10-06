@@ -483,14 +483,14 @@ module.exports = async (client, game_server) => {
 
     async function handleRoundStart(channel) {
         if (await game_server.handle_status(1)) return;
-        if (game_server.player_low_autoshutdown && game_server.settings_data.server_status.data.setting) {
+        if (game_server.settings_data.player_low_autoshutdown && game_server.settings_data.server_status.data.setting) {
             const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
             if (server_response && isJsonString(server_response)) {
                 const response = JSON.parse(server_response);
                 const data = response.data;
-                if (data && data.players < game_server.data.player_low_autoshutdown) {
+                if (data && data.players < game_server.settings_data.player_low_autoshutdown.data.setting) {
                     game_server.handle_status(0);
-                    const instance = await client.tgs_getInstance(game_server.data.tgs_id);
+                    const instance = await client.tgs_getInstance(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
                     if (instance) client.tgs_stop(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
                     return;
                 }
@@ -771,7 +771,7 @@ async function updateServerCustomOperators(client, game_server) {
 
 async function autoStartServer(client, game_server) {
     if(game_server.settings_data.server_status.data.setting) return;
-    const instance = await client.tgs_getInstance(game_server.data.tgs_id);
+    const instance = await client.tgs_getInstance(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
     if(!instance) return;
     client.tgs_start(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id)
 };
