@@ -22,10 +22,8 @@ module.exports = async (load_complex_things) => {
     };
 
     global.mysqlRequest = async function (database, query, params = []) {
-        if (!database) {
-            console.log('Database >> MySQL >> [WARNING] >> Wrong DB at request');
-            return;
-        }
+        if (!database) throw 'Database >> MySQL >> [WARNING] >> Wrong DB at request';
+
         return await new Promise((resolve, reject) => {
             database.query(query, [...params], (err, result) => {
                 if (err) {
