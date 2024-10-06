@@ -23,6 +23,7 @@ module.exports = async () => {
             const parsedRow = meta.parse ? meta.parse(row) : row;
             const entity = new meta.class(db, parsedRow.id, meta);
             delete parsedRow['id'];
+            entity.sync_data = { ...parsedRow };
             entity.map(parsedRow);
             return entity;
         });

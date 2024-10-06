@@ -29,7 +29,7 @@ class Entity {
     async save() {
         const rows = this.id ? await global.mysqlRequest(this.db, `SELECT * FROM ${this.meta.table} WHERE id = ?`, [this.id]) : [];
         const to_map_incoming = {};
-        const to_map_outgoing = {};
+        var to_map_outgoing = {};
         if (rows.length > 0) {
             const db_data = rows[0];
             delete db_data['id'];
@@ -43,9 +43,7 @@ class Entity {
                 }
             }
         } else {
-            for (const key in this.data) {
-                to_map_outgoing[key] = this.data[key];
-            }
+            to_map_outgoing = await this.unmap();
         }
         if (Object.entries(to_map_incoming).length) {
             await this.map(to_map_incoming);
