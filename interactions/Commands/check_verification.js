@@ -23,8 +23,9 @@ module.exports = {
 
         let db_response;
         for (const server_name in global.servers_link) {
-            if (global.servers_link[server_name].data.guild !== discord_server.id);
+            if (global.servers_link[server_name].data.guild !== discord_server.id) continue;
             db_response = await global.mysqlRequest(global.servers_link[server_name].game_connection, "SELECT * FROM discord_links WHERE discord_id = ?", [interaction.user.id]);
+            break;
         }
         if (!db_response || !db_response[0] || !db_response[0].discord_id) return await client.ephemeralEmbed({ title: 'Verification', desc: 'You need to verify, you don\'t have linked game account' }, interaction);
 
