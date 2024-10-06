@@ -18,7 +18,7 @@ module.exports = {
             title: 'Verification',
             desc: 'In progress...'
         }, interaction);
-        const discord_server = global.guilds_link[interaction.guild];
+        const discord_server = global.guilds_link[interaction.guildId];
         if (!discord_server) return client.ephemeralEmbed({ title: 'Verification', desc: 'No verification for this server', color: '#c70058' }, interaction);
         let db_response;
         for (const server_name in global.servers_link) {

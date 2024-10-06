@@ -10,6 +10,7 @@ module.exports = async (client, game_server) => {
             const response = JSON.parse(server_response);
             const data = response.data;
             if (!data) throw 'Returned no data';
+            failed_times = 0;
             const time = Math.floor(data.round_duration / 600);
             let fields = [];
             fields.push({ name: '**Round Name**', value: `${data.round_name} `, inline: true});
@@ -22,7 +23,6 @@ module.exports = async (client, game_server) => {
             fields.push({ name: '**Gamemode**', value: `${data.mode}`, inline: true});
             fields.push({ name: '**Round Time**', value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0'), inline: true});
             if (data.round_end_state) fields.push({ name: '**Rouned End State**', value: `${data.round_end_state} `, inline: true});
-            failed_times = 0;
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
@@ -960,7 +960,7 @@ module.exports = async (client, game_server) => {
     game_server.handle_status = async function (new_status) {
         console.log(game_server.settings_data.server_status.data.setting, new_status)
         if (!!game_server.settings_data.server_status.data.setting == new_status) return false;
-        game_server.settings_data.server_status.data.setting = new_status;
+        game_server.settings_data.server_status.data.setting = Number(new_status);
         console.log('current changed state', game_server.settings_data.server_status.data.setting)
         if (game_server.settings_data.server_status.data.setting) {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
