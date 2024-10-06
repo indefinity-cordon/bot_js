@@ -32,8 +32,9 @@ module.exports = async (client, game_server) => {
                 }, message);
             }
         } catch (error) {
-            if (failed_times > 5) game_server.handle_status(0);
-            else failed_times++;
+            game_server.handle_status(0);
+            //if (failed_times > 5) game_server.handle_status(0);
+            //else failed_times++;
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],

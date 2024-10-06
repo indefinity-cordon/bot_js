@@ -42,7 +42,7 @@ INSERT INTO `guild_settings` (`id`, `guild`, `name`, `setting`) VALUES
 	(1, 1, 'tgs_address', 'http://localhost:5000'),
 	(2, 1, 'verified_role', '1260279361593147392'),
 	(3, 1, 'anti_verified_role', '1260279307788488796'),
-	(4, 1, 'admin_role_id', '1260284596365426771'),
+	(4, 1, 'admin_role_id', '1237738433427013756'),
 	(5, 2, 'admin_role_id', '1268836266745794602');
 
 -- Дамп структуры для таблица discord_bot.servers

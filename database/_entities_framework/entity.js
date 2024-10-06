@@ -44,7 +44,6 @@ class Entity {
                 }
             }
             await this.map(to_map_incoming);
-            await this.map(to_map_outgoing);
             this.sync_data = await this.unmap();
         } else if (this.id) {
             destory();
@@ -53,6 +52,7 @@ class Entity {
             to_map_outgoing = await this.unmap();
         }
         if (Object.entries(to_map_outgoing).length) {
+            console.log('shit', to_map_outgoing)
             await this.map(to_map_outgoing);
             const columns = Object.keys(to_map_outgoing).join(', ');
             const values = Object.values(to_map_outgoing);
