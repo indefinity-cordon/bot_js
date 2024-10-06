@@ -65,8 +65,6 @@ async function initializeBot() {
     if (process.env.REDIS_STRING) require('./database/Redis')();
 
     await global.database;
-    await global.mysqlRequest(global.database, "UPDATE guilds SET guild_id = ? WHERE id = ?", [614611020039585792, 1]);
-    await global.mysqlRequest(global.database, "UPDATE guilds SET guild_id = ? WHERE id = ?", [1268689852585476116, 2]);
 
     global.handling_commands_actions = {};
     global.handling_commands = [];
@@ -77,6 +75,8 @@ async function initializeBot() {
         });
     });
 
+    await global.mysqlRequest(global.database, "UPDATE guilds SET guild_id = ? WHERE id = ?", [614611020039585792, 1]);
+    await global.mysqlRequest(global.database, "UPDATE guilds SET guild_id = ? WHERE id = ?", [1268689852585476116, 2]);
     await client.login(process.env.DISCORD_TOKEN);
 
     global.guilds_link = {};
