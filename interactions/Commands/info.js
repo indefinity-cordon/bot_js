@@ -43,7 +43,7 @@ module.exports = {
                 desc: 'Retrieving data...',
                 color: '#c70058'
             }, interaction);
-            await global.servers_link[collected].infoRequest({ request: db_discord_link }, interaction);
+            await global.servers_link[collected].infoRequest(db_discord_link, interaction);
         }
     }
 };
