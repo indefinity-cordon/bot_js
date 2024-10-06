@@ -16,7 +16,7 @@ class ServerSettings extends Entity {
     async unmap() {
         const row = await super.unmap();
 
-        if (isJsonStringifable(this.data.param)) {
+        if (this.data['param'] && isJsonStringifable(this.data.param)) {
             row.setting = JSON.stringify(this.data.param);
         }
         return row;
