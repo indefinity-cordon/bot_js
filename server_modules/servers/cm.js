@@ -32,9 +32,10 @@ module.exports = async (client, game_server) => {
                 }, message);
             }
         } catch (error) {
-            game_server.handle_status(0);
-            //if (failed_times > 5) game_server.handle_status(0);
-            //else failed_times++;
+            if (failed_times > 5) {
+                game_server.handle_status(0);
+                failed_times = 0;
+            } else failed_times++;
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
@@ -959,7 +960,6 @@ module.exports = async (client, game_server) => {
     }, 2000);
 
     game_server.handle_status = async function (new_status) {
-        console.log(game_server.settings_data.server_status.data.setting, new_status)
         if (game_server.settings_data.server_status.data.setting == new_status) return false;
         game_server.settings_data.server_status.data.setting = new_status;
         console.log('current changed state', game_server.settings_data.server_status.data.setting)
