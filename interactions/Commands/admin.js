@@ -13,8 +13,7 @@ module.exports = {
      */
     run: async (client, interaction, args) => {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
-        console.log(interaction.guildId, global.guilds_link)
-        const discord_server = global.guilds_link[interaction.guildId];
+        const discord_server = global.guilds_link[`${interaction.guildId}`];
         if (!discord_server) return interaction.reply({ content: 'You don\'t have permission to use any admin commands.', ephemeral: true });
         const member = interaction.member;
         const role_сache = new Map();

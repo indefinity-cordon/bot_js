@@ -77,9 +77,6 @@ async function initializeBot() {
 
     await client.login(process.env.DISCORD_TOKEN);
 
-    await global.mysqlRequest(global.database, "UPDATE guilds SET guild_id = ? WHERE id = ?", [614611020039585792, 1]);
-    await global.mysqlRequest(global.database, "UPDATE guilds SET guild_id = ? WHERE id = ?", [1268689852585476116, 2]);
-
     global.guilds_link = {};
     global.servers_link = {};
     require('./server_modules/servers_actions.js')(client);
