@@ -15,6 +15,17 @@ const client = new Discord.Client({
 
 client.commands = new Discord.Collection();
 
+//For sedalya puka
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+
+    if (message.author.id == '340560711304347658') {
+        // Если автор совпадает, отправляем ответное сообщение
+        message.channel.send('https://tenor.com/view/blocked-message-gif-24291794');
+    }
+});
+
 global.discord_client = client
 
 //LOGS
