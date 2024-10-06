@@ -6,6 +6,7 @@ class ServerSettings extends Entity {
     }
 
     map(row) {
+        console.log('map', row)
         super.map(row);
 
         if (row['setting'] && isJsonString(this.data.setting)) {
@@ -14,6 +15,7 @@ class ServerSettings extends Entity {
     }
 
     unmap() {
+        console.log('unmap', row)
         const row = super.unmap();
 
         if (isJsonStringifable(this.data.param)) {

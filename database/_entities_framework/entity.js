@@ -1,6 +1,6 @@
 class Entity {
     constructor(db, id, meta) {
-        this.db = db;// Ссылка на объект соединения с ДБ
+        this.db = db;
         this.id = id;
         this.meta = meta;
         this.data = {};
