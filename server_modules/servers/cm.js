@@ -691,7 +691,7 @@ module.exports = async (client, game_server) => {
                 const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
                 const now_date = new Date();
                 const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
-                await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 180)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
+                await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся примерно в <t:${Math.floor(start_time.getTime() / 1000 + 1200)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
             }
         } else {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
