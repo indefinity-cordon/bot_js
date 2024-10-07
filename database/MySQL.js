@@ -47,10 +47,10 @@ module.exports = async (load_complex_things) => {
 
     if (load_complex_things) require('./_entities_framework/index.js')();
 
-    global.createLog = async function (log) {
-        const log = new global.entity_construct['Log'](global.database, null, global.entity_meta['Log']);
-        log.data.info = log;
-        log.save();
+    global.createLog = async function (text_log) {
+        const interaction_log = new global.entity_construct['Log'](global.database, null, global.entity_meta['Log']);
+        interaction_log.data.info = text_log;
+        interaction_log.save();
     };
 };
 
