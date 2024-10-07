@@ -5,26 +5,35 @@ module.exports = async (client, game_server) => {
 
     game_server.updateStatusMessage = async function (type) {
         try {
-            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
+            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status_authed', auth: 'bsojgsd90423pfdsuigohdhs901248gdfgj89yasanhb8cx76cvccxc5', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
             if (!server_response) throw 'Returned no response';
 
             const response = JSON.parse(server_response);
             const data = response.data;
             if (!data) throw 'Returned no data';
 
+            for (const [key, value] of data) {
+                data[key] = value ? value : 'Loading...'
+            }
+
+            const { round_duration, round_name, round_id, map_name, next_map_name, ship_map_name, next_ship_map_name, players, mode, round_end_state } = data
+
             failed_times = 0;
-            const time = Math.floor(data.round_duration / 600);
+            const time = Math.floor(round_duration / 600);
             let fields = [];
-            fields.push({ name: '**Round Name**', value: `${data.round_name} `, inline: true});
-            fields.push({ name: '**Round ID**', value: `${data.round_id} `, inline: true});
-            fields.push({ name: '**Map**', value: `${data.map_name} `, inline: true});
-            if (data.next_map_name) fields.push({ name: '**Next Map**', value: `${data.next_map_name} `, inline: true});
-            fields.push({ name: '**Ship Map**', value: `${data.ship_map_name} `, inline: true});
-            if (data.next_map_name) fields.push({ name: '***Next Ship Map**', value: `${data.next_ship_map_name} `, inline: true});
-            fields.push({ name: '**Total Players**', value: `${data.players} `, inline: true});
-            fields.push({ name: '**Gamemode**', value: `${data.mode}`, inline: true});
+            fields.push({ name: '**Round Name**', value: `${round_name} `, inline: true});
+            fields.push({ name: '**Round ID**', value: `${round_id} `, inline: true});
+            fields.push({ name: '**Map**', value: `${map_name} `, inline: true});
+            if (next_map_name)
+                fields.push({ name: '**Next Map**', value: `${next_map_name} `, inline: true});
+            fields.push({ name: '**Ship Map**', value: `${ship_map_name} `, inline: true});
+            if (next_ship_map_name)
+                fields.push({ name: '***Next Ship Map**', value: `${next_ship_map_name} `, inline: true});
+            fields.push({ name: '**Total Players**', value: `${players} `, inline: true});
+            fields.push({ name: '**Gamemode**', value: `${mode}`, inline: true});
             fields.push({ name: '**Round Time**', value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0'), inline: true});
-            if (data.round_end_state) fields.push({ name: '**Rouned End State**', value: `${data.round_end_state} `, inline: true});
+            if (round_end_state)
+                fields.push({ name: '**Rouned End State**', value: `${round_end_state} `, inline: true});
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: [new EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
@@ -484,7 +493,7 @@ module.exports = async (client, game_server) => {
     async function handleRoundStart(channel) {
         if (await game_server.handle_status(1)) return;
         if (game_server.settings_data.player_low_autoshutdown && game_server.settings_data.server_status.data.setting) {
-            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status', auth: 'anonymous', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
+            const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status_authed', auth: 'bsojgsd90423pfdsuigohdhs901248gdfgj89yasanhb8cx76cvccxc5', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
             if (server_response && isJsonString(server_response)) {
                 const response = JSON.parse(server_response);
                 const data = response.data;
@@ -691,8 +700,16 @@ module.exports = async (client, game_server) => {
                 const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
                 const now_date = new Date();
                 const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
-                await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся примерно в <t:${Math.floor(start_time.getTime() / 1000 + 1200)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
+                await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся примерно в <t:${Math.floor(start_time.getTime() / 1000 + 20 * 60)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
             }
+            await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'set_delay', auth: 'bsojgsd90423pfdsuigohdhs901248gdfgj89yasanhb8cx76cvccxc5', source: 'bot', delay: 1}), port: game_server.data.port, address: game_server.data.ip});
+            async function clear_delay() {
+                await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'set_delay', auth: 'bsojgsd90423pfdsuigohdhs901248gdfgj89yasanhb8cx76cvccxc5', source: 'bot', delay: 0}), port: game_server.data.port, address: game_server.data.ip});
+                if (channel) {
+                    await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Задержка старта снята!`).setColor('#669917')], content: ` `}, channel);
+                }
+            }
+            setTimeout(clear_delay, 20 * 60000);
         } else {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
             const channel = await client.channels.fetch(status[0].channel_id);
