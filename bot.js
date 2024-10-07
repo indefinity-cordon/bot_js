@@ -16,11 +16,25 @@ const client = new Discord.Client({
 client.commands = new Discord.Collection();
 
 //For sedalya puka
+const links = [
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/stupidity-look-serius-gif-26117549',
+    'https://tenor.com/view/sus-scout-lachen-tf2-gif-17981608274864336621',
+    'https://tenor.com/view/mortal-kombat-skull-emoji-gif-25107751',
+    'https://tenor.com/view/rat-rodent-vermintide-vermintide2-skaven-gif-20147931',
+    'https://tenor.com/view/talk-lizard-ironic-gif-25847938'
+];
+
+function getRandomLink() {
+    const index = Math.floor(Math.random() * links.length);
+    return links[index];
+}
+
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
     if (message.author.id == '155734640705929216') {
-        message.channel.send('https://tenor.com/view/blocked-message-gif-24291794');
+        message.channel.send(getRandomLink());
     }
 });
 

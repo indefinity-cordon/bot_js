@@ -336,9 +336,9 @@ module.exports = async (client, game_server) => {
         if (!selected_action) return;
 
         const handling_options = {
-            'add': manageAddAmin,
-            'remove': manageRemoveAmin,
-            'update': manageUpdateAmin
+            'add': manageAddAdmin,
+            'remove': manageRemoveAdmin,
+            'update': manageUpdateAdmin
         };
         await handling_options[selected_action](interaction, client, game_server);
     };
@@ -780,7 +780,7 @@ async function autoStartServer(client, game_server) {
 
 /// MANAGING ADMINS
 
-async function manageAddAmin(interaction, client, game_server) {
+async function manageAddAdmin(interaction, client, game_server) {
     await interaction.followUp({ content: 'Enter the ckey (or what it most likely) of the player to add as admin', ephemeral: true });
     const ckey = await client.collectUserInput(interaction);
     if (!ckey) return;
@@ -798,30 +798,39 @@ async function manageAddAmin(interaction, client, game_server) {
     const admins = await global.mysqlRequest(database_connection, "SELECT player_id FROM admins");
     if (admins.find(admin => admin.player_id == selected_player)) return await client.ephemeralEmbed({ title: 'Request', desc: 'This admin already exist', color: '#c70058' }, interaction);
 
-    const selected_rank = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', await getRankOptions(client, game_server.game_connection), 'Select the rank to assign:');
+    const all_ranks = await getRankOptions(client, game_server.game_connection);
+    const selected_rank = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', all_ranks, 'Select the rank to assign:');
     if (!selected_rank) return;
+
+    global.createLog(`${interaction.user.id} added admin [${player_data.ckey}], rank: [${all_ranks.find(rank => rank.value === selected_rank).label}]`);
 
     await global.mysqlRequest(game_server.game_connection, "INSERT INTO admins (player_id, rank_id) VALUES (?, ?)", [selected_player, selected_rank]);
     const selected_action = await client.sendInteractionSelectMenu(interaction, 'select-titles', 'Set Titles', [{ label: 'Set Up', value: 'set' }, { label: 'Skip', value: 'skip' }], 'Would you like to assign extra titles to this admin?');
     if (selected_action === 'set') {
-        const selected_extra_ranks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', await getRankOptions(client, game_server.game_connection), 'Select extra titles to assign:', true);
-        if (selected_extra_ranks && selected_extra_ranks.length) await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(selected_extra_ranks), selected_player]);
+        const selected_extra_ranks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', all_ranks, 'Select extra titles to assign:', true);
+        if (selected_extra_ranks && selected_extra_ranks.length) {
+            global.createLog(`${interaction.user.id} admin extra titles added [${player_data.ckey}], extra_titles_encoded: [${JSON.stringify(selected_extra_ranks)}]`);
+
+            await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(selected_extra_ranks), selected_player]);
+        }
     }
     await client.ephemeralEmbed({ title: 'Request', desc: 'Admin added successfully!', color: '#669917' }, interaction);
 };
 
-async function manageRemoveAmin(interaction, client, game_server) {
+async function manageRemoveAdmin(interaction, client, game_server) {
     const all_admins = await getAdminOptions(client, game_server.game_connection);
     if (!all_admins.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found admins to remove', color: '#c70058' }, interaction);
 
     const selected_admin = await client.sendInteractionSelectMenu(interaction, 'select-admin', 'Select Admin', all_admins, 'Select the admin to remove:');
-    if (selected_admin) {
-        await global.mysqlRequest(game_server.game_connection, "DELETE FROM admins WHERE player_id = ?", [selected_admin]);
-        await client.ephemeralEmbed({ title: 'Request', desc: 'Admin removed successfully!', color: '#669917' }, interaction);
-    }
+    if (!selected_admin) return;
+
+    global.createLog(`${interaction.user.id} removed admin [${all_admins.find(admin => admin.value === selected_admin).label}]`);
+
+    await global.mysqlRequest(game_server.game_connection, "DELETE FROM admins WHERE player_id = ?", [selected_admin]);
+    await client.ephemeralEmbed({ title: 'Request', desc: 'Admin removed successfully!', color: '#669917' }, interaction);
 };
 
-async function manageUpdateAmin(interaction, client, game_server) {
+async function manageUpdateAdmin(interaction, client, game_server) {
     const all_admins = await getAdminOptions(client, game_server.game_connection);
     if (!all_admins.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found admins to update', color: '#c70058' }, interaction);
 
@@ -830,8 +839,13 @@ async function manageUpdateAmin(interaction, client, game_server) {
 
     const selected_action = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Update Rank', [{ label: 'Update', value: 'update' }, { label: 'Skip', value: 'skip' }], 'Would you like to update rank to this admin?');
     if (selected_action === 'update') {
-        const selected_rank = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', getRankOptions(client, game_server.game_connection), 'Select the new rank to assign:');
-        if (selected_rank) await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET rank_id = ? WHERE player_id = ?", [selected_rank, selected_admin]);
+        const all_ranks = await getRankOptions(client, game_server.game_connection);
+        const selected_rank = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', all_ranks, 'Select the new rank to assign:');
+        if (selected_rank) {
+            global.createLog(`${interaction.user.id} change admin rank [${all_admins.find(admin => admin.value === selected_admin).label}], new rank: [${all_ranks.find(rank => rank.value === selected_rank).label}]`);
+
+            await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET rank_id = ? WHERE player_id = ?", [selected_rank, selected_admin]);
+        }
     }
     const selected_action_titles = await client.sendInteractionSelectMenu(interaction, 'select-titles', 'Update Titles', [
             { label: 'Update', value: 'update' }, { label: 'Remove', value: 'remove' }, { label: 'Skip', value: 'skip' }
@@ -844,6 +858,9 @@ async function manageUpdateAmin(interaction, client, game_server) {
             const selected_extra_ranks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', extra_rank_options.filter(option => !extra_titles.includes(option.value)), 'Select extra titles to assign:', true);
             if (selected_extra_ranks && selected_extra_ranks.length) {
                 extra_titles = [...new Set([...extra_titles, ...selected_extra_ranks])];
+
+                global.createLog(`${interaction.user.id} added admin extra titles [${all_admins.find(admin => admin.value === selected_admin).label}], new extra_titles_encoded: [${JSON.stringify(extra_titles)}] : Initial(${current_player[0].extra_titles_encoded})`);
+
                 await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extra_titles), selected_admin]);
             }
         } break;
@@ -857,6 +874,9 @@ async function manageUpdateAmin(interaction, client, game_server) {
                 const selected_extra_ranks = await client.sendInteractionSelectMenu(interaction, 'select-extra-ranks', 'Select Extra Titles', assignedOptions, 'Select extra titles to remove:', true);
                 if (selected_extra_ranks && selected_extra_ranks.length) {
                     extra_titles = extra_titles.filter(title => !selected_extra_ranks.includes(title));
+
+                    global.createLog(`${interaction.user.id} removed admin extra titles [${all_admins.find(admin => admin.value === selected_admin).label}], new extra_titles_encoded: [${JSON.stringify(extra_titles)}] : Initial(${current_player[0].extra_titles_encoded})`);
+
                     await global.mysqlRequest(game_server.game_connection, "UPDATE admins SET extra_titles_encoded = ? WHERE player_id = ?", [JSON.stringify(extra_titles), selected_admin]);
                 }
             }
@@ -881,6 +901,8 @@ async function manageAddRank(interaction, client, game_server) {
     const text_rights = await client.collectUserInput(interaction);
     if (!text_rights) return;
 
+    global.createLog(`${interaction.user.id} created admin rank [${rank_name}], new text_rights: [${text_rights}]`);
+
     await global.mysqlRequest(game_server.game_connection, "INSERT INTO admin_ranks (rank_name, text_rights) VALUES (?, ?)", [rank_name, text_rights]);
     await client.ephemeralEmbed({ title: 'Request', desc: `Rank ${rank_name} added successfully!`, color: '#669917' }, interaction);
 };
@@ -891,6 +913,8 @@ async function manageRemoveRank(interaction, client, game_server) {
 
     const selected_rank = await client.sendInteractionSelectMenu(interaction, 'select-rank', 'Select Rank', all_ranks, 'Select the rank to remove:');
     if (!selected_rank) return;
+
+    global.createLog(`${interaction.user.id} removed admin rank [${ranks.find(rank => rank.value === selected_rank).label}]`);
 
     await global.mysqlRequest(game_server.game_connection, "DELETE FROM admin_ranks WHERE id = ?", [selected_rank]);
     const adminst_extra_titled = await global.mysqlRequest(game_server.game_connection, "SELECT player_id, extra_titles_encoded FROM admins WHERE extra_titles_encoded LIKE ?", [`%${selected_rank}%`]);
@@ -916,11 +940,15 @@ async function manageUpdateRank(interaction, client, game_server) {
         const new_name = await client.collectUserInput(interaction);
         if (!new_name) return;
 
+        global.createLog(`${interaction.user.id} changed admin rank [${ranks.find(rank => rank.value === selected_rank).label}], new rank_name: [${new_name}]`);
+
         await global.mysqlRequest(game_server.game_connection, "UPDATE admin_ranks SET rank_name = ? WHERE id = ?", [new_name, selected_rank]);
     }
     await interaction.followUp({ content: 'Enter the text rights for this rank', ephemeral: true });
     const new_rights = await client.collectUserInput(interaction);
     if (!new_rights) return;
+
+    global.createLog(`${interaction.user.id} changed admin rank [${ranks.find(rank => rank.value === selected_rank).label}], new text_rights: [${new_rights}]`);
 
     await global.mysqlRequest(game_server.game_connection, "UPDATE admin_ranks SET text_rights = ? WHERE id = ?", [new_rights, selected_rank]);
     await client.ephemeralEmbed({ title: 'Request', desc: 'Rank updated successfully!', color: '#669917' }, interaction);
@@ -958,6 +986,9 @@ async function manageAddWhitelist(interaction, client, game_server, acting_wls) 
     if (!selected_whitelists) return;
 
     current_whitelists = [...new Set([...current_whitelists, ...selected_whitelists])];
+
+    global.createLog(`${interaction.user.id} added whitelist [${player.ckey}], new whitelist_status: [${current_whitelists.join('|')}] : Initial(${player.whitelist_status ? player.whitelist_status.split('|') : []})`);
+
     await global.mysqlRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [current_whitelists.join('|'), selected_player]);
     await client.ephemeralEmbed({ title: 'Request', desc: 'Roles added successfully!', color: '#669917' }, interaction);
 }
@@ -994,6 +1025,9 @@ async function manageRemoveWhitelist(interaction, client, game_server, acting_wl
             current_whitelists.splice(index, 1);
         }
     });
+
+    global.createLog(`${interaction.user.id} removed whitelist [${player.ckey}], new whitelist_status: [${current_whitelists.join('|')}] : Initial(${player.whitelist_status.split('|')})`);
+
     await global.mysqlRequest(game_server.game_connection, "UPDATE players SET whitelist_status = ? WHERE id = ?", [current_whitelists.join('|'), selected_player]);
     await client.ephemeralEmbed({ title: 'Request', desc: 'Roles removed successfully!', color: '#669917' }, interaction);
 }

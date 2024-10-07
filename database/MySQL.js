@@ -40,7 +40,18 @@ module.exports = async (load_complex_things) => {
         global.database = await global.mysqlCreate(process.env.DB_CONNECTION_STRING_BOT);
     }
 
+    if (!global.database) {
+        console.log(`Database >> MySQL >> Connecting ...`);
+        global.database = await global.mysqlCreate(process.env.DB_CONNECTION_STRING_BOT);
+    }
+
     if (load_complex_things) require('./_entities_framework/index.js')();
+
+    global.createLog = async function (log) {
+        const log = new global.entity_construct['Log'](global.database, null, global.entity_meta['Log']);
+        log.data.info = log;
+        log.save();
+    };
 };
 
 

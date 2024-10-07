@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS `guild_settings` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `guild_id` (`guild`),
   CONSTRAINT `FK_guilds_settings` FOREIGN KEY (`guild`) REFERENCES `guilds` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Дамп данных таблицы discord_bot.guild_settings: ~5 rows (приблизительно)
+-- Дамп данных таблицы discord_bot.guild_settings: ~6 rows (приблизительно)
 INSERT INTO `guild_settings` (`id`, `guild`, `name`, `setting`) VALUES
 	(1, 1, 'tgs_address', 'http://localhost:5000'),
 	(2, 1, 'verified_role', '1252317492609810595'),
@@ -118,6 +118,20 @@ CREATE TABLE IF NOT EXISTS `settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Дамп данных таблицы discord_bot.settings: ~0 rows (приблизительно)
+
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
+-- Дамп структуры для таблица discord_bot.logs
+CREATE TABLE IF NOT EXISTS `logs` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `info` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `log_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

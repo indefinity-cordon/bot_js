@@ -81,36 +81,36 @@ module.exports = async (client) => {
         await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const response = await axios.put(`${tgs_address}/api/DreamDaemon`, null, { headers });
-        if(!interaction) return;
-        await client.ephemeralEmbed({
-            title: 'Action',
-            desc: `${response.data}`,
-            color: '#c70058'
-        }, interaction);
+
+        if(!interaction) return global.createLog('Server used command [TGS Start]');
+
+        global.createLog(`${interaction.user.id} used command [TGS Start]`);
+
+        await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
     };
 
     client.tgs_stop = async function (tgs_address, instanceId, interaction) {
         await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const response = await axios.delete(`${tgs_address}/api/DreamDaemon`, { headers });
-        if(!interaction) return;
-        await client.ephemeralEmbed({
-            title: 'Action',
-            desc: `${response.data}`,
-            color: '#c70058'
-        }, interaction);
+
+        if(!interaction) return global.createLog('Server used command [TGS Stop]');
+
+        global.createLog(`${interaction.user.id} used command [TGS Stop]`);
+
+        await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
     };
 
     client.tgs_deploy = async function (tgs_address, instanceId, interaction) {
         await client.tgs_checkAuth(tgs_address);
         const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
         const response = await axios.put(`${tgs_address}/api/DreamMaker`, null, { headers });
-        if(!interaction) return;
-        await client.ephemeralEmbed({
-            title: 'Action',
-            desc: `${response.data}`,
-            color: '#c70058'
-        }, interaction);
+
+        if(!interaction) return global.createLog('Server used command [TGS Deploy]');
+
+        global.createLog(`${interaction.user.id} used command [TGS Deploy]`);
+
+        await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
     };
 
     client.handling_tgs_actions = {
