@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { EmbedBuilder, codeBlock } = require('discord.js');
 
 module.exports = class LogsHandlerclass {
     /**
@@ -46,16 +46,16 @@ module.exports = class LogsHandlerclass {
             }
         };
         this.build_error_embed = async function (error, title, name) {
-            const embed = new Discord.EmbedBuilder()
+            const embed = new EmbedBuilder()
             .setTitle(title)
             .addFields([
                 {
                     name: name,
-                    value: error ? Discord.codeBlock(error) : `No ${name}`,
+                    value: error ? codeBlock(error) : `No ${name}`,
                 },
                 {
                     name: `Stack ${name}`,
-                    value: error.stack ? Discord.codeBlock(error.stack) : `No stack ${name}`,
+                    value: error.stack ? codeBlock(error.stack) : `No stack ${name}`,
                 },
             ]);
             return embed;
@@ -81,7 +81,7 @@ module.exports = class LogsHandlerclass {
             });
         };
         this.sendSimplyLog = async function (title, desc, fields) {
-            const embed = new Discord.EmbedBuilder()
+            const embed = new EmbedBuilder()
             if (title) embed.setTitle(title);
             if (desc) embed.setDescription(desc);
             if (fields) embed.addFields(fields);

@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { ActivityType } = require('discord.js');
 
 module.exports = async (client) => {
     console.log('\u001b[0m');
@@ -13,7 +13,7 @@ async function updateStatus(client) {
     client.user.setPresence({
         activities: [{
             name: 'Simulator of Life',
-            type: Discord.ActivityType.Playing,
+            type: ActivityType.Playing,
             state: `Building Better Worlds for ${Math.round(current_date.getTime() / 1000 / 60 / 60)} hour(s)`,
 //            url: 'https://colonialmarines.ru/wiki/Заглавная_страница'
         }],

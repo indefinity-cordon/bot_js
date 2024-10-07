@@ -1,10 +1,10 @@
-const Discord = require('discord.js');
+const { Events } = require('discord.js');
 
 let subscriber;
 let collectors = [];
 
 module.exports = async (client) => {
-    client.on(Discord.Events.ClientReady, async () => {
+    client.on(Events.ClientReady, async () => {
         startListining(client);
         setInterval(
             startListining,

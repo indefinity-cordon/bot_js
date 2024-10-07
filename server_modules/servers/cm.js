@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 module.exports = async (client, game_server) => {
     var failed_times = 0;
@@ -27,7 +27,7 @@ module.exports = async (client, game_server) => {
             if (data.round_end_state) fields.push({ name: '**Rouned End State**', value: `${data.round_end_state} `, inline: true});
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
+                    embeds: [new EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
                     content: `${game_server.data.server_name} Status`,
                     components: [],
                     type: 'edit'
@@ -40,7 +40,7 @@ module.exports = async (client, game_server) => {
             } else failed_times++;
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
+                    embeds: [new EmbedBuilder().setTitle(' ').setDescription('# SERVER OFFLINE').setColor('#a00f0f').setTimestamp()],
                     content: `${game_server.data.server_name} Status`,
                     components: [],
                     type: 'edit'
@@ -58,7 +58,7 @@ module.exports = async (client, game_server) => {
 
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(server_schedule_data).setColor('#669917').setTimestamp()],
+                    embeds: [new EmbedBuilder().setTitle(' ').setDescription(server_schedule_data).setColor('#669917').setTimestamp()],
                     content: `${game_server.data.server_name} start schedule`,
                     components: [],
                     type: 'edit'
@@ -67,7 +67,7 @@ module.exports = async (client, game_server) => {
         } catch (error) {
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
-                    embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription('something went wrong').setColor('#a00f0f').setTimestamp()],
+                    embeds: [new EmbedBuilder().setTitle(' ').setDescription('something went wrong').setColor('#a00f0f').setTimestamp()],
                     content: `${game_server.data.server_name} start schedule`,
                     components: [],
                     type: 'edit'
@@ -115,7 +115,7 @@ module.exports = async (client, game_server) => {
                     description = '';
                 }
                 if (fields.length == 25) {
-                    embeds.push(new Discord.EmbedBuilder().setTitle(' ').setDescription(embed_description).addFields(fields).setColor('#669917'));
+                    embeds.push(new EmbedBuilder().setTitle(' ').setDescription(embed_description).addFields(fields).setColor('#669917'));
                     embed_description = null;
                     fields = [];
                 }
@@ -126,7 +126,7 @@ module.exports = async (client, game_server) => {
                 embed_description = description;
             }
             if (fields.length || embed_description) {
-                embeds.push(new Discord.EmbedBuilder().setTitle(' ').setDescription(embed_description ? embed_description : ' ').addFields(fields.length ? fields : { name: ' ', value: ' '}).setColor('#669917'));
+                embeds.push(new EmbedBuilder().setTitle(' ').setDescription(embed_description ? embed_description : ' ').addFields(fields.length ? fields : { name: ' ', value: ' '}).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
@@ -159,7 +159,7 @@ module.exports = async (client, game_server) => {
                 description += `**${db_rank.rank_name}**\n`;
                 description += `${rank_fields.join(' & ')}\n\n`;
             }
-            embeds.push(new Discord.EmbedBuilder().setTitle(' ').setDescription(description).setColor('#669917'));
+            embeds.push(new EmbedBuilder().setTitle(' ').setDescription(description).setColor('#669917'));
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
                     embeds: embeds,
@@ -212,7 +212,7 @@ module.exports = async (client, game_server) => {
                     if (!players.length) continue;
                     fields.push({ name: `**${replacements[type][status]}**`, value: players.join(', '), inline: true});
                 }
-                if (fields.length) embeds.push(new Discord.EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917'));
+                if (fields.length) embeds.push(new EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917'));
             }
             for (const message of game_server.updater_messages[type]) {
                 await client.sendEmbed({
@@ -497,13 +497,13 @@ module.exports = async (client, game_server) => {
             }
 
         const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel);
+        await client.sendEmbed({embeds: [new EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel);
         }
     };
 
     async function handlePredator(channel) {
         const role = channel.guild.roles.cache.find(role => role.name === 'Predator gamer');
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle('PREDATOR ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel);
+        await client.sendEmbed({embeds: [new EmbedBuilder().setTitle('PREDATOR ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel);
     };
 
     async function handleAhelp(channel, data) {
@@ -594,11 +594,11 @@ module.exports = async (client, game_server) => {
     };
 
     async function handleLogin(channel, data) {
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Admin Login: ${data.key}`).setColor('#2ecc71')]}, channel);
+        await client.sendEmbed({embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Admin Login: ${data.key}`).setColor('#2ecc71')]}, channel);
     };
 
     async function handleLogout(channel, data) {
-        await client.sendEmbed({embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Admin Logout: ${data.key}`).setColor('#e74c3c')]}, channel);
+        await client.sendEmbed({embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Admin Logout: ${data.key}`).setColor('#e74c3c')]}, channel);
     };
 
     async function fetchPlayerById(playerId, database) {
@@ -618,7 +618,7 @@ module.exports = async (client, game_server) => {
             .replace(/https?:\/\/\S+/g, ' ')
             .replace(/@everyone/g, ' ')
             .replace(/@here/g, ' ');
-        const embed = new Discord.EmbedBuilder()
+        const embed = new EmbedBuilder()
             .setTitle(' ')
             .setDescription(`OOC: ${data.author}: ${messageContent}`)
             .setColor('#7289da');
@@ -636,7 +636,7 @@ module.exports = async (client, game_server) => {
             .replace(/https?:\/\/\S+/g, ' ')
             .replace(/@everyone/g, ' ')
             .replace(/@here/g, ' ');
-        const embed = new Discord.EmbedBuilder()
+        const embed = new EmbedBuilder()
             .setTitle(' ')
             .setDescription(`Asay: ${data.author}: ${messageContent} (${data.rank})`)
             .setColor('#7289da');
@@ -691,13 +691,13 @@ module.exports = async (client, game_server) => {
                 const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
                 const now_date = new Date();
                 const start_time = new Date(Date.UTC(now_date.getUTCFullYear(), now_date.getUTCMonth(), now_date.getUTCDate(), now_date.getUTCHours(), now_date.getUTCMinutes(), 0));
-                await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 180)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
+                await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Запуск!\nРаунд начнётся в <t:${Math.floor(start_time.getTime() / 1000 + 180)}:t>`).setColor('#669917')], content: `<@&${role.id}>`}, channel);
             }
         } else {
             const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
             const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
-                await client.sendEmbed({ embeds: [new Discord.EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
+                await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
             }
         }
         return true;

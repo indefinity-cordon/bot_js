@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 /** 
  * @param {String} text
@@ -7,7 +7,7 @@ const Discord = require('discord.js');
 
 module.exports = (client) => {
     client.templateEmbed = function () {
-        return new Discord.EmbedBuilder()
+        return new EmbedBuilder()
             .setColor('#42ab3e')
             .setTimestamp();
     }
@@ -77,7 +77,7 @@ module.exports = (client) => {
         components: components,
         type: type
     }, interaction) {
-        let embed = new Discord.EmbedBuilder()
+        let embed = new EmbedBuilder()
             .setColor('#42ab3e');
 
         if (title) embed.setTitle(title);

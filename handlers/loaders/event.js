@@ -1,5 +1,6 @@
+const { Events } = require('discord.js');
 const fs = require('fs');
-const Discord = require('discord.js');
+
 
 module.exports = (client) => {
 
@@ -15,10 +16,10 @@ module.exports = (client) => {
         const event = require(`${process.cwd()}/events/${file}`);
         const eventName = file.split('.')[0];
         const eventUpperCase = eventName.charAt(0).toUpperCase() + eventName.slice(1);
-        if (Discord.Events[eventUpperCase] === undefined){
+        if (Events[eventUpperCase] === undefined){
             client.on(eventName, event.bind(null, client)).setMaxListeners(0);
         }else {
-        client.on(Discord.Events[eventUpperCase], event.bind(null, client)).setMaxListeners(0);
+        client.on(Events[eventUpperCase], event.bind(null, client)).setMaxListeners(0);
         }
     };
 }

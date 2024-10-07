@@ -1,5 +1,4 @@
-const Discord = require('discord.js');
-const { ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { PermissionsBitField, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = async (client) => {
     //----------------------------------------------------------------//
@@ -7,7 +6,7 @@ module.exports = async (client) => {
     //----------------------------------------------------------------//
     // All bitfields to name
     client.bitfieldToName = function (bitfield) {
-        const permissions = new Discord.PermissionsBitField(bitfield);
+        const permissions = new PermissionsBitField(bitfield);
         return permissions.toArray();
     };
 
