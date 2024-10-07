@@ -54,6 +54,12 @@ if (process.env.GITHUB_PAT) {
     require('./~GitHub.js')();
 }
 
+
+/*
+ * >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SAFE BOT PART <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+*/
+
+
 global.restartApp = async function (reason) {
     console.log('System >> App ... Restarting process ...');
     await global._LogsHandler.sendSimplyLog('System', null, [{ name: 'Restart', value: reason ? `Reason: ${reason}` : 'Unspecified' }]);
@@ -76,15 +82,6 @@ async function initializeBot() {
     });
 
     await client.login(process.env.DISCORD_TOKEN);
-
-
-    await global.mysqlRequest(global.database, 'CREATE TABLE IF NOT EXISTS \`logs\` (\
-    \`id\` bigint NOT NULL AUTO_INCREMENT,\
-    \`info\` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\
-    \`log_time\` DATETIME DEFAULT CURRENT_TIMESTAMP,\
-    PRIMARY KEY (\`id\`) USING BTREE\
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;');
-
 
     global.guilds_link = {};
     global.servers_link = {};
