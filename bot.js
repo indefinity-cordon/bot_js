@@ -15,75 +15,6 @@ const client = new Client({
 });
 
 client.commands = new Collection();
-
-
-//For sedalya puka
-const links = [
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
-    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
-    'https://tenor.com/view/stupidity-look-serius-gif-26117549',
-    'https://tenor.com/view/sus-scout-lachen-tf2-gif-17981608274864336621',
-    'https://tenor.com/view/mortal-kombat-skull-emoji-gif-25107751',
-    'https://tenor.com/view/rat-rodent-vermintide-vermintide2-skaven-gif-20147931',
-    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
-    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794',
-    'https://tenor.com/view/blocked-message-gif-24291794'
-];
-
-function getRandomLink() {
-    const index = Math.floor(Math.random() * links.length);
-    return links[index];
-}
-
-client.on('messageCreate', async (message) => {
-    if (message.author.bot || message.channel.guild.id !== '614611020039585792') return;
-
-    if (message.author.id == '155734640705929216') {
-        message.channel.send(getRandomLink());
-    }
-});
-
-async function sendGhostSlap(channel) {
-    const message = await channel.send('<@155734640705929216>');
-    setTimeout(() => message.delete(), 2000);
-}
-
-function getRandomTextChannel(guild) {
-    const text_channels = guild.channels.cache.filter(channel => channel.isTextBased());
-    if (!text_channels.size) return null;
-    const index = Math.floor(Math.random() * text_channels.size);
-    return [...text_channels.values()][index];
-}
-
-async function checkAndSendSlap() {
-    const guild = client.guilds.cache.get('614611020039585792');
-    if (!guild) return;
-
-    const channel = getRandomTextChannel(guild);
-    if (!channel) return;
-
-    const member = await guild.members.fetch('155734640705929216');
-    if (member.presence && member.presence.status !== 'offline') return;
-
-    const randomTime = Math.floor(Math.random() * (10 * 600000 - 10 * 60000)) + 10 * 60000;
-    setTimeout(() => {
-        sendGhostSlap(channel);
-    }, randomTime);
-}
-
-setInterval(checkAndSendSlap, 6000);//60 * 60000);
-//End of funny
-
-
 global.discord_client = client
 
 //LOGS
@@ -162,3 +93,70 @@ async function initializeBot() {
 }
 
 initializeBot();
+
+
+//For sedalya puka
+const links = [
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
+    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
+    'https://tenor.com/view/stupidity-look-serius-gif-26117549',
+    'https://tenor.com/view/sus-scout-lachen-tf2-gif-17981608274864336621',
+    'https://tenor.com/view/mortal-kombat-skull-emoji-gif-25107751',
+    'https://tenor.com/view/rat-rodent-vermintide-vermintide2-skaven-gif-20147931',
+    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
+    'https://tenor.com/view/talk-lizard-ironic-gif-25847938',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794',
+    'https://tenor.com/view/blocked-message-gif-24291794'
+];
+
+function getRandomLink() {
+    const index = Math.floor(Math.random() * links.length);
+    return links[index];
+}
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot || message.channel.guild.id !== '614611020039585792') return;
+
+    if (message.author.id == '155734640705929216') {
+        message.channel.send(getRandomLink());
+    }
+});
+
+async function sendGhostSlap(channel) {
+    const message = await channel.send('<@155734640705929216>');
+    setTimeout(() => message.delete(), 2000);
+}
+
+function getRandomTextChannel(guild) {
+    const text_channels = guild.channels.cache.filter(channel => channel.isTextBased());
+    if (!text_channels.size) return null;
+    const index = Math.floor(Math.random() * text_channels.size);
+    return [...text_channels.values()][index];
+}
+
+async function checkAndSendSlap() {
+    const guild = client.guilds.cache.get('614611020039585792');
+    if (!guild) return;
+
+    const channel = getRandomTextChannel(guild);
+    if (!channel) return;
+
+    const member = await guild.members.fetch('155734640705929216');
+    if (member.presence && member.presence.status !== 'offline') return;
+
+    const randomTime = Math.floor(Math.random() * (10 * 600000 - 10 * 60000)) + 10 * 60000;
+    setTimeout(() => {
+        sendGhostSlap(channel);
+    }, randomTime);
+}
+
+setInterval(checkAndSendSlap, 6000);//60 * 60000);
+//End of funny
