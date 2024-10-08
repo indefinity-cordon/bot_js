@@ -491,7 +491,6 @@ module.exports = async (client, game_server) => {
 	};
 
 	async function handleRoundStart(channel) {
-		if (await game_server.handle_status(1)) return;
 		if (game_server.settings_data.player_low_autoshutdown && game_server.settings_data.server_status.data.setting) {
 			const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status_authed', auth: 'bsojgsd90423pfdsuigohdhs901248gdfgj89yasanhb8cx76cvccxc5', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
 			if (server_response && isJsonString(server_response)) {
@@ -499,11 +498,12 @@ module.exports = async (client, game_server) => {
 				const data = response.data;
 				if (data && data.players < game_server.settings_data.player_low_autoshutdown.data.setting) {
 					game_server.handle_status(0);
-					const instance = await client.tgs_getInstance(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
-					if (instance) client.tgs_stop(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
+					client.tgs_stop(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
 					return;
 				}
 			}
+
+		if (await game_server.handle_status(1)) return;
 
 		const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
 		await client.sendEmbed({embeds: [new EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel);
@@ -762,7 +762,7 @@ async function updateServerCustomOperators(client, game_server) {
 			if (start_date_utc > now_utc) {
 				const time_remaining = start_date_utc - now_utc;
 				game_server.update_custom_operators_data['intervals']['autostart'] = setTimeout(async () => {
-					await autoStartServer(client, game_server);
+					client.tgs_start(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id)
 				}, time_remaining);
 			}
 		}
@@ -774,19 +774,11 @@ async function updateServerCustomOperators(client, game_server) {
 			if (start_date_utc > now_utc) {
 				const time_remaining = start_date_utc - now_utc;
 				game_server.update_custom_operators_data['intervals']['autostart'] = setTimeout(async () => {
-					await autoStartServer(client, game_server);
+					client.tgs_start(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id)
 				}, time_remaining);
 			}
 		}
 	}
-};
-
-
-async function autoStartServer(client, game_server) {
-	if(game_server.settings_data.server_status.data.setting) return;
-	const instance = await client.tgs_getInstance(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id);
-	if(!instance) return;
-	client.tgs_start(game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id)
 };
 
 
