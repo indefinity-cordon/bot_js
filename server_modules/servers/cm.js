@@ -15,25 +15,23 @@ module.exports = async (client, game_server) => {
 			for (const [key, value] of data) {
 				data[key] = value ? value : 'Loading...'
 			}
-
-			const { round_duration, round_name, round_id, map_name, next_map_name, ship_map_name, next_ship_map_name, players, mode, round_end_state } = data
-
+	
 			failed_times = 0;
-			const time = Math.floor(round_duration / 600);
+			const time = Math.floor(data.round_duration / 600);
 			let fields = [];
-			fields.push({ name: '**Round Name**', value: `${round_name} `, inline: true});
-			fields.push({ name: '**Round ID**', value: `${round_id} `, inline: true});
-			fields.push({ name: '**Map**', value: `${map_name} `, inline: true});
-			if (next_map_name)
-				fields.push({ name: '**Next Map**', value: `${next_map_name} `, inline: true});
-			fields.push({ name: '**Ship Map**', value: `${ship_map_name} `, inline: true});
-			if (next_ship_map_name)
-				fields.push({ name: '***Next Ship Map**', value: `${next_ship_map_name} `, inline: true});
-			fields.push({ name: '**Total Players**', value: `${players} `, inline: true});
-			fields.push({ name: '**Gamemode**', value: `${mode}`, inline: true});
+			fields.push({ name: '**Round Name**', value: `${data.round_name} `, inline: true});
+			fields.push({ name: '**Round ID**', value: `${data.round_id} `, inline: true});
+			fields.push({ name: '**Map**', value: `${data.map_name} `, inline: true});
+			if (data.next_map_name)
+				fields.push({ name: '**Next Map**', value: `${data.next_map_name} `, inline: true});
+			fields.push({ name: '**Ship Map**', value: `${data.ship_map_name} `, inline: true});
+			if (data.next_ship_map_name)
+				fields.push({ name: '***Next Ship Map**', value: `${data.next_ship_map_name} `, inline: true});
+			fields.push({ name: '**Total Players**', value: `${data.players} `, inline: true});
+			fields.push({ name: '**Gamemode**', value: `${data.mode}`, inline: true});
 			fields.push({ name: '**Round Time**', value: `${Math.floor(time / 60)}:` + `${time % 60}`.padStart(2, '0'), inline: true});
-			if (round_end_state)
-				fields.push({ name: '**Rouned End State**', value: `${round_end_state} `, inline: true});
+			if (data.round_end_state)
+				fields.push({ name: '**Rouned End State**', value: `${data.round_end_state} `, inline: true});
 			for (const message of game_server.updater_messages[type]) {
 				await client.sendEmbed({
 					embeds: [new EmbedBuilder().setTitle(' ').addFields(fields).setColor('#669917').setTimestamp()],
