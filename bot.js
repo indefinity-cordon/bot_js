@@ -129,7 +129,7 @@ client.on('messageCreate', async (message) => {
 
 async function sendGhostSlap(channel) {
     const message = await channel.send('<@155734640705929216>');
-    setTimeout(() => message.delete(), 2000);
+    setTimeout(() => message.delete(), 30 * 60000);
 }
 
 function getRandomTextChannel(guild) {
