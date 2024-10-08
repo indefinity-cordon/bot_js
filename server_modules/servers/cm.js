@@ -693,9 +693,9 @@ module.exports = async (client, game_server) => {
     game_server.handle_status = async function (new_status) {
         if (game_server.settings_data.server_status.data.setting == new_status) return false;
         game_server.settings_data.server_status.data.setting = new_status;
+        const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
+        const channel = await client.channels.fetch(status[0].channel_id);
         if (game_server.settings_data.server_status.data.setting) {
-            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
-            const channel = await client.channels.fetch(status[0].channel_id);
             if (channel) {
                 const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
                 const now_date = new Date();
@@ -710,12 +710,8 @@ module.exports = async (client, game_server) => {
                 }
             }
             setTimeout(clear_delay, 20 * 60000);
-        } else {
-            const status = await global.mysqlRequest(global.database, "SELECT channel_id, message_id FROM server_channels WHERE server = ? AND type = 'round'", [game_server.id]);
-            const channel = await client.channels.fetch(status[0].channel_id);
-            if (channel) {
-                await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
-            }
+        } else if (channel) {
+            await client.sendEmbed({ embeds: [new EmbedBuilder().setTitle(' ').setDescription(`Сервер выключен!\nИнформацию по следующему запуску смотрите в расписание`).setColor('#669917')], content: ` `}, channel);
         }
         return true;
     };
