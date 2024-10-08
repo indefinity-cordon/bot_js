@@ -119,20 +119,17 @@ function getRandomLink() {
 	return links[index];
 }
 
-var overhelming_spam = []
-
-setInterval(() => delete overhelming_spam['capping'], 2000);
+global.locked_response_fun = false
 
 client.on('messageCreate', async (message) => {
 	if (message.author.bot || message.channel.guild.id !== '614611020039585792') return;
 
-	if (message.author.id == '155734640705929216') {
-		if (overhelming_spam['capping'] > 2) {
-			message.delete()
-		} else {
-			overhelming_spam['capping']++
-			message.channel.send(getRandomLink());
-		}
+	if (message.author.id == '155734640705929216' && !locked_response) {
+		global.locked_response_fun = true
+		setTimeout(() => {
+			global.locked_response_fun = false;
+		}, 2000);
+		message.channel.send(getRandomLink());
 	}
 });
 
