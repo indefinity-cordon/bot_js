@@ -1,57 +1,57 @@
 const Entity = require('./../entity');
 
 class Settings extends Entity {
-    constructor(db, id, meta) {
-        super(db, id, meta);
-    }
+	constructor(db, id, meta) {
+		super(db, id, meta);
+	}
 
-    async map(row) {
-        await super.map(row);
+	async map(row) {
+		await super.map(row);
 
-        if (row['setting'] && isJsonString(this.data.setting)) {
-            this.data.param = JSON.parse(this.data.setting);
-        }
-    }
+		if (row['setting'] && isJsonString(this.data.setting)) {
+			this.data.param = JSON.parse(this.data.setting);
+		}
+	}
 
-    async unmap() {
-        const row = await super.unmap();
+	async unmap() {
+		const row = await super.unmap();
 
-        if (isJsonStringifable(this.data.param)) {
-            row.setting = JSON.stringify(this.data.param);
-        }
-        return row;
-    }
+		if (isJsonStringifable(this.data.param)) {
+			row.setting = JSON.stringify(this.data.param);
+		}
+		return row;
+	}
 }
 
 module.exports = async () => {
-    global.entity_construct['Settings'] = Settings;
-    global.entity_meta['Settings'] = SettingsMeta;
+	global.entity_construct['Settings'] = Settings;
+	global.entity_meta['Settings'] = SettingsMeta;
 };
 
 const SettingsMeta = {
-    table: 'settings',
-    class: Settings,
-    columns: {
-        id: 'bigint',
-        name: 'varchar',
-        setting: 'varchar',
-    }
+	table: 'settings',
+	class: Settings,
+	columns: {
+		id: 'bigint',
+		name: 'varchar',
+		setting: 'varchar',
+	}
 };
 
 function isJsonString(str) {
-    try {
-        JSON.parse(str);
-        return true;
-    } catch (e) {
-        return false;
-    }
+	try {
+		JSON.parse(str);
+		return true;
+	} catch (e) {
+		return false;
+	}
 }
 
 function isJsonStringifable(obj) {
-    try {
-        JSON.stringify(obj);
-        return true;
-    } catch (e) {
-        return false;
-    }
+	try {
+		JSON.stringify(obj);
+		return true;
+	} catch (e) {
+		return false;
+	}
 }

@@ -1,58 +1,58 @@
 const Entity = require('./../entity');
 
 class ServerSettings extends Entity {
-    constructor(db, id, meta) {
-        super(db, id, meta);
-    }
+	constructor(db, id, meta) {
+		super(db, id, meta);
+	}
 
-    async map(row) {
-        await super.map(row);
+	async map(row) {
+		await super.map(row);
 
-        if (row['setting'] && isJsonString(this.data.setting)) {
-            this.param = JSON.parse(this.data.setting);
-        }
-    }
+		if (row['setting'] && isJsonString(this.data.setting)) {
+			this.param = JSON.parse(this.data.setting);
+		}
+	}
 
-    async unmap() {
-        const row = await super.unmap();
+	async unmap() {
+		const row = await super.unmap();
 
-        if (this.data['param'] && isJsonStringifable(this.data.param)) {
-            row.setting = JSON.stringify(this.data.param);
-        }
-        return row;
-    }
+		if (this.data['param'] && isJsonStringifable(this.data.param)) {
+			row.setting = JSON.stringify(this.data.param);
+		}
+		return row;
+	}
 }
 
 module.exports = async () => {
-    global.entity_construct['ServerSettings'] = ServerSettings;
-    global.entity_meta['ServerSettings'] = ServerSettingsMeta;
+	global.entity_construct['ServerSettings'] = ServerSettings;
+	global.entity_meta['ServerSettings'] = ServerSettingsMeta;
 };
 
 const ServerSettingsMeta = {
-    table: 'server_settings',
-    class: ServerSettings,
-    columns: {
-        id: 'bigint',
-        server: 'bigint',
-        name: 'varchar',
-        setting: 'varchar',
-    }
+	table: 'server_settings',
+	class: ServerSettings,
+	columns: {
+		id: 'bigint',
+		server: 'bigint',
+		name: 'varchar',
+		setting: 'varchar',
+	}
 };
 
 function isJsonString(str) {
-    try {
-        JSON.parse(str);
-        return true;
-    } catch (e) {
-        return false;
-    }
+	try {
+		JSON.parse(str);
+		return true;
+	} catch (e) {
+		return false;
+	}
 }
 
 function isJsonStringifable(obj) {
-    try {
-        JSON.stringify(obj);
-        return true;
-    } catch (e) {
-        return false;
-    }
+	try {
+		JSON.stringify(obj);
+		return true;
+	} catch (e) {
+		return false;
+	}
 }
