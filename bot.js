@@ -128,7 +128,7 @@ client.on('messageCreate', async (message) => {
 		global.locked_response_fun = true;
 		setTimeout(() => {
 			global.locked_response_fun = false;
-		}, 10000);
+		}, 5 * 60000);
 		message.channel.send(getRandomLink());
 	}
 });
