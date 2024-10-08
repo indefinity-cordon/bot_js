@@ -124,8 +124,8 @@ global.locked_response_fun = false
 client.on('messageCreate', async (message) => {
 	if (message.author.bot || message.channel.guild.id !== '614611020039585792') return;
 
-	if (message.author.id == '155734640705929216' && !locked_response) {
-		global.locked_response_fun = true
+	if (message.author.id == '155734640705929216' && !locked_response_fun) {
+		global.locked_response_fun = true;
 		setTimeout(() => {
 			global.locked_response_fun = false;
 		}, 10000);
