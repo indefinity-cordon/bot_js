@@ -121,7 +121,7 @@ function getRandomLink() {
 
 var overhelming_spam = []
 
-setInterval(() => overhelming_spam = [], 2000);
+setInterval(() => delete overhelming_spam['capping'], 2000);
 
 client.on('messageCreate', async (message) => {
 	if (message.author.bot || message.channel.guild.id !== '614611020039585792') return;
