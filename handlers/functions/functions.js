@@ -114,12 +114,8 @@ module.exports = async (client) => {
                 }
             });
             collector.on('end', async collected => {
-                if (collected.size === 0) {
-                    await client.ephemeralEmbed({
-                        title: 'Request',
-                        desc: 'Time ran out! Please try again.',
-                        color: '#c70058'
-                    }, interaction);
+                if (!collected.size) {
+                    await client.ephemeralEmbed({ title: 'Request', desc: 'Time ran out! Please try again.', color: '#c70058' }, interaction);
                     await interaction.editReply({ components: [] });
                 }
                 resolve();
@@ -187,12 +183,8 @@ module.exports = async (client) => {
                 }
             });
             collector.on('end', async collected => {
-                if (collected.size === 0) {
-                    await client.ephemeralEmbed({
-                        title: 'Request',
-                        desc: 'Time ran out! Please try again.',
-                        color: '#c70058'
-                    }, interaction);
+                if (!collected.size) {
+                    await client.ephemeralEmbed({ title: 'Request', desc: 'Time ran out! Please try again.', color: '#c70058' }, interaction);
                     await interaction.editReply({ components: [] });
                 }
                 resolve();
@@ -203,12 +195,12 @@ module.exports = async (client) => {
     client.collectUserInput = async function (interaction) {
         const filter = collected => collected.author.id === interaction.user.id;
         const collected = await interaction.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
-    
-        if (collected.size === 0) {
+
+        if (!collected.size) {
             await interaction.followUp({ content: 'Time ran out! Please try again.', components: [], ephemeral: true });
             return null;
         }
-    
+
         return collected.first().content;
     }
 }

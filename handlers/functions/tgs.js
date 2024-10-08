@@ -9,8 +9,6 @@ const defaultHeaders = {
     Api: 'Tgstation.Server.Api/10.0.0',
 };
 
-//TODO PORT mysqlSettingsRequest TO NEW SYSTEM
-
 module.exports = async (client) => {
     client.tgs_makeToken = async function (tgsLogin, tgsPass) {
         const authString = `${tgsLogin}:${tgsPass}`;
