@@ -129,7 +129,7 @@ client.on('messageCreate', async (message) => {
 
 async function sendGhostSlap(channel) {
     const message = await channel.send('<@155734640705929216>');
-    setTimeout(() => message.delete(), 30 * 60000);
+    setTimeout(() => message.delete(), 1);
 }
 
 function getRandomTextChannel(guild) {
@@ -155,5 +155,5 @@ async function checkAndSendSlap() {
     }, randomTime);
 }
 
-setInterval(checkAndSendSlap, 6000);//60 * 60000);
+setInterval(checkAndSendSlap, 30 * 60000);//60 * 60000);
 //End of funny
