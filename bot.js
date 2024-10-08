@@ -155,5 +155,5 @@ async function checkAndSendSlap() {
     }, randomTime);
 }
 
-setInterval(checkAndSendSlap, 30 * 60000);//60 * 60000);
+setInterval(checkAndSendSlap, 60 * 60000);
 //End of funny
