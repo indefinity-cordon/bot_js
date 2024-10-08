@@ -119,11 +119,20 @@ function getRandomLink() {
 	return links[index];
 }
 
+var overhelming_spam = []
+
+setInterval(() => overhelming_spam = [], 2000);
+
 client.on('messageCreate', async (message) => {
 	if (message.author.bot || message.channel.guild.id !== '614611020039585792') return;
 
 	if (message.author.id == '155734640705929216') {
-		message.channel.send(getRandomLink());
+		if (overhelming_spam['capping'] > 2) {
+			message.delete()
+		} else {
+			overhelming_spam['capping']++
+			message.channel.send(getRandomLink());
+		}
 	}
 });
 

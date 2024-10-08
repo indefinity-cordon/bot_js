@@ -11,6 +11,7 @@ module.exports = async (client, game_server) => {
 			const response = JSON.parse(server_response);
 			const data = response.data;
 			if (!data) throw 'Returned no data';
+
 			failed_times = 0;
 			const time = Math.floor(data.round_duration / 600);
 			let fields = [];
