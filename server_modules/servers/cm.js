@@ -485,6 +485,8 @@ module.exports = async (client, game_server) => {
 	};
 
 	async function handleRoundStart(channel) {
+		if (await game_server.handle_status(1)) return;
+
 		if (game_server.settings_data.player_low_autoshutdown && game_server.settings_data.server_status.data.setting) {
 			const server_response = await client.prepareByondAPIRequest({client: client, request: JSON.stringify({query: 'status_authed', auth: 'bsojgsd90423pfdsuigohdhs901248gdfgj89yasanhb8cx76cvccxc5', source: 'bot'}), port: game_server.data.port, address: game_server.data.ip});
 			if (server_response && isJsonString(server_response)) {
@@ -496,8 +498,6 @@ module.exports = async (client, game_server) => {
 					return;
 				}
 			}
-
-		if (await game_server.handle_status(1)) return;
 
 		const role = channel.guild.roles.cache.find(role => role.name === 'Round Alert');
 		await client.sendEmbed({embeds: [new EmbedBuilder().setTitle('NEW ROUND!').setDescription(' ').setColor(role.hexColor)], content: `<@&${role.id}>`}, channel);
