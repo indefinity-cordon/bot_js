@@ -4,7 +4,7 @@ require('dotenv').config('.env');
 const manager = new ShardingManager('./bot.js', {
 	token: process.env.DISCORD_TOKEN,
 	respawn: true,
-	totalShards: 1
+	totalShards: 1// Not required for now, because multi shard system handled wrong and don't need right now if we can't easy manage guilds flow, plus this bot only for small amount of guilds and for now it's fine as it, need to fix later and add system guilds cover detection to load only required data
 });
 
 
