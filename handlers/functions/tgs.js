@@ -62,19 +62,6 @@ module.exports = async (client) => {
 		return response.data;
 	};
 
-	client.tgs_gitPullRepoForInst = async function (tgs_address, instanceId, ...commitSha) {
-		await client.tgs_checkAuth(tgs_address);
-		const headers = { ...defaultHeaders, ...bearer };
-		let params = { accessUser: process.env.GITHUB_USER, accessToken: process.env.GITHUB_PAT };
-		if (commitSha.length) {
-			params = { ...params, checkoutSha: commitSha.join('') };
-		} else {
-			params = { ...params, updateFromOrigin: 'true' };
-		}
-		const response = await axios.post(`${tgs_address}/api/Repository/${instanceId}`, null, { headers, params });
-		return response.data;
-	};
-
 	client.tgs_getRepository = async function (tgs_address, instanceId) {
 		await client.tgs_checkAuth(tgs_address);
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
@@ -132,14 +119,24 @@ module.exports = async (client) => {
 
 	client.tgs_handleTestMerge = async function (tgs_address, instanceId, interaction) {
 		const repository = await client.tgs_getRepository(tgs_address, instanceId);
-		console.log('TGS >> Recieved Repository DATA:', repository);
-		const listed_prs = repository.newTestMerges || [];
+		if (!repository.origin || !repository.reference) return await client.ephemeralEmbed({ title: 'Request', desc: 'Repository or branch not found.', color: '#c70058' }, interaction);
 
-		if (!listed_prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
-	
-		const all_prs = listed_prs.map(pr => ({
+		const response = await axios.get(`https://api.github.com/repos/${repositor.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`, {
+				headers: {
+						Authorization: `token ${process.env.GITHUB_TOKEN}`
+				},
+				params: {
+						base: repository.reference,
+						state: 'open'
+				},
+		});
+
+		const prs = response.data;
+		if (!prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
+
+		const all_prs = prs.map(pr => ({
 			label: `PR #${pr.number}`,
-			description: pr.comment || `Revision: ${pr.pullRequestRevision}`,
+			description: pr.title || `No description available`,
 			value: pr.number.toString(),
 		}));
 	
@@ -147,11 +144,13 @@ module.exports = async (client) => {
 		if (!selected_prs) return;
 	
 		const new_test_merges = selected_prs.map(pr => ({
-			number: parseInt(pr),
+			number: parseInt(pr)
 		}));
 	
 		const repository_data = {
-			newTestMerges: new_test_merges,
+			updateFromOrigin: true,
+			reference: repository.reference,
+			newTestMerges: new_test_merges
 		};
 	
 		return await client.tgs_testMerge(tgs_address, instanceId, interaction, repository_data);
