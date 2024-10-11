@@ -121,28 +121,19 @@ module.exports = async (client) => {
 		const repository = await client.tgs_getRepository(tgs_address, instanceId);
 		if (!repository.origin || !repository.reference) return await client.ephemeralEmbed({ title: 'Request', desc: 'Repository or branch not found.', color: '#c70058' }, interaction);
 
-		let prs
-		try {
-			const response = await axios.get(
-				`https://api.github.com/repos/${repository.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`,
-				{
-					headers: {
-							Authorization: `token ${process.env.GITHUB_PAT}`
-					},
-					params: {
-							base: repository.reference,
-							state: 'open'
-					}
+		const response = await axios.get(
+			`https://api.github.com/repos/${repository.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`,
+			{
+				headers: {
+						Authorization: `token ${process.env.GITHUB_PAT}`
+				},
+				params: {
+						base: repository.reference,
+						state: 'open'
 				}
-			);
-
-			console.log('funny >> guy:', response)
-
-			prs = response.data;
-		} catch (error) {
-			console.log('GitHub >> [ERROR] >> Failed (tms):', error);
-		}
-
+			}
+		);
+		const prs = response.data;
 		if (!prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
 
 		const all_prs = prs.map(pr => ({
@@ -151,7 +142,7 @@ module.exports = async (client) => {
 			value: pr.number.toString(),
 		}));
 	
-		const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:');
+		const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:', true);
 		if (!selected_prs) return;
 	
 		const new_test_merges = selected_prs.map(pr => ({
