@@ -74,11 +74,16 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.put(`${tgs_address}/api/DreamDaemon`, null, { headers });
 
-		if(!interaction) return global.createLog('Server used command [TGS Start]');
+		if(!interaction) {
+			global.createLog('Server used command [TGS Start]');
+			return response.data;
+		}
 
 		global.createLog(`${interaction.user.id} used command [TGS Start]`);
 
 		await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
+
+		return response.data;
 	};
 
 	client.tgs_stop = async function (tgs_address, instanceId, interaction) {
@@ -86,11 +91,16 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.delete(`${tgs_address}/api/DreamDaemon`, { headers });
 
-		if(!interaction) return global.createLog('Server used command [TGS Stop]');
+		if(!interaction) {
+			global.createLog('Server used command [TGS Stop]');
+			return response.data;
+		}
 
 		global.createLog(`${interaction.user.id} used command [TGS Stop]`);
 
 		await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
+
+		return response.data;
 	};
 
 	client.tgs_deploy = async function (tgs_address, instanceId, interaction) {
@@ -98,11 +108,16 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.put(`${tgs_address}/api/DreamMaker`, null, { headers });
 
-		if(!interaction) return global.createLog('Server used command [TGS Deploy]');
+		if(!interaction) {
+			global.createLog('Server used command [TGS Deploy]');
+			return response.data;
+		}
 
 		global.createLog(`${interaction.user.id} used command [TGS Deploy]`);
 
 		await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
+
+		return response.data;
 	};
 
 	client.tgs_testMerge = async function (tgs_address, instanceId, interaction, repository_data) {
@@ -110,7 +125,10 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.post(`${tgs_address}/api/Repository`, repository_data, { headers });
 
-		if(!interaction) return global.createLog('Server used command [TGS Deploy]');
+		if(!interaction) {
+			global.createLog('Server used command [TGS Deploy]');
+			return response.data;
+		}
 
 		global.createLog(`${interaction.user.id} used command [TGS Deploy]`);
 
