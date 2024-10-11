@@ -13,8 +13,8 @@ module.exports = async () => {
 				`https://api.github.com/repos/${process.env.GITHUB_LINK}/commits/${process.env.GITHUB_BRANCH}`,
 				{
 					headers: {
-						Authorization: `token ${process.env.GITHUB_PAT}`,
-					},
+						Authorization: `token ${process.env.GITHUB_PAT}`
+					}
 				}
 			);
 			return response.data.sha;
