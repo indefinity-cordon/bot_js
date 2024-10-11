@@ -123,7 +123,7 @@ module.exports = async (client) => {
 
 		let prs
 		try {
-			const response = await axios.get(`https://api.github.com/repos/${repositor.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`, {
+			const response = await axios.get(`https://api.github.com/repos/${repository.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`, {
 					headers: {
 							Authorization: `token ${process.env.GITHUB_TOKEN}`
 					},
