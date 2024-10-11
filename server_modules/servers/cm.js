@@ -432,7 +432,7 @@ module.exports = async (client, game_server) => {
 	game_server.tgsActions = async function (interaction) {
 		const collected = await client.sendInteractionSelectMenu(interaction, 'select-action', 'Select action', client.handling_tgs, 'Please select action to perform:');
 		if (collected) {
-			await await client.handling_tgs_actions[collected](game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id, interaction);
+			console.log(await client.handling_tgs_actions[collected](game_server.discord_server.settings_data.tgs_address.data.setting, game_server.data.tgs_id, interaction));
 		}
 	};
 
