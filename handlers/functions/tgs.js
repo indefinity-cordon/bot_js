@@ -121,17 +121,25 @@ module.exports = async (client) => {
 		const repository = await client.tgs_getRepository(tgs_address, instanceId);
 		if (!repository.origin || !repository.reference) return await client.ephemeralEmbed({ title: 'Request', desc: 'Repository or branch not found.', color: '#c70058' }, interaction);
 
-		const response = await axios.get(`https://api.github.com/repos/${repositor.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`, {
-				headers: {
-						Authorization: `token ${process.env.GITHUB_TOKEN}`
-				},
-				params: {
-						base: repository.reference,
-						state: 'open'
-				},
-		});
+		let prs
+		try {
+			const response = await axios.get(`https://api.github.com/repos/${repositor.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`, {
+					headers: {
+							Authorization: `token ${process.env.GITHUB_TOKEN}`
+					},
+					params: {
+							base: repository.reference,
+							state: 'open'
+					},
+			});
 
-		const prs = response.data;
+			console.log('funny >> guy:', response)
+
+			prs = response.data;
+		} catch (error) {
+			console.log('GitHub >> [ERROR] >> Failed (tms):', error);
+		}
+
 		if (!prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
 
 		const all_prs = prs.map(pr => ({
