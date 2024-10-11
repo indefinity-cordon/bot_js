@@ -48,10 +48,10 @@ module.exports = async (client) => {
 		return instances;
 	};
 
-	client.tgs_getInstance = async function (tgs_address, instId) {
+	client.tgs_getInstance = async function (tgs_address, instanceId) {
 		await client.tgs_checkAuth(tgs_address);
 		const headers = { ...defaultHeaders, ...bearer };
-		const response = await axios.get(`${tgs_address}/api/Instance/${instId}`, { headers });
+		const response = await axios.get(`${tgs_address}/api/Instance/${instanceId}`, { headers });
 		return response.data;
 	};
 
@@ -62,7 +62,7 @@ module.exports = async (client) => {
 		return response.data;
 	};
 
-	client.tgs_gitPullRepoForInst = async function (tgs_address, instId, ...commitSha) {
+	client.tgs_gitPullRepoForInst = async function (tgs_address, instanceId, ...commitSha) {
 		await client.tgs_checkAuth(tgs_address);
 		const headers = { ...defaultHeaders, ...bearer };
 		let params = { accessUser: process.env.GITHUB_USER, accessToken: process.env.GITHUB_PAT };
@@ -71,7 +71,14 @@ module.exports = async (client) => {
 		} else {
 			params = { ...params, updateFromOrigin: 'true' };
 		}
-		const response = await axios.post(`${tgs_address}/api/Repository/${instId}`, null, { headers, params });
+		const response = await axios.post(`${tgs_address}/api/Repository/${instanceId}`, null, { headers, params });
+		return response.data;
+	};
+
+	client.tgs_getRepository = async function (tgs_address, instanceId) {
+		await client.tgs_checkAuth(tgs_address);
+		const headers = { ...defaultHeaders, ...bearer };
+		const response = await axios.get(`${tgs_address}/api/Repository/${instanceId}`, { headers });
 		return response.data;
 	};
 
@@ -111,15 +118,56 @@ module.exports = async (client) => {
 		await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
 	};
 
+	client.tgs_testMerge = async function (tgs_address, instanceId, interaction, repository_data) {
+		await client.tgs_checkAuth(tgs_address);
+		const headers = { ...defaultHeaders, ...bearer };
+		const response = await axios.post(`${tgs_address}/api/Repository/${instanceId}`, repository_data, { headers });
+
+		if(!interaction) return global.createLog('Server used command [TGS Deploy]');
+
+		global.createLog(`${interaction.user.id} used command [TGS Deploy]`);
+
+		return response.data;
+	};
+
+	client.tgs_handleTestMerge = async function (tgs_address, instanceId, interaction) {
+		const repository = await client.tgs_getRepository(tgs_address, instanceId);
+		console.log('TGS >> Recieved Repository DATA:', repository);
+		const listed_prs = repository.newTestMerges || [];
+
+		if (!listed_prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
+	
+		const all_prs = listed_prs.map(pr => ({
+			label: `PR #${pr.number}`,
+			description: pr.comment || `Revision: ${pr.pullRequestRevision}`,
+			value: pr.number.toString(),
+		}));
+	
+		const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:');
+		if (!selected_prs) return;
+	
+		const new_test_merges = selected_prs.map(pr => ({
+			number: parseInt(pr),
+		}));
+	
+		const repository_data = {
+			newTestMerges: new_test_merges,
+		};
+	
+		return await client.tgs_testMerge(tgs_address, instanceId, interaction, repository_data);
+	};
+
 	client.handling_tgs_actions = {
 		'stop': client.tgs_stop,
 		'start': client.tgs_start,
-		'deploy': client.tgs_deploy
+		'deploy': client.tgs_deploy,
+		'testmerge': client.tgs_handleTestMerge
 	};
 
 	client.handling_tgs = [
 		{ label: 'Stop', value: 'stop' },
 		{ label: 'Start', value: 'start' },
-		{ label: 'Deploy', value: 'deploy' }
+		{ label: 'Deploy', value: 'deploy' },
+		{ label: 'Test Merges', value: 'testmerge' }
 	];
 };
