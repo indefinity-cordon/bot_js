@@ -129,7 +129,8 @@ module.exports = async (client) => {
 				},
 				params: {
 						base: repository.reference,
-						state: 'open'
+						state: 'open',
+            per_page: 500
 				}
 			}
 		);
@@ -138,11 +139,8 @@ module.exports = async (client) => {
 
 		const all_prs = prs.map(pr => ({
 			label: `PR #${pr.number}`,
-			description: pr.title ? `${pr.title}` : `No description available`,
 			value: pr.number.toString()
 		}));
-
-    console.log('PRs:', all_prs);
 
 		const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:', true);
 		if (!selected_prs) return;
