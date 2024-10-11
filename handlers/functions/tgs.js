@@ -74,15 +74,8 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.put(`${tgs_address}/api/DreamDaemon`, null, { headers });
 
-		if(!interaction) {
-			global.createLog('Server used command [TGS Start]');
-			return response.data;
-		}
-
-		global.createLog(`${interaction.user.id} used command [TGS Start]`);
-
-		await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
-
+		if(!interaction) return response.data;
+		global.createLog('Server used command [TGS Start]');
 		return response.data;
 	};
 
@@ -91,15 +84,8 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.delete(`${tgs_address}/api/DreamDaemon`, { headers });
 
-		if(!interaction) {
-			global.createLog('Server used command [TGS Stop]');
-			return response.data;
-		}
-
-		global.createLog(`${interaction.user.id} used command [TGS Stop]`);
-
-		await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
-
+		if(interaction) return response.data;
+		global.createLog('Server used command [TGS Stop]');
 		return response.data;
 	};
 
@@ -108,15 +94,10 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.put(`${tgs_address}/api/DreamMaker`, null, { headers });
 
-		if(!interaction) {
-			global.createLog('Server used command [TGS Deploy]');
-			return response.data;
-		}
+		console.log(response)
 
-		global.createLog(`${interaction.user.id} used command [TGS Deploy]`);
-
-		await client.ephemeralEmbed({ title: 'Action', desc: `${response.data}`, color: '#c70058' }, interaction);
-
+		if(interaction) return response.data;
+		global.createLog('Server used command [TGS Deploy]');
 		return response.data;
 	};
 
@@ -125,13 +106,8 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.post(`${tgs_address}/api/Repository`, repository_data, { headers });
 
-		if(!interaction) {
-			global.createLog('Server used command [TGS Deploy]');
-			return response.data;
-		}
-
-		global.createLog(`${interaction.user.id} used command [TGS Deploy]`);
-
+		if(interaction) return response.data;
+		global.createLog('Server used command [TGS Test Merges]');
 		return response.data;
 	};
 
