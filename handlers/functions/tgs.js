@@ -118,44 +118,48 @@ module.exports = async (client) => {
 	};
 
 	client.tgs_handleTestMerge = async function (tgs_address, instanceId, interaction) {
-		const repository = await client.tgs_getRepository(tgs_address, instanceId);
-		if (!repository.origin || !repository.reference) return await client.ephemeralEmbed({ title: 'Request', desc: 'Repository or branch not found.', color: '#c70058' }, interaction);
+		try {
+			const repository = await client.tgs_getRepository(tgs_address, instanceId);
+			if (!repository.origin || !repository.reference) return await client.ephemeralEmbed({ title: 'Request', desc: 'Repository or branch not found.', color: '#c70058' }, interaction);
 
-		const response = await axios.get(
-			`https://api.github.com/repos/${repository.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`,
-			{
-				headers: {
-						Authorization: `token ${process.env.GITHUB_PAT}`
-				},
-				params: {
-						base: repository.reference,
-						state: 'open'
+			const response = await axios.get(
+				`https://api.github.com/repos/${repository.origin.replace('https://github.com/', '').replace('.git', '')}/pulls`,
+				{
+					headers: {
+							Authorization: `token ${process.env.GITHUB_PAT}`
+					},
+					params: {
+							base: repository.reference,
+							state: 'open'
+					}
 				}
-			}
-		);
-		const prs = response.data;
-		if (!prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
+			);
+			const prs = response.data;
+			if (!prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
 
-		const all_prs = prs.map(pr => ({
-			label: `PR #${pr.number}`,
-			description: pr.title || `No description available`,
-			value: pr.number.toString(),
-		}));
+			const all_prs = prs.map(pr => ({
+				label: `PR #${pr.number}`,
+				description: pr.title || `No description available`,
+				value: pr.number.toString(),
+			}));
 
-		const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:', true);
-		if (!selected_prs) return;
+			const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:', true);
+			if (!selected_prs) return;
 
-		const new_test_merges = selected_prs.map(pr => ({
-			number: parseInt(pr)
-		}));
+			const new_test_merges = selected_prs.map(pr => ({
+				number: parseInt(pr)
+			}));
 
-		const repository_data = {
-			updateFromOrigin: true,
-			reference: repository.reference,
-			newTestMerges: new_test_merges
-		};
+			const repository_data = {
+				updateFromOrigin: true,
+				reference: repository.reference,
+				newTestMerges: new_test_merges
+			};
 
-		return await client.tgs_testMerge(tgs_address, instanceId, interaction, repository_data);
+			return await client.tgs_testMerge(tgs_address, instanceId, interaction, repository_data);
+		} catch (error) {
+			console.log('TGS >> [ERROR] >> Failed:', error);
+		}
 	};
 
 	client.handling_tgs_actions = {
