@@ -8,7 +8,6 @@ const manager = new ShardingManager('./bot.js', {
 });
 
 
-
 console.clear();
 console.log('System >> Starting up ...');
 console.log('\u001b[0m');
