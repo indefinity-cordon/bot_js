@@ -107,8 +107,8 @@ module.exports = async (client) => {
 
 	client.tgs_testMerge = async function (tgs_address, instanceId, interaction, repository_data) {
 		await client.tgs_checkAuth(tgs_address);
-		const headers = { ...defaultHeaders, ...bearer };
-		const response = await axios.post(`${tgs_address}/api/Repository/${instanceId}`, repository_data, { headers });
+		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
+		const response = await axios.post(`${tgs_address}/api/Repository`, repository_data, { headers });
 
 		if(!interaction) return global.createLog('Server used command [TGS Deploy]');
 
@@ -141,20 +141,20 @@ module.exports = async (client) => {
 			description: pr.title || `No description available`,
 			value: pr.number.toString(),
 		}));
-	
+
 		const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:', true);
 		if (!selected_prs) return;
-	
+
 		const new_test_merges = selected_prs.map(pr => ({
 			number: parseInt(pr)
 		}));
-	
+
 		const repository_data = {
 			updateFromOrigin: true,
 			reference: repository.reference,
 			newTestMerges: new_test_merges
 		};
-	
+
 		return await client.tgs_testMerge(tgs_address, instanceId, interaction, repository_data);
 	};
 
