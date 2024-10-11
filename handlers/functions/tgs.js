@@ -77,8 +77,8 @@ module.exports = async (client) => {
 
 	client.tgs_getRepository = async function (tgs_address, instanceId) {
 		await client.tgs_checkAuth(tgs_address);
-		const headers = { ...defaultHeaders, ...bearer };
-		const response = await axios.get(`${tgs_address}/api/Repository/${instanceId}`, { headers });
+		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
+		const response = await axios.get(`${tgs_address}/api/Repository`, { headers });
 		return response.data;
 	};
 
