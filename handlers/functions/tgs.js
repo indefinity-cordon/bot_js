@@ -74,9 +74,9 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.put(`${tgs_address}/api/DreamDaemon`, null, { headers });
 
-		if(!interaction) return response.data;
+		if(!interaction) return response;
 		global.createLog('Server used command [TGS Start]');
-		return response.data;
+		return response;
 	};
 
 	client.tgs_stop = async function (tgs_address, instanceId, interaction) {
@@ -84,9 +84,9 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.delete(`${tgs_address}/api/DreamDaemon`, { headers });
 
-		if(interaction) return response.data;
+		if(interaction) return response;
 		global.createLog('Server used command [TGS Stop]');
-		return response.data;
+		return response;
 	};
 
 	client.tgs_deploy = async function (tgs_address, instanceId, interaction) {
@@ -94,11 +94,9 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.put(`${tgs_address}/api/DreamMaker`, null, { headers });
 
-		console.log(response)
-
-		if(interaction) return response.data;
+		if(interaction) return response;
 		global.createLog('Server used command [TGS Deploy]');
-		return response.data;
+		return response;
 	};
 
 	client.tgs_testMerge = async function (tgs_address, instanceId, interaction, repository_data) {
@@ -106,9 +104,9 @@ module.exports = async (client) => {
 		const headers = { ...defaultHeaders, ...bearer, Instance: instanceId };
 		const response = await axios.post(`${tgs_address}/api/Repository`, repository_data, { headers });
 
-		if(interaction) return response.data;
+		if(interaction) return response;
 		global.createLog('Server used command [TGS Test Merges]');
-		return response.data;
+		return response;
 	};
 
 	client.tgs_handleTestMerge = async function (tgs_address, instanceId, interaction) {
