@@ -133,15 +133,16 @@ module.exports = async (client) => {
 				}
 			}
 		);
-		console.log(response)
 		const prs = response.data;
 		if (!prs.length) return await client.ephemeralEmbed({ title: 'Request', desc: 'Not found any PRs.', color: '#c70058' }, interaction);
 
 		const all_prs = prs.map(pr => ({
 			label: `PR #${pr.number}`,
-			description: pr.title || `No description available`,
-			value: pr.number.toString(),
+			description: pr.title ? `${pr.title}` : `No description available`,
+			value: pr.number.toString()
 		}));
+
+    console.log('PRs:', all_prs);
 
 		const selected_prs = await client.sendInteractionSelectMenu(interaction, 'select-prs', 'Select PRs', all_prs, 'Select PRs to be set for TM:', true);
 		if (!selected_prs) return;
