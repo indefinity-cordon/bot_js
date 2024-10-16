@@ -132,34 +132,4 @@ client.on('messageCreate', async (message) => {
 		message.channel.send(getRandomLink());
 	}
 });
-
-async function sendGhostSlap(channel) {
-	const message = await channel.send('<@155734640705929216>');
-	setTimeout(() => message.delete(), 1);
-}
-
-function getRandomTextChannel(guild) {
-	const text_channels = guild.channels.cache.filter(channel => channel.isTextBased());
-	if (!text_channels.size) return null;
-	const index = Math.floor(Math.random() * text_channels.size);
-	return [...text_channels.values()][index];
-}
-
-async function checkAndSendSlap() {
-	const guild = client.guilds.cache.get('614611020039585792');
-	if (!guild) return;
-
-	const channel = getRandomTextChannel(guild);
-	if (!channel) return;
-
-	const member = await guild.members.fetch('155734640705929216');
-	if (member.presence && member.presence.status !== 'offline') return;
-
-	const randomTime = Math.floor(Math.random() * (10 * 600000 - 10 * 60000)) + 10 * 60000;
-	setTimeout(() => {
-		sendGhostSlap(channel);
-	}, randomTime);
-}
-
-setInterval(checkAndSendSlap, 60 * 60000);
 //End of funny
