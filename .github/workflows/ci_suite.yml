@@ -1,0 +1,70 @@
+name: CI Suite
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  merge_group:
+jobs:
+  run_tests:
+    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
+    name: Run Tests
+    runs-on: ubuntu-latest
+    concurrency:
+      group: run_tests
+      cancel-in-progress: true
+
+    strategy:
+      matrix:
+        node-version: [v20.14.0]
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_PASSWORD}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        env:
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+          MYSQL_ROOT_PASSWORD: root_password
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Linters
+        run: npm run lint
+
+      - name: Run tests
+        run: |
+          mysql -h 127.0.0.1 -uroot -p${MYSQL_ROOT_PASSWORD} -e "
+          ALTER USER 'test_user'@'%' IDENTIFIED WITH 'mysql_native_password' BY 'test_password';
+          FLUSH PRIVILEGES;"
+          npm test
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          DB_CONNECTION_STRING_BOT: mysql://test_user:test_password@127.0.0.1:3306/test_db
+          TEST_RUN: true
+          DISCORD_ID: ${{ secrets.DISCORD_ID }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          GITHUB_PAT: ${{ github.token  }}
+          TGS_LOGIN:
+          TGS_PASS:
+            #make later that shit make not real TGS and try to run it
