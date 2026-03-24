@@ -27,13 +27,15 @@ class Entity {
   }
 
   async save() {
-    const rows = this.id
-      ? await globalThis.mysqlRequest(
-          this.db,
-          `SELECT * FROM ${this.meta.table} WHERE id = ?`,
-          [this.id],
-        )
-      : [];
+    let rows;
+    if (this.id)
+      rows = await globalThis.mysqlRequest(
+        this.db,
+        `SELECT * FROM ${this.meta.table} WHERE id = ?`,
+        [this.id],
+      );
+    if (!rows) rows = [];
+
     let to_map_outgoing = null;
     if (rows.length > 0) {
       const to_map_incoming = {};

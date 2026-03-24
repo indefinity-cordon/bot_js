@@ -1,7 +1,7 @@
 import mysql from "mysql";
 
 export default async function MySQL(load_complex_things) {
-  globalThis.mysqlCreate = async function (connection_params) {
+  globalThis.mysqlCreate = async function (connection_params, database) {
     const connection = mysql.createConnection(
       process.TEST_RUN
         ? process.env.DB_CONNECTION_STRING_BOT
@@ -11,33 +11,30 @@ export default async function MySQL(load_complex_things) {
       console.log("Database >> MySQL >> [ERROR] >>", err),
     );
     await mysqlConnect(connection);
+    if (database) database.connection = connection;
+    else
+      database = {
+        connection: connection,
+        active: false,
+        connection_params: connection_params,
+      };
     await new Promise((resolve) => {
       try {
         setInterval(async () => {
-          const mysql_active = await checkMySQLConnection(connection);
-          if (!mysql_active) {
-            console.warn(
-              "Database >> MySQL >> [ERROR] >> Failed to Restore Connection",
-            );
-          }
+          checkMySQLConnection(database);
         }, 60000);
         resolve(true);
       } catch {
         resolve(false);
       }
     });
-    return connection;
+    return database;
   };
 
   globalThis.mysqlRequest = async function (database, query, params = []) {
-    if (!database) {
-      console.error(`DB >> MySQL >> [WARNING] >> Wrong DB at request`);
-      return [];
-    }
-
     try {
       return await new Promise((resolve, reject) => {
-        database.query(query, [...params], (err, result) => {
+        database.connection.query(query, [...params], (err, result) => {
           if (err) {
             reject(err);
           } else {
@@ -77,23 +74,22 @@ export default async function MySQL(load_complex_things) {
   };
 }
 
-async function checkMySQLConnection(connection) {
-  return new Promise((resolve) => {
-    connection.ping(async (err) => {
-      if (err) {
-        console.warn(
-          "Database >> MySQL >> [ERROR] >> Connection Lost ... Reconnect Attempt ...",
-        );
-        try {
-          await mysqlConnect(connection);
-          resolve(true);
-        } catch {
-          resolve(false);
-        }
-      } else {
-        resolve(true);
+async function checkMySQLConnection(database) {
+  await database.connection.ping(async (err) => {
+    if (err) {
+      database.active = false;
+      console.warn(
+        "Database >> MySQL >> [ERROR] >> Connection Lost ... Reconnect Attempt ...",
+      );
+      try {
+        await mysqlConnect(database.connection);
+      } catch (err) {
+        if (err.fatal)
+          globalThis.mysqlCreate(database.connection_params, database);
       }
-    });
+    } else {
+      database.active = true;
+    }
   });
 }
 
@@ -105,7 +101,7 @@ async function mysqlConnect(connection) {
         reject(err);
       } else {
         console.log("Database >> MySQL >> Connected");
-        resolve(true);
+        resolve();
       }
     });
   });
