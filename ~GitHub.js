@@ -1,4 +1,4 @@
-import simpleGit from "simple-git";
+import { simpleGit, ResetMode } from "simple-git";
 
 const git = simpleGit(process.cwd());
 
@@ -50,6 +50,7 @@ async function getLastLocalCommit() {
 
 async function pullChanges() {
   try {
+    await git.reset(ResetMode.HARD);
     await git.pull("origin", process.env.GITHUB_BRANCH);
     console.log("GitHub >> Pulled latest changes");
   } catch (error) {
