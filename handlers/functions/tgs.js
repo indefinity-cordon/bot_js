@@ -24,7 +24,7 @@ export default async function declareTGS() {
         Authorization: `Bearer ${response.data.bearer}`,
       };
       bearersValidUntil[tgsAddress] = new Date(
-        Date.now() - new Date().getTimezoneOffset() * 60000 + 600000,
+        Date.now() + 600000,
       );
       return bearersData[tgsAddress];
     } catch (error) {
@@ -37,9 +37,7 @@ export default async function declareTGS() {
     tgsLogin,
     tgsPass,
   ) {
-    const valid_time = new Date(
-      Date.now() - new Date().getTimezoneOffset() * 60000,
-    );
+    const valid_time = new Date(Date.now());
     if (valid_time < bearersValidUntil[tgsAddress])
       return bearersData[tgsAddress];
     else

@@ -178,7 +178,7 @@ class ByondChannel {
           { name: "Sent", value: entry.string_request },
           {
             name: "Created at",
-            value: `<t:${Math.floor((entry.created - new Date().getTimezoneOffset() * 60000) / 1000)}:t>`,
+            value: `<t:${Math.floor(entry.created / 1000)}:t>`,
           },
         ]);
       }
@@ -267,7 +267,7 @@ class ByondChannel {
         { name: "Sent", value: entry.string_request },
         {
           name: "Created at",
-          value: `<t:${Math.floor((entry.created - new Date().getTimezoneOffset() * 60000) / 1000)}:t>`,
+          value: `<t:${Math.floor(entry.created / 1000)}:t>`,
         },
       ]);
     }
